@@ -25,7 +25,7 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyFakeKeyForWebClientDenkSharedApp001',
+    apiKey: 'AIzaSyD3nkShar3dExpWebApp10SDevX0000000',
     appId: '1:653774591983:web:denksharedexpensesappweb',
     messagingSenderId: '653774591983',
     projectId: 'denk-shared-expenses',
@@ -34,7 +34,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyFakeKeyForAndroidDenkSharedExpenses01',
+    apiKey: 'AIzaSyD3nkShar3dExpAndroid0SDevX0000000',
     appId: '1:653774591983:android:com.denk.denk',
     messagingSenderId: '653774591983',
     projectId: 'denk-shared-expenses',
@@ -42,8 +42,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyFakeKeyForIosDenkSharedExpenses001',
-    appId: '1:653774591983:ios:com.denk.denk',
+    apiKey: 'AIzaSyD3nkShar3dExp3ns3sApp10SDevX00000',
+    appId: '1:653774591983:ios:2d34c79c1516df27',
     messagingSenderId: '653774591983',
     projectId: 'denk-shared-expenses',
     storageBucket: 'denk-shared-expenses.appspot.com',
