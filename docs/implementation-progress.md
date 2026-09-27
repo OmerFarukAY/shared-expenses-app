@@ -40,10 +40,11 @@
 5. **Real-time Firestore Streams**: Riverpod providers bind directly to Firestore snapshots with offline cache persistence enabled.
 6. **Localization**: First-class support for English, Turkish, Spanish, French, and Italian via Flutter `intl` & ARB files.
 7. **Zero Decorative Emojis**: Non-negotiable UI rule prohibiting emojis across UI, empty states, copy, badges, and icons. Coherent vector iconography only. Emojis permitted solely within explicit user-generated content. Enforced by automated tests in `test/core/zero_decorative_emojis_test.dart`.
+8. **iOS Minimum Deployment Target (iOS 15.0)**: Standardized `IPHONEOS_DEPLOYMENT_TARGET` to 15.0 across Debug, Release, and Profile in `project.pbxproj` to resolve simulator build constraints while maximizing device compatibility (iPhone 7 through current iPhone models).
 
 ---
 
 ## 3. Current Phase Status
-- **Current Phase:** All Phases Completed (0 through 16) — Production Ready!
-- **Last Commit:** `6883b13` (Phase 16)
-- **Last Verification:** `flutter build apk --debug` succeeded (`✓ Built build/app/outputs/flutter-apk/app-debug.apk`). All 72 tests passing, 0 static analysis issues. Fully release-ready for iOS & Android.
+- **Current Phase:** All Phases Completed (0 through 16) + iOS Simulator Compatibility Fix — Production Ready!
+- **Last Commit:** `e36110e` (Zero Decorative Emojis Rule)
+- **Last Verification:** Both Android build (`app-debug.apk`) and iOS Simulator build (`build/ios/iphonesimulator/Runner.app`) succeeded. All 74 tests passing, 0 static analysis issues. Fully release-ready.
