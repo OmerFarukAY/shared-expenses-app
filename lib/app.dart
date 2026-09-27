@@ -6,6 +6,7 @@ import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
 import 'package:denk/features/auth/presentation/onboarding_display_name_screen.dart';
 import 'package:denk/features/groups/presentation/groups_list_screen.dart';
+import 'package:denk/features/settings/presentation/settings_controller.dart';
 import 'package:denk/l10n/l10n.dart';
 
 /// Root application widget for Denk.
@@ -16,10 +17,13 @@ class DenkApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appLocale = ref.watch(appLocaleProvider);
+    final appThemeMode = ref.watch(appThemeModeProvider);
+
     return MaterialApp(
       title: 'Denk',
       debugShowCheckedModeBanner: false,
-      locale: forcedLocale,
+      locale: forcedLocale ?? appLocale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -29,7 +33,7 @@ class DenkApp extends ConsumerWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
+      themeMode: appThemeMode,
       home: const DenkAuthGate(),
     );
   }

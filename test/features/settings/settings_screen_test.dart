@@ -1,0 +1,156 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:denk/core/theme/app_theme.dart';
+import 'package:denk/features/auth/domain/user_profile.dart';
+import 'package:denk/features/auth/presentation/auth_controller.dart';
+import 'package:denk/features/settings/presentation/settings_screen.dart';
+import 'package:denk/l10n/l10n.dart';
+
+void main() {
+  final now = DateTime.now();
+
+  testWidgets(
+    'SettingsScreen renders profile, language selector, and privacy explanation',
+    (tester) async {
+      final fakeController = _MockUserProfileController(
+        UserProfile(
+          uid: 'anon_user_123456789',
+          displayName: 'Ömer',
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            userProfileControllerProvider.overrideWith(() => fakeController),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            theme: AppTheme.light,
+            home: const SettingsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify Profile Info
+      expect(find.text('Settings'), findsOneWidget);
+      expect(find.text('Ömer'), findsOneWidget);
+      expect(find.text('Anonymous Firebase Account'), findsOneWidget);
+      expect(find.textContaining('UID: anon_use...'), findsOneWidget);
+
+      // Verify Preferences items
+      expect(find.text('Language'), findsOneWidget);
+      expect(find.text('Theme'), findsOneWidget);
+
+      // Verify Privacy Info & Destructive deletion
+      expect(find.text('Privacy Information'), findsOneWidget);
+      expect(find.text('Delete Local Account'), findsWidgets);
+
+      // Tap Language to open selection dialog
+      await tester.tap(find.text('Language'));
+      await tester.pumpAndSettle();
+
+      // All 5 languages should be present in dialog
+      expect(find.text('English'), findsWidgets);
+      expect(find.text('Türkçe'), findsOneWidget);
+      expect(find.text('Español'), findsOneWidget);
+      expect(find.text('Français'), findsOneWidget);
+      expect(find.text('Italiano'), findsOneWidget);
+
+      // Select Türkçe
+      await tester.tap(find.text('Türkçe'));
+      await tester.pumpAndSettle();
+
+      // Verify Privacy Info Dialog
+      await tester.tap(find.text('Read'));
+      await tester.pumpAndSettle();
+      expect(find.text('Data Minimization in Denk'), findsOneWidget);
+
+      await tester.tap(find.text('Done'));
+      await tester.pumpAndSettle();
+    },
+  );
+
+  testWidgets('SettingsScreen delete account triggers confirmation dialog', (
+    tester,
+  ) async {
+    final fakeController = _MockUserProfileController(
+      UserProfile(
+        uid: 'anon_user_123',
+        displayName: 'Ömer',
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          userProfileControllerProvider.overrideWith(() => fakeController),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.light,
+          home: const SettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Scroll down to reveal destructive delete button
+    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -600));
+    await tester.pumpAndSettle();
+
+    // Tap Delete Local Account
+    final deleteButtons = find.text('Delete Local Account');
+    expect(deleteButtons, findsWidgets);
+    await tester.tap(deleteButtons.last);
+    await tester.pumpAndSettle();
+
+    // Verify Confirmation Dialog
+    expect(find.text('Cancel'), findsOneWidget);
+    expect(find.text('Delete'), findsOneWidget);
+
+    // Tap Delete in dialog
+    await tester.tap(find.text('Delete'));
+    await tester.pumpAndSettle();
+
+    expect(fakeController.deleteCalled, isTrue);
+  });
+}
+
+class _MockUserProfileController extends AsyncNotifier<UserProfile?>
+    implements UserProfileController {
+  final UserProfile? _profile;
+  bool deleteCalled = false;
+  String? updatedName;
+
+  _MockUserProfileController(this._profile);
+
+  @override
+  Future<UserProfile?> build() async => _profile;
+
+  @override
+  Future<void> setDisplayName(
+    String name, {
+    String preferredCurrency = 'TRY',
+    String languageCode = 'en',
+  }) async {}
+
+  @override
+  Future<void> updateDisplayName(String name) async {
+    updatedName = name;
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    deleteCalled = true;
+    state = const AsyncValue.data(null);
+  }
+}

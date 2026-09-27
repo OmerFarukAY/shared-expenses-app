@@ -8,6 +8,7 @@ import 'package:denk/features/groups/presentation/create_group_sheet.dart';
 import 'package:denk/features/groups/presentation/group_controller.dart';
 import 'package:denk/features/groups/presentation/group_dashboard_screen.dart';
 import 'package:denk/features/groups/presentation/join_group_sheet.dart';
+import 'package:denk/features/settings/presentation/settings_screen.dart';
 import 'package:denk/l10n/l10n.dart';
 
 class GroupsListScreen extends ConsumerWidget {
@@ -39,6 +40,15 @@ class GroupsListScreen extends ConsumerWidget {
             tooltip: l10n?.createGroup ?? 'Create Group',
             icon: const Icon(Icons.add_rounded, size: 24),
             onPressed: () => CreateGroupSheet.show(context),
+          ),
+          IconButton(
+            tooltip: l10n?.settingsTitle ?? 'Settings',
+            icon: const Icon(Icons.settings_outlined, size: 20),
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+            },
           ),
           const SizedBox(width: 8),
         ],
