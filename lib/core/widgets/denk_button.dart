@@ -104,11 +104,17 @@ class DenkButton extends StatelessWidget {
           side: borderSide,
         ),
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: (isLoading || onPressed == null) ? null : onPressed,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Center(child: content),
+        child: Semantics(
+          button: true,
+          enabled: onPressed != null && !isLoading,
+          label: label,
+          excludeSemantics: true,
+          child: InkWell(
+            onTap: (isLoading || onPressed == null) ? null : onPressed,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Center(child: content),
+            ),
           ),
         ),
       ),

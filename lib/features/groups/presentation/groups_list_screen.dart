@@ -129,109 +129,116 @@ class _GroupCard extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
 
-    return DenkCard(
-      onTap: onTap,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.groups_rounded,
-                  color: theme.colorScheme.primary,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      group.name,
-                      style: AppTypography.h3,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${group.memberCount} ${group.memberCount == 1 ? "member" : "members"} • ${group.defaultCurrency}',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.6,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: Colors.grey,
-                size: 20,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Divider(color: theme.colorScheme.outlineVariant),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Invite Code: ${group.inviteCode}',
-                style: AppTypography.labelSmall.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                  fontFamily: 'monospace',
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  Clipboard.setData(ClipboardData(text: group.inviteCode));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        l10n?.inviteCodeCopied ?? 'Invite code copied',
-                      ),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
-                borderRadius: BorderRadius.circular(6),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+    final memberText =
+        '${group.memberCount} ${l10n?.membersLabel ?? "members"} • ${group.defaultCurrency}';
+
+    return Semantics(
+      button: true,
+      label: '${group.name}, $memberText',
+      child: DenkCard(
+        onTap: onTap,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Row(
+                  child: Icon(
+                    Icons.groups_rounded,
+                    color: theme.colorScheme.primary,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.copy_rounded,
-                        size: 13,
-                        color: theme.colorScheme.primary,
-                      ),
-                      const SizedBox(width: 4),
                       Text(
-                        'Copy',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: theme.colorScheme.primary,
+                        group.name,
+                        style: AppTypography.h3,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        memberText,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Colors.grey,
+                  size: 20,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Divider(color: theme.colorScheme.outlineVariant),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Invite Code: ${group.inviteCode}',
+                  style: AppTypography.labelSmall.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                    fontFamily: 'monospace',
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: group.inviteCode));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          l10n?.inviteCodeCopied ?? 'Invite code copied',
+                        ),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.copy_rounded,
+                          size: 13,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Copy',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -328,95 +328,152 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                       // HERO BALANCE CARD
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: isCreditor
-                                ? (isDark
-                                      ? AppColors.positiveDark.withValues(
-                                          alpha: 0.5,
-                                        )
-                                      : AppColors.positiveLight)
-                                : isDebtor
-                                ? (isDark
-                                      ? AppColors.negativeDark.withValues(
-                                          alpha: 0.5,
-                                        )
-                                      : AppColors.negativeLight)
-                                : (isDark
-                                      ? AppColors.darkSurface
-                                      : AppColors.lightSurface),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
+                        child: Semantics(
+                          label: isCreditor
+                              ? '${l10n?.youAreOwed ?? 'You are owed'}: ${currency.formatMinor(myNetMinor)}'
+                              : isDebtor
+                              ? '${l10n?.youOwe ?? 'You owe'}: ${currency.formatMinor(myNetMinor.abs())}'
+                              : (l10n?.allSettled ?? 'All settled up'),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
                               color: isCreditor
-                                  ? AppColors.positive.withValues(alpha: 0.25)
+                                  ? (isDark
+                                        ? AppColors.positiveDark.withValues(
+                                            alpha: 0.5,
+                                          )
+                                        : AppColors.positiveLight)
                                   : isDebtor
-                                  ? AppColors.negative.withValues(alpha: 0.25)
+                                  ? (isDark
+                                        ? AppColors.negativeDark.withValues(
+                                            alpha: 0.5,
+                                          )
+                                        : AppColors.negativeLight)
                                   : (isDark
-                                        ? AppColors.darkBorder
-                                        : AppColors.lightBorder),
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    isCreditor
-                                        ? (l10n?.youAreOwed ?? 'You are owed')
-                                        : isDebtor
-                                        ? (l10n?.youOwe ?? 'You owe')
-                                        : (l10n?.allSettled ??
-                                              'All settled up'),
-                                    style: AppTypography.labelSmall.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: isCreditor
-                                          ? (isDark
-                                                ? AppColors.positiveBright
-                                                : AppColors.positive)
-                                          : isDebtor
-                                          ? (isDark
-                                                ? AppColors.negativeBright
-                                                : AppColors.negative)
-                                          : theme.colorScheme.onSurface
-                                                .withValues(alpha: 0.6),
-                                    ),
-                                  ),
-                                  Text(
-                                    '${l10n?.totalSpending ?? 'Total Spending'}: ${currency.formatMinor(summary.totalGroupSpendingMinor)}',
-                                    style: AppTypography.labelSmall.copyWith(
-                                      color: theme.colorScheme.onSurface
-                                          .withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                isCreditor
-                                    ? '+${currency.formatMinor(myNetMinor)}'
+                                        ? AppColors.darkSurface
+                                        : AppColors.lightSurface),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isCreditor
+                                    ? AppColors.positive.withValues(alpha: 0.25)
                                     : isDebtor
-                                    ? '-${currency.formatMinor(myNetMinor.abs())}'
-                                    : currency.formatMinor(0),
-                                style: AppTypography.monetary(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.w700,
-                                  color: isCreditor
-                                      ? (isDark
-                                            ? AppColors.positiveBright
-                                            : AppColors.positive)
-                                      : isDebtor
-                                      ? (isDark
-                                            ? AppColors.negativeBright
-                                            : AppColors.negative)
-                                      : theme.colorScheme.onSurface,
-                                ),
+                                    ? AppColors.negative.withValues(alpha: 0.25)
+                                    : (isDark
+                                          ? AppColors.darkBorder
+                                          : AppColors.lightBorder),
                               ),
-                            ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        if (isCreditor)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 6,
+                                            ),
+                                            child: Icon(
+                                              Icons.arrow_upward_rounded,
+                                              size: 16,
+                                              color: isDark
+                                                  ? AppColors.positiveBright
+                                                  : AppColors.positive,
+                                            ),
+                                          )
+                                        else if (isDebtor)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 6,
+                                            ),
+                                            child: Icon(
+                                              Icons.arrow_downward_rounded,
+                                              size: 16,
+                                              color: isDark
+                                                  ? AppColors.negativeBright
+                                                  : AppColors.negative,
+                                            ),
+                                          )
+                                        else
+                                          const Padding(
+                                            padding: EdgeInsets.only(right: 6),
+                                            child: Icon(
+                                              Icons
+                                                  .check_circle_outline_rounded,
+                                              size: 16,
+                                              color: AppColors.settled,
+                                            ),
+                                          ),
+                                        Text(
+                                          isCreditor
+                                              ? (l10n?.youAreOwed ??
+                                                    'You are owed')
+                                              : isDebtor
+                                              ? (l10n?.youOwe ?? 'You owe')
+                                              : (l10n?.allSettled ??
+                                                    'All settled up'),
+                                          style: AppTypography.labelSmall
+                                              .copyWith(
+                                                fontWeight: FontWeight.w600,
+                                                color: isCreditor
+                                                    ? (isDark
+                                                          ? AppColors
+                                                                .positiveBright
+                                                          : AppColors.positive)
+                                                    : isDebtor
+                                                    ? (isDark
+                                                          ? AppColors
+                                                                .negativeBright
+                                                          : AppColors.negative)
+                                                    : theme
+                                                          .colorScheme
+                                                          .onSurface
+                                                          .withValues(
+                                                            alpha: 0.6,
+                                                          ),
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                    Text(
+                                      '${l10n?.totalSpending ?? 'Total Spending'}: ${currency.formatMinor(summary.totalGroupSpendingMinor)}',
+                                      style: AppTypography.labelSmall.copyWith(
+                                        color: theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  isCreditor
+                                      ? '+${currency.formatMinor(myNetMinor)}'
+                                      : isDebtor
+                                      ? '-${currency.formatMinor(myNetMinor.abs())}'
+                                      : currency.formatMinor(0),
+                                  style: AppTypography.monetary(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w700,
+                                    color: isCreditor
+                                        ? (isDark
+                                              ? AppColors.positiveBright
+                                              : AppColors.positive)
+                                        : isDebtor
+                                        ? (isDark
+                                              ? AppColors.negativeBright
+                                              : AppColors.negative)
+                                        : theme.colorScheme.onSurface,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -1044,6 +1101,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
+        tooltip: l10n?.addExpense ?? 'Add Expense',
         onPressed: () {
           membersAsync.whenData((members) {
             AddExpenseScreen.show(

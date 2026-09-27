@@ -42,18 +42,28 @@ class DenkBalancePill extends StatelessWidget {
     final formatted = currency.formatMinor(balanceMinor);
     final displayText = balanceMinor > 0 ? '$prefix$formatted' : formatted;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        displayText,
-        style: AppTypography.monetary(
-          fontSize: fontSize,
-          fontWeight: FontWeight.w600,
-          color: fg,
+    final semanticLabel = balanceMinor > 0
+        ? 'Positive balance $displayText'
+        : balanceMinor < 0
+        ? 'Negative balance $displayText'
+        : 'Settled balance $displayText';
+
+    return Semantics(
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          displayText,
+          style: AppTypography.monetary(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w600,
+            color: fg,
+          ),
         ),
       ),
     );

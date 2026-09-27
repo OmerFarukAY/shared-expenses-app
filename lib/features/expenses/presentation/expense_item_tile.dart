@@ -44,105 +44,115 @@ class ExpenseItemTile extends StatelessWidget {
 
     final dateFormatted = DateFormat.MMMd().format(expense.date);
     final category = expense.category;
+    final semanticLabel = myNetMinor > 0
+        ? '${expense.title}, total ${currency.formatMinor(expense.totalMinor)}, ${_getPayerSummary()}, you are owed ${currency.formatMinor(myNetMinor)}'
+        : myNetMinor < 0
+        ? '${expense.title}, total ${currency.formatMinor(expense.totalMinor)}, ${_getPayerSummary()}, you owe ${currency.formatMinor(myNetMinor.abs())}'
+        : '${expense.title}, total ${currency.formatMinor(expense.totalMinor)}, ${_getPayerSummary()}';
 
-    return DenkCard(
-      onTap: onTap,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          // Category Icon badge
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: category.color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: DenkCard(
+        onTap: onTap,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        margin: const EdgeInsets.only(bottom: 8),
+        child: Row(
+          children: [
+            // Category Icon badge
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: category.color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(category.icon, color: category.color, size: 22),
             ),
-            child: Icon(category.icon, color: category.color, size: 22),
-          ),
-          const SizedBox(width: 14),
+            const SizedBox(width: 14),
 
-          // Title & Payer summary
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            // Title & Payer summary
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    expense.title,
+                    style: AppTypography.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      Text(
+                        _getPayerSummary(),
+                        style: AppTypography.bodySmall.copyWith(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        ' • $dateFormatted',
+                        style: AppTypography.bodySmall.copyWith(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.45,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            // Total amount & personal net impact
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  expense.title,
-                  style: AppTypography.bodyMedium.copyWith(
+                  currency.formatMinor(expense.totalMinor),
+                  style: AppTypography.monetary(
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 3),
-                Row(
-                  children: [
-                    Text(
-                      _getPayerSummary(),
-                      style: AppTypography.bodySmall.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.6,
-                        ),
-                      ),
+                const SizedBox(height: 2),
+                if (myNetMinor > 0)
+                  Text(
+                    '+${currency.formatMinor(myNetMinor)}',
+                    style: AppTypography.monetary(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.positive,
                     ),
-                    Text(
-                      ' • $dateFormatted',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.45,
-                        ),
-                      ),
+                  )
+                else if (myNetMinor < 0)
+                  Text(
+                    '-${currency.formatMinor(myNetMinor.abs())}',
+                    style: AppTypography.monetary(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.negative,
                     ),
-                  ],
-                ),
+                  )
+                else if (paidByMe > 0)
+                  Text(
+                    'settled',
+                    style: AppTypography.caption.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                  ),
               ],
             ),
-          ),
-
-          const SizedBox(width: 12),
-
-          // Total amount & personal net impact
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                currency.formatMinor(expense.totalMinor),
-                style: AppTypography.monetary(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 2),
-              if (myNetMinor > 0)
-                Text(
-                  '+${currency.formatMinor(myNetMinor)}',
-                  style: AppTypography.monetary(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.positive,
-                  ),
-                )
-              else if (myNetMinor < 0)
-                Text(
-                  '-${currency.formatMinor(myNetMinor.abs())}',
-                  style: AppTypography.monetary(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.negative,
-                  ),
-                )
-              else if (paidByMe > 0)
-                Text(
-                  'settled',
-                  style: AppTypography.caption.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                  ),
-                ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
