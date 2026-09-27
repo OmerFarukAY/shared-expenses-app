@@ -16,7 +16,8 @@ class SettlementTransaction {
     required this.toName,
     required this.amountMinor,
     required this.currency,
-  });
+  }) : assert(amountMinor > 0, 'Settlement amount must be positive'),
+       assert(fromUid != toUid, 'Payer and recipient must differ');
 
   @override
   bool operator ==(Object other) =>
@@ -62,7 +63,8 @@ class SettlementRecord {
     required this.settledAt,
     required this.settledBy,
     this.notes,
-  });
+  }) : assert(amountMinor > 0, 'Settlement amount must be positive'),
+       assert(fromUid != toUid, 'Payer and recipient must differ');
 
   Map<String, dynamic> toMap() {
     return {

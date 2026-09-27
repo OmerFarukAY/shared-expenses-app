@@ -156,7 +156,13 @@ service cloud.firestore {
                          request.resource.data.keys().hasAll(['uid', 'displayName', 'role', 'joinedAt']) &&
                          request.resource.data.uid == memberUid &&
                          request.resource.data.displayName is string && request.resource.data.displayName.size() >= 1 && request.resource.data.displayName.size() <= 50 &&
-                         (request.resource.data.role == 'owner' || request.resource.data.role == 'member');
+                         (
+                           request.resource.data.role == 'member' ||
+                           (request.resource.data.role == 'owner' && (
+                             !exists(/databases/$(database)/documents/groups/$(groupId)) ||
+                             request.auth.uid == get(/databases/$(database)/documents/groups/$(groupId)).data.createdBy
+                           ))
+                         );
 
         // Users can update their own display name within the group
         allow update: if isAuthenticated() && request.auth.uid == memberUid &&

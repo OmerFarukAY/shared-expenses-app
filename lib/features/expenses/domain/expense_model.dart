@@ -52,7 +52,8 @@ class ExpenseModel {
     required this.createdBy,
     required this.createdAt,
     required this.updatedAt,
-  });
+  }) : assert(totalMinor > 0, 'Expense totalMinor must be strictly positive'),
+       assert(currency.length == 3, 'Currency must be 3-letter ISO code');
 
   /// Amount paid by the given user for this expense in minor units.
   int getPayerPaid(String uid) => payers[uid] ?? 0;
