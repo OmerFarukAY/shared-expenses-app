@@ -92,5 +92,12 @@
   "settingsDeleteAccount": "Cihazdaki Hesabı Sil",
   "settingsDeleteWarning": "Bu işlem bu cihazdaki anonim kimliğinizi siler. Tekrar davet edilene kadar gruplarınıza erişemezsiniz.",
   "settingsAbout": "Denk Hakkında",
-  "settingsVersion": "Sürüm"
+  "settingsVersion": "Sürüm",
+
+  "expenseDetailTitle": "Harcama Detayı",
+  "deleteExpenseConfirmTitle": "Harcamayı Sil",
+  "deleteExpenseConfirmMessage": "Bu harcamayı silmek istediğinizden emin misiniz? Grup bakiyeleri yeniden hesaplanacaktır.",
+  "paidBy": "Ödeyen",
+  "splitBetween": "Bölüşenler",
+  "expenseNotes": "Notlar"
 }

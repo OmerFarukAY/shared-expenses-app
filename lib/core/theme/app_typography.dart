@@ -90,4 +90,18 @@ abstract class AppTypography {
     letterSpacing: 0.3,
     height: 1.2,
   );
+
+  static const TextStyle caption = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0.1,
+    height: 1.3,
+  );
+
+  static const TextStyle button = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.1,
+    height: 1.25,
+  );
 }

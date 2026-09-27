@@ -92,5 +92,12 @@
   "settingsDeleteAccount": "Supprimer le compte local",
   "settingsDeleteWarning": "Cette action supprime votre identité locale sur cet appareil. Vous perdrez l'accès à vos groupes sauf nouvelle invitation.",
   "settingsAbout": "À propos de Denk",
-  "settingsVersion": "Version"
+  "settingsVersion": "Version",
+
+  "expenseDetailTitle": "Détails de la dépense",
+  "deleteExpenseConfirmTitle": "Supprimer la dépense",
+  "deleteExpenseConfirmMessage": "Êtes-vous sûr de vouloir supprimer cette dépense ? Tous les soldes seront recalculés.",
+  "paidBy": "Payé par",
+  "splitBetween": "Partagé entre",
+  "expenseNotes": "Remarques"
 }

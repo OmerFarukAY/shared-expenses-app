@@ -251,4 +251,23 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get settingsVersion => 'Versione';
+
+  @override
+  String get expenseDetailTitle => 'Dettagli spesa';
+
+  @override
+  String get deleteExpenseConfirmTitle => 'Elimina spesa';
+
+  @override
+  String get deleteExpenseConfirmMessage =>
+      'Sei sicuro di voler eliminare questa spesa? Tutti i saldi verranno ricalcolati.';
+
+  @override
+  String get paidBy => 'Pagato da';
+
+  @override
+  String get splitBetween => 'Diviso tra';
+
+  @override
+  String get expenseNotes => 'Note';
 }

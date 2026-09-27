@@ -253,4 +253,23 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsVersion => 'Versión';
+
+  @override
+  String get expenseDetailTitle => 'Detalles del gasto';
+
+  @override
+  String get deleteExpenseConfirmTitle => 'Eliminar gasto';
+
+  @override
+  String get deleteExpenseConfirmMessage =>
+      '¿Estás seguro de que deseas eliminar este gasto? Se recalcularán todos los saldos.';
+
+  @override
+  String get paidBy => 'Pagado por';
+
+  @override
+  String get splitBetween => 'Dividido entre';
+
+  @override
+  String get expenseNotes => 'Notas';
 }

@@ -252,4 +252,23 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get settingsVersion => 'Sürüm';
+
+  @override
+  String get expenseDetailTitle => 'Harcama Detayı';
+
+  @override
+  String get deleteExpenseConfirmTitle => 'Harcamayı Sil';
+
+  @override
+  String get deleteExpenseConfirmMessage =>
+      'Bu harcamayı silmek istediğinizden emin misiniz? Grup bakiyeleri yeniden hesaplanacaktır.';
+
+  @override
+  String get paidBy => 'Ödeyen';
+
+  @override
+  String get splitBetween => 'Bölüşenler';
+
+  @override
+  String get expenseNotes => 'Notlar';
 }

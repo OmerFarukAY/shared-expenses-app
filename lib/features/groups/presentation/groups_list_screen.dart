@@ -6,6 +6,7 @@ import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
 import 'package:denk/features/groups/presentation/create_group_sheet.dart';
 import 'package:denk/features/groups/presentation/group_controller.dart';
+import 'package:denk/features/groups/presentation/group_dashboard_screen.dart';
 import 'package:denk/features/groups/presentation/join_group_sheet.dart';
 import 'package:denk/l10n/l10n.dart';
 
@@ -81,7 +82,15 @@ class GroupsListScreen extends ConsumerWidget {
                 group: group,
                 onTap: () {
                   ref.read(selectedGroupIdProvider.notifier).state = group.id;
-                  onGroupSelected?.call(group);
+                  if (onGroupSelected != null) {
+                    onGroupSelected!(group);
+                  } else {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => GroupDashboardScreen(group: group),
+                      ),
+                    );
+                  }
                 },
               );
             },

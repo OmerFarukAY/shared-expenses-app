@@ -92,5 +92,12 @@
   "settingsDeleteAccount": "Delete Local Account",
   "settingsDeleteWarning": "This will remove your local anonymous identity on this device. You will lose access to groups unless invited back.",
   "settingsAbout": "About Denk",
-  "settingsVersion": "Version"
+  "settingsVersion": "Version",
+
+  "expenseDetailTitle": "Expense Details",
+  "deleteExpenseConfirmTitle": "Delete Expense",
+  "deleteExpenseConfirmMessage": "Are you sure you want to delete this expense? This will recalculate all group balances.",
+  "paidBy": "Paid by",
+  "splitBetween": "Split between",
+  "expenseNotes": "Notes"
 }

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 class DenkCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry? margin;
   final VoidCallback? onTap;
   final Color? backgroundColor;
   final Color? borderColor;
@@ -15,6 +16,7 @@ class DenkCard extends StatelessWidget {
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(16),
+    this.margin,
     this.onTap,
     this.backgroundColor,
     this.borderColor,
@@ -34,8 +36,9 @@ class DenkCard extends StatelessWidget {
       border: Border.all(color: strokeColor, width: 1),
     );
 
+    Widget result;
     if (onTap != null) {
-      return Material(
+      result = Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
@@ -46,8 +49,17 @@ class DenkCard extends StatelessWidget {
           ),
         ),
       );
+    } else {
+      result = Container(
+        decoration: decoration,
+        padding: padding,
+        child: child,
+      );
     }
 
-    return Container(decoration: decoration, padding: padding, child: child);
+    if (margin != null) {
+      return Padding(padding: margin!, child: result);
+    }
+    return result;
   }
 }

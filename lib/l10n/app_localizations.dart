@@ -583,6 +583,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Version'**
   String get settingsVersion;
+
+  /// No description provided for @expenseDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense Details'**
+  String get expenseDetailTitle;
+
+  /// No description provided for @deleteExpenseConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Expense'**
+  String get deleteExpenseConfirmTitle;
+
+  /// No description provided for @deleteExpenseConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this expense? This will recalculate all group balances.'**
+  String get deleteExpenseConfirmMessage;
+
+  /// No description provided for @paidBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid by'**
+  String get paidBy;
+
+  /// No description provided for @splitBetween.
+  ///
+  /// In en, this message translates to:
+  /// **'Split between'**
+  String get splitBetween;
+
+  /// No description provided for @expenseNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get expenseNotes;
 }
 
 class _AppLocalizationsDelegate

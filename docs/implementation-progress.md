@@ -19,8 +19,8 @@
 | **Phase 5** | Realtime Firestore group/member synchronization & security rules | 🟢 Completed | Firestore rules compilation dry-run passed, atomic batch transactions, realtime member stream tests. |
 | **Phase 6** | Expense domain model & financial calculation engine | 🟢 Completed | ExpenseCategory, ExpenseModel, ExpenseSplitEngine (integer minor math, remainder distribution, decoupled payers/participants), tests. |
 | **Phase 7** | Add Expense UX (multiple payers, multiple participants, split methods) | 🟢 Completed | FirestoreExpenseRepository, ExpenseController, progressive AddExpenseScreen (5-step rapid flow, multi-payer, multi-split), tests. |
-| **Phase 8** | Dashboard, expense list, detail, editing, and deletion | 🟡 In Progress | Group dashboard, spending summary, net balance card, expense list with search/categories, detail/edit/delete. |
-| **Phase 9** | Settlement engine, settlement UI, and settlement history | ⚪ Pending | Greedy debt simplification, mark settled, settlement log. |
+| **Phase 8** | Dashboard, expense list, detail, editing, and deletion | 🟢 Completed | Group balance calculator, GroupDashboardScreen, ExpenseItemTile, ExpenseDetailScreen, edit & delete flows, 43 passing tests. |
+| **Phase 9** | Settlement engine, settlement UI, and settlement history | 🟡 In Progress | Greedy debt simplification, mark settled, settlement log. |
 | **Phase 10**| Search, filters, categories, and restrained statistics | ⚪ Pending | Category/member/date filtering, spending breakdown chart. |
 | **Phase 11**| Settings, privacy/data controls, and offline/error states | ⚪ Pending | Display name update, data deletion, offline banner, error boundary. |
 | **Phase 12**| Full localization (English, Turkish, Spanish, French, Italian) | ⚪ Pending | All ARB translations, pluralization, currency formatting. |
@@ -43,6 +43,6 @@
 ---
 
 ## 3. Current Phase Status
-- **Current Phase:** Phase 8 (Dashboard, expense list, detail, editing, and deletion)
-- **Last Commit:** `0431e68` (Phase 6)
-- **Last Tests:** All 37 tests passing (Add expense flow, Split engine, Group invariants, Models, Invite codes, Groups screen, Auth, Onboarding, Widgets, Currency, App smoke tests), analyzer 0 issues
+- **Current Phase:** Phase 9 (Settlement engine, settlement UI, and settlement history)
+- **Last Commit:** `0cc6a92` (Phase 7)
+- **Last Tests:** All 43 tests passing (Dashboard, Detail, Balance calculator, Add expense flow, Split engine, Group invariants, Models, Invite codes, Groups screen, Auth, Onboarding, Widgets, Currency, App smoke tests), analyzer 0 issues

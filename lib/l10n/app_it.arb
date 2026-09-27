@@ -92,5 +92,12 @@
   "settingsDeleteAccount": "Elimina Account Locale",
   "settingsDeleteWarning": "Questo eliminerà la tua identità anonima da questo dispositivo. Perderai l'accesso ai gruppi a meno che non ti reinvitino.",
   "settingsAbout": "Informazioni su Denk",
-  "settingsVersion": "Versione"
+  "settingsVersion": "Versione",
+
+  "expenseDetailTitle": "Dettagli spesa",
+  "deleteExpenseConfirmTitle": "Elimina spesa",
+  "deleteExpenseConfirmMessage": "Sei sicuro di voler eliminare questa spesa? Tutti i saldi verranno ricalcolati.",
+  "paidBy": "Pagato da",
+  "splitBetween": "Diviso tra",
+  "expenseNotes": "Note"
 }
