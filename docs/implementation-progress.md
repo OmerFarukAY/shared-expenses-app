@@ -23,8 +23,8 @@
 | **Phase 9** | Settlement engine, settlement UI, and settlement history | 🟢 Completed | Greedy debt simplification engine, SettlementRecord, FirestoreSettlementRepository, SettlementController, Settle tab, settlement history, 50 passing tests. |
 | **Phase 10**| Search, filters, categories, and restrained statistics | 🟢 Completed | Live search, category & member filter chips, GroupInsightsSheet with spending percentages and member contribution bars, 52 passing tests. |
 | **Phase 11**| Settings, privacy/data controls, and offline/error states | 🟢 Completed | SettingsScreen, display name editor, 5-language switcher, theme switcher, privacy modal, destructive anonymous account deletion, 54 passing tests. |
-| **Phase 12**| Full localization (English, Turkish, Spanish, French, Italian) | 🟡 In Progress | All ARB translations, pluralization, currency formatting. |
-| **Phase 13**| Accessibility, visual polish, micro-animations, and UX refinement | ⚪ Pending | Semantics, font scaling, contrast, responsive layout tuning. |
+| **Phase 12**| Full localization (English, Turkish, Spanish, French, Italian) | 🟢 Completed | 100% key parity across all 5 ARBs, dynamic language switching, full localization test suite, 64 passing tests. |
+| **Phase 13**| Accessibility, visual polish, micro-animations, and UX refinement | 🟡 In Progress | Semantics, font scaling, contrast, responsive layout tuning, micro-animations. |
 | **Phase 14**| Security hardening, Firestore rules review, performance optimization | ⚪ Pending | Devil's advocate rules audit, index check, query optimization. |
 | **Phase 15**| Full test suite, integration testing, release validation, documentation | ⚪ Pending | Unit, widget, flow tests, documentation update. |
 | **Phase 16**| Final production-readiness audit | ⚪ Pending | Final release checklist, Android build test, verification. |
@@ -43,6 +43,6 @@
 ---
 
 ## 3. Current Phase Status
-- **Current Phase:** Phase 12 (Full localization audit and coverage)
-- **Last Commit:** `2364357` (Phase 10)
-- **Last Tests:** All 54 tests passing (Settings screen, Delete account flow, Search & filter, Group insights, Settlement engine, Settlement balance offset, Dashboard, Detail, Balance calculator, Add expense flow, Split engine, Group invariants, Models, Invite codes, Groups screen, Auth, Onboarding, Widgets, Currency, App smoke tests), analyzer 0 issues
+- **Current Phase:** Phase 13 (Accessibility, Visual Polish, Micro-Animations, and UX Refinement)
+- **Last Commit:** `bf19b7c` (Phase 11)
+- **Last Tests:** All 64 tests passing (5-language localization test suite, Settings screen, Delete account flow, Search & filter, Group insights, Settlement engine, Settlement balance offset, Dashboard, Detail, Balance calculator, Add expense flow, Split engine, Group invariants, Models, Invite codes, Groups screen, Auth, Onboarding, Widgets, Currency, App smoke tests), analyzer 0 issues

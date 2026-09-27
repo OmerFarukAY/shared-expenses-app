@@ -292,4 +292,28 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get memberContributions => 'Üye Katkıları';
+
+  @override
+  String get settingsPreferences => 'Tercihler';
+
+  @override
+  String get themeTitle => 'Tema';
+
+  @override
+  String get themeSystem => 'Sistem Varsayılanı';
+
+  @override
+  String get themeLight => 'Açık';
+
+  @override
+  String get themeDark => 'Koyu';
+
+  @override
+  String get anonymousAccount => 'Anonim Firebase Hesabı';
+
+  @override
+  String get copyId => 'Kimliği Kopyala';
+
+  @override
+  String get membersLabel => 'üye';
 }

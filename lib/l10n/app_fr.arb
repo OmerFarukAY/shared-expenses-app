@@ -107,5 +107,14 @@
   "noMatchingExpenses": "Aucune dépense correspondante",
   "spendingInsights": "Aperçu des dépenses",
   "spendingByCategory": "Dépenses par catégorie",
-  "memberContributions": "Contributions des membres"
+  "memberContributions": "Contributions des membres",
+
+  "settingsPreferences": "Préférences",
+  "themeTitle": "Thème",
+  "themeSystem": "Système par défaut",
+  "themeLight": "Clair",
+  "themeDark": "Sombre",
+  "anonymousAccount": "Compte anonyme Firebase",
+  "copyId": "Copier l'identifiant",
+  "membersLabel": "membres"
 }

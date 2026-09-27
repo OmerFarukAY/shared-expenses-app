@@ -107,5 +107,14 @@
   "noMatchingExpenses": "Eşleşen harcama bulunamadı",
   "spendingInsights": "Harcama Özeti",
   "spendingByCategory": "Kategoriye Göre Harcamalar",
-  "memberContributions": "Üye Katkıları"
+  "memberContributions": "Üye Katkıları",
+
+  "settingsPreferences": "Tercihler",
+  "themeTitle": "Tema",
+  "themeSystem": "Sistem Varsayılanı",
+  "themeLight": "Açık",
+  "themeDark": "Koyu",
+  "anonymousAccount": "Anonim Firebase Hesabı",
+  "copyId": "Kimliği Kopyala",
+  "membersLabel": "üye"
 }

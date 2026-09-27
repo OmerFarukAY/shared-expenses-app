@@ -104,7 +104,10 @@ void main() {
     await tester.pumpAndSettle();
 
     // Scroll down to reveal destructive delete button
-    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -600));
+    await tester.drag(
+      find.byType(SingleChildScrollView),
+      const Offset(0, -600),
+    );
     await tester.pumpAndSettle();
 
     // Tap Delete Local Account

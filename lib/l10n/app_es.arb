@@ -107,5 +107,14 @@
   "noMatchingExpenses": "No se encontraron gastos coincidentes",
   "spendingInsights": "Resumen de gastos",
   "spendingByCategory": "Gastos por categoría",
-  "memberContributions": "Aportaciones de miembros"
+  "memberContributions": "Aportaciones de miembros",
+
+  "settingsPreferences": "Preferencias",
+  "themeTitle": "Tema",
+  "themeSystem": "Predeterminado del sistema",
+  "themeLight": "Claro",
+  "themeDark": "Oscuro",
+  "anonymousAccount": "Cuenta anónima de Firebase",
+  "copyId": "Copiar ID",
+  "membersLabel": "miembros"
 }

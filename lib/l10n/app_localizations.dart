@@ -661,6 +661,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Member Contributions'**
   String get memberContributions;
+
+  /// No description provided for @settingsPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get settingsPreferences;
+
+  /// No description provided for @themeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get themeTitle;
+
+  /// No description provided for @themeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System Default'**
+  String get themeSystem;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeDark;
+
+  /// No description provided for @anonymousAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Anonymous Firebase Account'**
+  String get anonymousAccount;
+
+  /// No description provided for @copyId.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy ID'**
+  String get copyId;
+
+  /// No description provided for @membersLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'members'**
+  String get membersLabel;
 }
 
 class _AppLocalizationsDelegate

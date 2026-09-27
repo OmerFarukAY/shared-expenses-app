@@ -293,4 +293,28 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get memberContributions => 'Contributions des membres';
+
+  @override
+  String get settingsPreferences => 'Préférences';
+
+  @override
+  String get themeTitle => 'Thème';
+
+  @override
+  String get themeSystem => 'Système par défaut';
+
+  @override
+  String get themeLight => 'Clair';
+
+  @override
+  String get themeDark => 'Sombre';
+
+  @override
+  String get anonymousAccount => 'Compte anonyme Firebase';
+
+  @override
+  String get copyId => 'Copier l\'identifiant';
+
+  @override
+  String get membersLabel => 'membres';
 }

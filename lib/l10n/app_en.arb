@@ -107,5 +107,14 @@
   "noMatchingExpenses": "No matching expenses",
   "spendingInsights": "Spending Overview",
   "spendingByCategory": "Spending by Category",
-  "memberContributions": "Member Contributions"
+  "memberContributions": "Member Contributions",
+
+  "settingsPreferences": "Preferences",
+  "themeTitle": "Theme",
+  "themeSystem": "System Default",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "anonymousAccount": "Anonymous Firebase Account",
+  "copyId": "Copy ID",
+  "membersLabel": "members"
 }

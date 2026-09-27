@@ -114,17 +114,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   void _showThemeDialog() {
     final currentMode = ref.read(appThemeModeProvider);
+    final l10n = AppLocalizations.of(context);
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Theme', style: AppTypography.h3),
+        title: Text(l10n?.themeTitle ?? 'Theme', style: AppTypography.h3),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              title: const Text(
-                'System Default',
+              title: Text(
+                l10n?.themeSystem ?? 'System Default',
                 style: AppTypography.bodyMedium,
               ),
               trailing: currentMode == ThemeMode.system
@@ -141,7 +142,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               },
             ),
             ListTile(
-              title: const Text('Light', style: AppTypography.bodyMedium),
+              title: Text(
+                l10n?.themeLight ?? 'Light',
+                style: AppTypography.bodyMedium,
+              ),
               trailing: currentMode == ThemeMode.light
                   ? Icon(
                       Icons.check_rounded,
@@ -156,7 +160,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               },
             ),
             ListTile(
-              title: const Text('Dark', style: AppTypography.bodyMedium),
+              title: Text(
+                l10n?.themeDark ?? 'Dark',
+                style: AppTypography.bodyMedium,
+              ),
               trailing: currentMode == ThemeMode.dark
                   ? Icon(
                       Icons.check_rounded,
@@ -290,10 +297,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         : 'English';
 
     final themeName = currentThemeMode == ThemeMode.light
-        ? 'Light'
+        ? (l10n?.themeLight ?? 'Light')
         : currentThemeMode == ThemeMode.dark
-        ? 'Dark'
-        : 'System';
+        ? (l10n?.themeDark ?? 'Dark')
+        : (l10n?.themeSystem ?? 'System');
 
     return Scaffold(
       appBar: AppBar(
@@ -342,7 +349,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Anonymous Firebase Account',
+                                    l10n?.anonymousAccount ??
+                                        'Anonymous Firebase Account',
                                     style: AppTypography.caption.copyWith(
                                       color: theme.colorScheme.onSurface
                                           .withValues(alpha: 0.5),
@@ -387,7 +395,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   );
                                 },
                                 child: Text(
-                                  'Copy ID',
+                                  l10n?.copyId ?? 'Copy ID',
                                   style: AppTypography.caption.copyWith(
                                     color: theme.colorScheme.primary,
                                     fontWeight: FontWeight.w600,
@@ -404,7 +412,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const SizedBox(height: 24),
 
                   // PREFERENCES SECTION
-                  const Text('Preferences', style: AppTypography.h3),
+                  Text(
+                    l10n?.settingsPreferences ?? 'Preferences',
+                    style: AppTypography.h3,
+                  ),
                   const SizedBox(height: 10),
                   DenkCard(
                     padding: const EdgeInsets.symmetric(
@@ -445,8 +456,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ListTile(
                             contentPadding: EdgeInsets.zero,
                             leading: const Icon(Icons.palette_outlined),
-                            title: const Text(
-                              'Theme',
+                            title: Text(
+                              l10n?.themeTitle ?? 'Theme',
                               style: AppTypography.bodyMedium,
                             ),
                             trailing: Row(

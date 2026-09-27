@@ -170,7 +170,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
             ),
             membersAsync.when(
               data: (members) => Text(
-                '${members.length} members',
+                '${members.length} ${l10n?.membersLabel ?? 'members'}',
                 style: AppTypography.labelSmall.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
