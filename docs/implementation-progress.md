@@ -18,8 +18,8 @@
 | **Phase 4** | Group creation, group joining, invite code and deep-link flow | 🟢 Completed | GroupModel, GroupMember, InviteCodeGenerator, FirestoreGroupRepository, GroupsListScreen, Create/Join sheets, tests. |
 | **Phase 5** | Realtime Firestore group/member synchronization & security rules | 🟢 Completed | Firestore rules compilation dry-run passed, atomic batch transactions, realtime member stream tests. |
 | **Phase 6** | Expense domain model & financial calculation engine | 🟢 Completed | ExpenseCategory, ExpenseModel, ExpenseSplitEngine (integer minor math, remainder distribution, decoupled payers/participants), tests. |
-| **Phase 7** | Add Expense UX (multiple payers, multiple participants, split methods) | 🟡 In Progress | Rapid 5-step expense creation sheet, multi-payer / multi-participant selectors, split mode toggles. |
-| **Phase 8** | Dashboard, expense list, detail, editing, and deletion | ⚪ Pending | Group dashboard, spending summary, net balance, expense editing. |
+| **Phase 7** | Add Expense UX (multiple payers, multiple participants, split methods) | 🟢 Completed | FirestoreExpenseRepository, ExpenseController, progressive AddExpenseScreen (5-step rapid flow, multi-payer, multi-split), tests. |
+| **Phase 8** | Dashboard, expense list, detail, editing, and deletion | 🟡 In Progress | Group dashboard, spending summary, net balance card, expense list with search/categories, detail/edit/delete. |
 | **Phase 9** | Settlement engine, settlement UI, and settlement history | ⚪ Pending | Greedy debt simplification, mark settled, settlement log. |
 | **Phase 10**| Search, filters, categories, and restrained statistics | ⚪ Pending | Category/member/date filtering, spending breakdown chart. |
 | **Phase 11**| Settings, privacy/data controls, and offline/error states | ⚪ Pending | Display name update, data deletion, offline banner, error boundary. |
@@ -43,6 +43,6 @@
 ---
 
 ## 3. Current Phase Status
-- **Current Phase:** Phase 7 (Add Expense UX with multiple payers, multiple participants, split methods)
-- **Last Commit:** `62f6d55` (Phase 5)
-- **Last Tests:** All 36 tests passing (Split engine, Group invariants, Models, Invite codes, Groups screen, Auth, Onboarding, Widgets, Currency, App smoke tests), analyzer 0 issues
+- **Current Phase:** Phase 8 (Dashboard, expense list, detail, editing, and deletion)
+- **Last Commit:** `0431e68` (Phase 6)
+- **Last Tests:** All 37 tests passing (Add expense flow, Split engine, Group invariants, Models, Invite codes, Groups screen, Auth, Onboarding, Widgets, Currency, App smoke tests), analyzer 0 issues
