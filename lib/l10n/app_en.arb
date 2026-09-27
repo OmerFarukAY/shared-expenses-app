@@ -99,5 +99,13 @@
   "deleteExpenseConfirmMessage": "Are you sure you want to delete this expense? This will recalculate all group balances.",
   "paidBy": "Paid by",
   "splitBetween": "Split between",
-  "expenseNotes": "Notes"
+  "expenseNotes": "Notes",
+
+  "searchHint": "Search expenses...",
+  "filterAll": "All",
+  "clearFilters": "Clear Filters",
+  "noMatchingExpenses": "No matching expenses",
+  "spendingInsights": "Spending Overview",
+  "spendingByCategory": "Spending by Category",
+  "memberContributions": "Member Contributions"
 }

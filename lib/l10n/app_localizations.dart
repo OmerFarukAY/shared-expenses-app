@@ -619,6 +619,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Notes'**
   String get expenseNotes;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search expenses...'**
+  String get searchHint;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// No description provided for @clearFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Filters'**
+  String get clearFilters;
+
+  /// No description provided for @noMatchingExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching expenses'**
+  String get noMatchingExpenses;
+
+  /// No description provided for @spendingInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'Spending Overview'**
+  String get spendingInsights;
+
+  /// No description provided for @spendingByCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Spending by Category'**
+  String get spendingByCategory;
+
+  /// No description provided for @memberContributions.
+  ///
+  /// In en, this message translates to:
+  /// **'Member Contributions'**
+  String get memberContributions;
 }
 
 class _AppLocalizationsDelegate

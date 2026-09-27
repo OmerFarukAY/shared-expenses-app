@@ -272,4 +272,25 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get expenseNotes => 'Notas';
+
+  @override
+  String get searchHint => 'Buscar gastos...';
+
+  @override
+  String get filterAll => 'Todos';
+
+  @override
+  String get clearFilters => 'Borrar filtros';
+
+  @override
+  String get noMatchingExpenses => 'No se encontraron gastos coincidentes';
+
+  @override
+  String get spendingInsights => 'Resumen de gastos';
+
+  @override
+  String get spendingByCategory => 'Gastos por categoría';
+
+  @override
+  String get memberContributions => 'Aportaciones de miembros';
 }

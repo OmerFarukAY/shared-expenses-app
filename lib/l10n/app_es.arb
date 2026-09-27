@@ -99,5 +99,13 @@
   "deleteExpenseConfirmMessage": "¿Estás seguro de que deseas eliminar este gasto? Se recalcularán todos los saldos.",
   "paidBy": "Pagado por",
   "splitBetween": "Dividido entre",
-  "expenseNotes": "Notas"
+  "expenseNotes": "Notas",
+
+  "searchHint": "Buscar gastos...",
+  "filterAll": "Todos",
+  "clearFilters": "Borrar filtros",
+  "noMatchingExpenses": "No se encontraron gastos coincidentes",
+  "spendingInsights": "Resumen de gastos",
+  "spendingByCategory": "Gastos por categoría",
+  "memberContributions": "Aportaciones de miembros"
 }

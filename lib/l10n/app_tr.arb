@@ -99,5 +99,13 @@
   "deleteExpenseConfirmMessage": "Bu harcamayı silmek istediğinizden emin misiniz? Grup bakiyeleri yeniden hesaplanacaktır.",
   "paidBy": "Ödeyen",
   "splitBetween": "Bölüşenler",
-  "expenseNotes": "Notlar"
+  "expenseNotes": "Notlar",
+
+  "searchHint": "Harcamalarda ara...",
+  "filterAll": "Tümü",
+  "clearFilters": "Filtreleri Temizle",
+  "noMatchingExpenses": "Eşleşen harcama bulunamadı",
+  "spendingInsights": "Harcama Özeti",
+  "spendingByCategory": "Kategoriye Göre Harcamalar",
+  "memberContributions": "Üye Katkıları"
 }

@@ -99,5 +99,13 @@
   "deleteExpenseConfirmMessage": "Êtes-vous sûr de vouloir supprimer cette dépense ? Tous les soldes seront recalculés.",
   "paidBy": "Payé par",
   "splitBetween": "Partagé entre",
-  "expenseNotes": "Remarques"
+  "expenseNotes": "Remarques",
+
+  "searchHint": "Rechercher des dépenses...",
+  "filterAll": "Tous",
+  "clearFilters": "Effacer les filtres",
+  "noMatchingExpenses": "Aucune dépense correspondante",
+  "spendingInsights": "Aperçu des dépenses",
+  "spendingByCategory": "Dépenses par catégorie",
+  "memberContributions": "Contributions des membres"
 }

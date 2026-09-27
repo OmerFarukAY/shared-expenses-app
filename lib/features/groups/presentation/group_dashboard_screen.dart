@@ -9,11 +9,13 @@ import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
 import 'package:denk/features/groups/presentation/group_controller.dart';
+import 'package:denk/features/expenses/domain/expense_category.dart';
 import 'package:denk/features/expenses/domain/group_balance_calculator.dart';
 import 'package:denk/features/expenses/presentation/add_expense_screen.dart';
 import 'package:denk/features/expenses/presentation/expense_controller.dart';
 import 'package:denk/features/expenses/presentation/expense_detail_screen.dart';
 import 'package:denk/features/expenses/presentation/expense_item_tile.dart';
+import 'package:denk/features/expenses/presentation/group_insights_sheet.dart';
 import 'package:denk/features/settlements/domain/settlement_engine.dart';
 import 'package:denk/features/settlements/domain/settlement_model.dart';
 import 'package:denk/features/settlements/presentation/settlement_controller.dart';
@@ -32,6 +34,9 @@ class GroupDashboardScreen extends ConsumerStatefulWidget {
 class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final TextEditingController _searchController = TextEditingController();
+  ExpenseCategory? _selectedCategory;
+  String? _selectedMemberUid;
 
   @override
   void initState() {
@@ -41,8 +46,17 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
 
   @override
   void dispose() {
+    _searchController.dispose();
     _tabController.dispose();
     super.dispose();
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _searchController.clear();
+      _selectedCategory = null;
+      _selectedMemberUid = null;
+    });
   }
 
   void _copyInviteCode(BuildContext context) {
@@ -167,6 +181,42 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
           ],
         ),
         actions: [
+          // Insights / Statistics Button
+          membersAsync.when(
+            data: (members) => expensesAsync.when(
+              data: (expenses) => settlementsAsync.when(
+                data: (settlements) {
+                  final summary = GroupBalanceCalculator.calculate(
+                    expenses: expenses,
+                    members: members,
+                    defaultCurrency: widget.group.defaultCurrency,
+                    settlements: settlements,
+                  );
+                  return IconButton(
+                    icon: const Icon(Icons.insights_rounded),
+                    tooltip: l10n?.spendingInsights ?? 'Spending Overview',
+                    onPressed: () {
+                      GroupInsightsSheet.show(
+                        context: context,
+                        group: widget.group,
+                        members: members,
+                        expenses: expenses,
+                        summary: summary,
+                      );
+                    },
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
+              ),
+              loading: () => const SizedBox.shrink(),
+              error: (_, _) => const SizedBox.shrink(),
+            ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
+          ),
+
+          // Invite Code Badge
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: InkWell(
@@ -242,6 +292,36 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                     memberNames: memberNames,
                     currency: widget.group.defaultCurrency,
                   );
+
+                  // Filter expenses based on search & filter selection
+                  final query = _searchController.text.trim().toLowerCase();
+                  final filteredExpenses = expenses.where((e) {
+                    if (_selectedCategory != null &&
+                        e.category != _selectedCategory) {
+                      return false;
+                    }
+                    if (_selectedMemberUid != null) {
+                      final isPayer = e.payers.containsKey(_selectedMemberUid);
+                      final isParticipant = e.participants.contains(
+                        _selectedMemberUid,
+                      );
+                      if (!isPayer && !isParticipant) return false;
+                    }
+                    if (query.isNotEmpty) {
+                      final matchesTitle = e.title.toLowerCase().contains(
+                        query,
+                      );
+                      final matchesNotes =
+                          e.notes?.toLowerCase().contains(query) ?? false;
+                      if (!matchesTitle && !matchesNotes) return false;
+                    }
+                    return true;
+                  }).toList();
+
+                  final hasActiveFilter =
+                      query.isNotEmpty ||
+                      _selectedCategory != null ||
+                      _selectedMemberUid != null;
 
                   return Column(
                     children: [
@@ -391,7 +471,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                         child: TabBarView(
                           controller: _tabController,
                           children: [
-                            // TAB 1: EXPENSES
+                            // TAB 1: EXPENSES WITH SEARCH & FILTERS
                             expenses.isEmpty
                                 ? Center(
                                     child: DenkEmptyState(
@@ -404,32 +484,253 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                           'Tap the button below to add your first expense.',
                                     ),
                                   )
-                                : ListView.builder(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                    itemCount: expenses.length,
-                                    itemBuilder: (context, index) {
-                                      final expense = expenses[index];
-                                      return ExpenseItemTile(
-                                        expense: expense,
-                                        members: members,
-                                        currentUserId: currentUserId,
-                                        onTap: () {
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  ExpenseDetailScreen(
-                                                    expense: expense,
-                                                    group: widget.group,
-                                                    members: members,
+                                : Column(
+                                    children: [
+                                      // Search Bar
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          16,
+                                          8,
+                                          16,
+                                          4,
+                                        ),
+                                        child: SizedBox(
+                                          height: 40,
+                                          child: TextField(
+                                            controller: _searchController,
+                                            onChanged: (_) => setState(() {}),
+                                            style: AppTypography.bodyMedium,
+                                            decoration: InputDecoration(
+                                              hintText:
+                                                  l10n?.searchHint ??
+                                                  'Search expenses...',
+                                              hintStyle: AppTypography
+                                                  .bodyMedium
+                                                  .copyWith(
+                                                    color: theme
+                                                        .colorScheme
+                                                        .onSurface
+                                                        .withValues(alpha: 0.4),
                                                   ),
+                                              prefixIcon: const Icon(
+                                                Icons.search_rounded,
+                                                size: 20,
+                                              ),
+                                              suffixIcon:
+                                                  _searchController
+                                                      .text
+                                                      .isNotEmpty
+                                                  ? IconButton(
+                                                      icon: const Icon(
+                                                        Icons.clear_rounded,
+                                                        size: 18,
+                                                      ),
+                                                      onPressed: () {
+                                                        _searchController
+                                                            .clear();
+                                                        setState(() {});
+                                                      },
+                                                    )
+                                                  : null,
+                                              contentPadding: EdgeInsets.zero,
+                                              filled: true,
+                                              fillColor: theme
+                                                  .colorScheme
+                                                  .surfaceContainerHighest,
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                                borderSide: BorderSide.none,
+                                              ),
                                             ),
-                                          );
-                                        },
-                                      );
-                                    },
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Filter Chips Bar
+                                      SizedBox(
+                                        height: 44,
+                                        child: ListView(
+                                          scrollDirection: Axis.horizontal,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                          ),
+                                          children: [
+                                            // Reset chip if active
+                                            if (hasActiveFilter) ...[
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  right: 6,
+                                                ),
+                                                child: ActionChip(
+                                                  avatar: const Icon(
+                                                    Icons.close_rounded,
+                                                    size: 14,
+                                                  ),
+                                                  label: Text(
+                                                    l10n?.clearFilters ??
+                                                        'Clear',
+                                                    style: AppTypography
+                                                        .labelSmall,
+                                                  ),
+                                                  onPressed: _clearFilters,
+                                                ),
+                                              ),
+                                            ],
+
+                                            // All Filter Chip
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                right: 6,
+                                              ),
+                                              child: FilterChip(
+                                                selected:
+                                                    _selectedCategory == null &&
+                                                    _selectedMemberUid == null,
+                                                label: Text(
+                                                  l10n?.filterAll ?? 'All',
+                                                ),
+                                                onSelected: (_) =>
+                                                    _clearFilters(),
+                                              ),
+                                            ),
+
+                                            // Category Filter Chips
+                                            ...ExpenseCategory.values.map((
+                                              cat,
+                                            ) {
+                                              final isSelected =
+                                                  _selectedCategory == cat;
+                                              return Padding(
+                                                padding: const EdgeInsets.only(
+                                                  right: 6,
+                                                ),
+                                                child: FilterChip(
+                                                  avatar: Icon(
+                                                    cat.icon,
+                                                    size: 14,
+                                                    color: isSelected
+                                                        ? Colors.white
+                                                        : cat.color,
+                                                  ),
+                                                  selected: isSelected,
+                                                  label: Text(
+                                                    cat.localizedName(l10n),
+                                                    style: AppTypography
+                                                        .labelSmall,
+                                                  ),
+                                                  onSelected: (selected) {
+                                                    setState(() {
+                                                      _selectedCategory =
+                                                          selected ? cat : null;
+                                                    });
+                                                  },
+                                                ),
+                                              );
+                                            }),
+
+                                            // Member Filter Chips
+                                            ...members.map((m) {
+                                              final isSelected =
+                                                  _selectedMemberUid == m.uid;
+                                              return Padding(
+                                                padding: const EdgeInsets.only(
+                                                  right: 6,
+                                                ),
+                                                child: FilterChip(
+                                                  selected: isSelected,
+                                                  label: Text(
+                                                    m.uid == currentUserId
+                                                        ? 'You'
+                                                        : m.displayName,
+                                                    style: AppTypography
+                                                        .labelSmall,
+                                                  ),
+                                                  onSelected: (selected) {
+                                                    setState(() {
+                                                      _selectedMemberUid =
+                                                          selected
+                                                          ? m.uid
+                                                          : null;
+                                                    });
+                                                  },
+                                                ),
+                                              );
+                                            }),
+                                          ],
+                                        ),
+                                      ),
+
+                                      // Expense List or No Matching State
+                                      Expanded(
+                                        child: filteredExpenses.isEmpty
+                                            ? Center(
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    DenkEmptyState(
+                                                      icon: Icons
+                                                          .search_off_rounded,
+                                                      title:
+                                                          l10n?.noMatchingExpenses ??
+                                                          'No matching expenses',
+                                                      subtitle:
+                                                          'Try clearing your search or filter options.',
+                                                    ),
+                                                    const SizedBox(height: 12),
+                                                    TextButton.icon(
+                                                      onPressed: _clearFilters,
+                                                      icon: const Icon(
+                                                        Icons.refresh_rounded,
+                                                        size: 18,
+                                                      ),
+                                                      label: Text(
+                                                        l10n?.clearFilters ??
+                                                            'Clear Filters',
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
+                                            : ListView.builder(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 8,
+                                                    ),
+                                                itemCount:
+                                                    filteredExpenses.length,
+                                                itemBuilder: (context, index) {
+                                                  final expense =
+                                                      filteredExpenses[index];
+                                                  return ExpenseItemTile(
+                                                    expense: expense,
+                                                    members: members,
+                                                    currentUserId:
+                                                        currentUserId,
+                                                    onTap: () {
+                                                      Navigator.of(
+                                                        context,
+                                                      ).push(
+                                                        MaterialPageRoute(
+                                                          builder: (_) =>
+                                                              ExpenseDetailScreen(
+                                                                expense:
+                                                                    expense,
+                                                                group: widget
+                                                                    .group,
+                                                                members:
+                                                                    members,
+                                                              ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                              ),
+                                      ),
+                                    ],
                                   ),
 
                             // TAB 2: BALANCES

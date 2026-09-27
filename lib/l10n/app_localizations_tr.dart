@@ -271,4 +271,25 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get expenseNotes => 'Notlar';
+
+  @override
+  String get searchHint => 'Harcamalarda ara...';
+
+  @override
+  String get filterAll => 'Tümü';
+
+  @override
+  String get clearFilters => 'Filtreleri Temizle';
+
+  @override
+  String get noMatchingExpenses => 'Eşleşen harcama bulunamadı';
+
+  @override
+  String get spendingInsights => 'Harcama Özeti';
+
+  @override
+  String get spendingByCategory => 'Kategoriye Göre Harcamalar';
+
+  @override
+  String get memberContributions => 'Üye Katkıları';
 }

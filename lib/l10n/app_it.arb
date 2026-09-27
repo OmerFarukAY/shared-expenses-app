@@ -99,5 +99,13 @@
   "deleteExpenseConfirmMessage": "Sei sicuro di voler eliminare questa spesa? Tutti i saldi verranno ricalcolati.",
   "paidBy": "Pagato da",
   "splitBetween": "Diviso tra",
-  "expenseNotes": "Note"
+  "expenseNotes": "Note",
+
+  "searchHint": "Cerca spese...",
+  "filterAll": "Tutti",
+  "clearFilters": "Cancella filtri",
+  "noMatchingExpenses": "Nessuna spesa corrispondente",
+  "spendingInsights": "Riepilogo spese",
+  "spendingByCategory": "Spese per categoria",
+  "memberContributions": "Contributi dei membri"
 }
