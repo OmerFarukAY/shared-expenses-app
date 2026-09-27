@@ -1,0 +1,189 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:denk/core/constants/currencies.dart';
+import 'package:denk/core/theme/app_typography.dart';
+import 'package:denk/core/widgets/widgets.dart';
+import 'package:denk/features/auth/presentation/auth_controller.dart';
+import 'package:denk/features/groups/presentation/group_controller.dart';
+import 'package:denk/l10n/l10n.dart';
+
+class CreateGroupSheet extends ConsumerStatefulWidget {
+  const CreateGroupSheet({super.key});
+
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const CreateGroupSheet(),
+    );
+  }
+
+  @override
+  ConsumerState<CreateGroupSheet> createState() => _CreateGroupSheetState();
+}
+
+class _CreateGroupSheetState extends ConsumerState<CreateGroupSheet> {
+  final _nameController = TextEditingController();
+  final _descController = TextEditingController();
+  late Currency _selectedCurrency;
+  String? _errorText;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final profile = ref.read(userProfileControllerProvider).value;
+    _selectedCurrency = Currency.fromCode(profile?.preferredCurrency);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descController.dispose();
+    super.dispose();
+  }
+
+  void _submit() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty || name.length > 60) {
+      setState(() {
+        _errorText = 'Group name must be between 1 and 60 characters';
+      });
+      return;
+    }
+
+    final user = ref.read(userProfileControllerProvider).value;
+    if (user == null) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorText = null;
+    });
+
+    try {
+      final repo = ref.read(groupRepositoryProvider);
+      final newGroup = await repo.createGroup(
+        name: name,
+        description: _descController.text.trim(),
+        defaultCurrency: _selectedCurrency.code,
+        creator: user,
+      );
+
+      ref.read(selectedGroupIdProvider.notifier).state = newGroup.id;
+
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorText = e.toString();
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 24,
+        bottom: bottomInset + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                l10n?.createGroup ?? 'Create Group',
+                style: AppTypography.h2,
+              ),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close_rounded),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          DenkTextField(
+            controller: _nameController,
+            label: l10n?.groupNameLabel ?? 'Group Name',
+            hintText: l10n?.groupNameHint ?? 'e.g. Ankara Flat, Berlin Trip',
+            errorText: _errorText,
+            autofocus: true,
+            textInputAction: TextInputAction.next,
+            onChanged: (_) {
+              if (_errorText != null) {
+                setState(() => _errorText = null);
+              }
+            },
+          ),
+          const SizedBox(height: 16),
+          Text(
+            l10n?.groupCurrencyLabel ?? 'Currency',
+            style: AppTypography.labelMedium.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardTheme.color,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline,
+                width: 1,
+              ),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<Currency>(
+                value: _selectedCurrency,
+                isExpanded: true,
+                items: Currency.supportedCurrencies
+                    .map(
+                      (curr) => DropdownMenuItem(
+                        value: curr,
+                        child: Text(
+                          '${curr.code} (${curr.symbol}) — ${curr.name}',
+                          style: AppTypography.bodyMedium,
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (newCurr) {
+                  if (newCurr != null) {
+                    setState(() => _selectedCurrency = newCurr);
+                  }
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          DenkButton(
+            label: l10n?.commonSave ?? 'Create Group',
+            isLoading: _isLoading,
+            onPressed: _submit,
+          ),
+        ],
+      ),
+    );
+  }
+}

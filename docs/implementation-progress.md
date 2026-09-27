@@ -15,8 +15,8 @@
 | **Phase 1** | Project foundation, Flutter app initialization, Firebase configuration, dependencies | 🟢 Completed | Flutter project, Riverpod, Firebase auth/firestore setup, integer Currency engine, 5-language l10n. |
 | **Phase 2** | Design system, typography, colors, themes, navigation foundation, localization setup | 🟢 Completed | Custom vector DenkLogo, AppColors, AppTypography (tabular numbers), AppTheme light/dark, core widgets, widget test suite. |
 | **Phase 3** | Anonymous authentication & minimal user profile/display-name flow | 🟢 Completed | Anonymous Firebase sign-in, local cache bootstrap, UserProfile model, OnboardingDisplayNameScreen, tests. |
-| **Phase 4** | Group creation, group joining, invite code and deep-link flow | 🟡 In Progress | Group domain model, GroupRepository, invite code generation & resolution, join group UI. |
-| **Phase 5** | Realtime Firestore group/member synchronization & security rules | ⚪ Pending | Member sync, security rules audit & tests. |
+| **Phase 4** | Group creation, group joining, invite code and deep-link flow | 🟢 Completed | GroupModel, GroupMember, InviteCodeGenerator, FirestoreGroupRepository, GroupsListScreen, Create/Join sheets, tests. |
+| **Phase 5** | Realtime Firestore group/member synchronization & security rules | 🟡 In Progress | Realtime member sync, group switcher, security rules verification, rules audit. |
 | **Phase 6** | Expense domain model & financial calculation engine | ⚪ Pending | Integer minor units, equal/custom/percentage splits, pure unit tests. |
 | **Phase 7** | Add Expense UX (multiple payers, multiple participants, split methods) | ⚪ Pending | Intuitive 5-step rapid expense creation sheet & validation. |
 | **Phase 8** | Dashboard, expense list, detail, editing, and deletion | ⚪ Pending | Group dashboard, spending summary, net balance, expense editing. |
@@ -43,6 +43,6 @@
 ---
 
 ## 3. Current Phase Status
-- **Current Phase:** Phase 4 (Group creation, group joining, invite code and deep-link flow)
-- **Last Commit:** `ee00a3f` (Phase 2)
-- **Last Tests:** All 14 tests passing (Auth, Onboarding, Widgets, Currency, App smoke tests), analyzer 0 issues
+- **Current Phase:** Phase 5 (Realtime Firestore group/member synchronization & security rules)
+- **Last Commit:** `a4ad1a9` (Phase 3)
+- **Last Tests:** All 21 tests passing (Group models, Invite codes, Groups screen, Auth, Onboarding, Widgets, Currency, App smoke tests), analyzer 0 issues
