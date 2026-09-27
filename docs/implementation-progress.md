@@ -16,8 +16,8 @@
 | **Phase 2** | Design system, typography, colors, themes, navigation foundation, localization setup | 🟢 Completed | Custom vector DenkLogo, AppColors, AppTypography (tabular numbers), AppTheme light/dark, core widgets, widget test suite. |
 | **Phase 3** | Anonymous authentication & minimal user profile/display-name flow | 🟢 Completed | Anonymous Firebase sign-in, local cache bootstrap, UserProfile model, OnboardingDisplayNameScreen, tests. |
 | **Phase 4** | Group creation, group joining, invite code and deep-link flow | 🟢 Completed | GroupModel, GroupMember, InviteCodeGenerator, FirestoreGroupRepository, GroupsListScreen, Create/Join sheets, tests. |
-| **Phase 5** | Realtime Firestore group/member synchronization & security rules | 🟡 In Progress | Realtime member sync, group switcher, security rules verification, rules audit. |
-| **Phase 6** | Expense domain model & financial calculation engine | ⚪ Pending | Integer minor units, equal/custom/percentage splits, pure unit tests. |
+| **Phase 5** | Realtime Firestore group/member synchronization & security rules | 🟢 Completed | Firestore rules compilation dry-run passed, atomic batch transactions, realtime member stream tests. |
+| **Phase 6** | Expense domain model & financial calculation engine | 🟡 In Progress | Strict integer minor units, equal/custom/percentage split engines, invariant unit tests. |
 | **Phase 7** | Add Expense UX (multiple payers, multiple participants, split methods) | ⚪ Pending | Intuitive 5-step rapid expense creation sheet & validation. |
 | **Phase 8** | Dashboard, expense list, detail, editing, and deletion | ⚪ Pending | Group dashboard, spending summary, net balance, expense editing. |
 | **Phase 9** | Settlement engine, settlement UI, and settlement history | ⚪ Pending | Greedy debt simplification, mark settled, settlement log. |
@@ -43,6 +43,6 @@
 ---
 
 ## 3. Current Phase Status
-- **Current Phase:** Phase 5 (Realtime Firestore group/member synchronization & security rules)
-- **Last Commit:** `a4ad1a9` (Phase 3)
-- **Last Tests:** All 21 tests passing (Group models, Invite codes, Groups screen, Auth, Onboarding, Widgets, Currency, App smoke tests), analyzer 0 issues
+- **Current Phase:** Phase 6 (Expense domain model & financial calculation engine)
+- **Last Commit:** `e4bb5f8` (Phase 4)
+- **Last Tests:** All 26 tests passing (Firestore repo, Group models, Invite codes, Groups screen, Auth, Onboarding, Widgets, Currency, App smoke tests), analyzer 0 issues
