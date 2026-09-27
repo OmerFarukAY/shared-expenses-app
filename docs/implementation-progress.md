@@ -12,8 +12,8 @@
 | Phase | Description | Status | Commit / Notes |
 | :--- | :--- | :--- | :--- |
 | **Phase 0** | Repository audit, architecture decision, product specification, design direction | 🟢 Completed | Architecture, privacy model, progress tracker, and product specification established. |
-| **Phase 1** | Project foundation, Flutter app initialization, Firebase configuration, dependencies | ⚪ Pending | Flutter create, Riverpod, Firebase Core/Auth/Firestore, Intl. |
-| **Phase 2** | Design system, typography, colors, themes, navigation foundation, localization setup | ⚪ Pending | Design tokens, light/dark themes, AppLocale setup for 5 languages. |
+| **Phase 1** | Project foundation, Flutter app initialization, Firebase configuration, dependencies | 🟢 Completed | Flutter project, Riverpod, Firebase auth/firestore setup, integer Currency engine, 5-language l10n. |
+| **Phase 2** | Design system, typography, colors, themes, navigation foundation, localization setup | 🟡 In Progress | Creating design tokens, typography, brand assets, navigation scaffolding. |
 | **Phase 3** | Anonymous authentication & minimal user profile/display-name flow | ⚪ Pending | Anonymous sign-in, onboarding display name, session bootstrap. |
 | **Phase 4** | Group creation, group joining, invite code and deep-link flow | ⚪ Pending | Create group, generate unique invite code, join via code/deep link. |
 | **Phase 5** | Realtime Firestore group/member synchronization & security rules | ⚪ Pending | Member sync, security rules audit & tests. |
@@ -43,7 +43,6 @@
 ---
 
 ## 3. Current Phase Status
-- **Current Phase:** Phase 1 (Project foundation, Flutter app initialization, Firebase configuration, dependencies)
-- **Last Commit:** `ba38191`
-- **Known Issues:** None
-- **Next Step:** Complete Phase 0 documentation, commit, and proceed to Phase 1 (Flutter project initialization and dependencies).
+- **Current Phase:** Phase 2 (Design system, typography, colors, themes, navigation foundation, localization setup)
+- **Last Commit:** `94b26bb` (Phase 0)
+- **Last Tests:** All 6 tests passing (Currency unit tests, App smoke test), analyzer 0 issues

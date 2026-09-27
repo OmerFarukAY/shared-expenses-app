@@ -1,0 +1,235 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users/{uid}
+    // Fields:
+    //   - uid: string (must match request.auth.uid)
+    //   - displayName: string (1..50 chars)
+    //   - preferredCurrency: string (3 chars ISO code)
+    //   - languageCode: string (2 chars)
+    //   - createdAt: timestamp
+    //   - updatedAt: timestamp
+    //
+    // Collection: groups/{groupId}
+    // Fields:
+    //   - id: string
+    //   - name: string (1..60 chars)
+    //   - description: optional string (<= 200 chars)
+    //   - defaultCurrency: string (3 chars ISO code)
+    //   - inviteCode: string (6..12 chars uppercase alphanumeric)
+    //   - createdBy: string (uid)
+    //   - createdAt: timestamp
+    //   - updatedAt: timestamp
+    //   - memberCount: int (>= 1)
+    //   - active: bool
+    //
+    // Collection: groups/{groupId}/members/{uid}
+    // Fields:
+    //   - uid: string
+    //   - displayName: string (1..50 chars)
+    //   - role: "owner" | "member"
+    //   - joinedAt: timestamp
+    //
+    // Collection: groups/{groupId}/expenses/{expenseId}
+    // Fields:
+    //   - id: string
+    //   - groupId: string
+    //   - title: string (1..100 chars)
+    //   - notes: optional string (<= 300 chars)
+    //   - category: string
+    //   - currency: string (3 chars ISO)
+    //   - totalMinor: int (> 0)
+    //   - date: timestamp
+    //   - splitMethod: "equal" | "custom" | "percentage"
+    //   - payers: map (uid -> int minor)
+    //   - participants: list of string uids
+    //   - splits: map (uid -> int minor)
+    //   - createdBy: string (uid)
+    //   - createdAt: timestamp
+    //   - updatedAt: timestamp
+    //
+    // Collection: groups/{groupId}/settlements/{settlementId}
+    // Fields:
+    //   - id: string
+    //   - groupId: string
+    //   - fromUid: string
+    //   - toUid: string
+    //   - amountMinor: int (> 0)
+    //   - currency: string (3 chars ISO)
+    //   - settledAt: timestamp
+    //   - createdBy: string (uid)
+    //   - notes: optional string (<= 200 chars)
+    //
+    // Collection: invites/{inviteCode}
+    // Fields:
+    //   - inviteCode: string
+    //   - groupId: string
+    //   - groupName: string (1..60 chars)
+    //   - defaultCurrency: string (3 chars ISO)
+    //   - createdBy: string (uid)
+    //   - createdAt: timestamp
+    //   - active: bool
+    // ===============================================================
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function isGroupMember(groupId) {
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid))
+      );
+    }
+
+    function isGroupCreator(groupId) {
+      return isAuthenticated() && (
+        request.auth.uid == get(/databases/$(database)/documents/groups/$(groupId)).data.createdBy
+      );
+    }
+
+    // User document validation
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'preferredCurrency', 'languageCode', 'createdAt', 'updatedAt']) &&
+             data.uid is string && data.uid == request.auth.uid &&
+             data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 50 &&
+             data.preferredCurrency is string && data.preferredCurrency.size() == 3 &&
+             data.languageCode is string && data.languageCode.size() >= 2 && data.languageCode.size() <= 5 &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    // Match rules
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && isValidUser(request.resource.data);
+      allow update: if isOwner(uid) && isValidUser(request.resource.data) &&
+                       request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isOwner(uid);
+    }
+
+    // Groups
+    match /groups/{groupId} {
+      // Group members can read group details
+      allow read: if isGroupMember(groupId) || (isAuthenticated() && request.auth.uid == resource.data.createdBy);
+
+      // Authenticated users can create groups if they set themselves as creator
+      allow create: if isAuthenticated() &&
+                       request.resource.data.keys().hasAll(['id', 'name', 'defaultCurrency', 'inviteCode', 'createdBy', 'createdAt', 'updatedAt', 'memberCount', 'active']) &&
+                       request.resource.data.id == groupId &&
+                       request.resource.data.createdBy == request.auth.uid &&
+                       request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 60 &&
+                       request.resource.data.defaultCurrency is string && request.resource.data.defaultCurrency.size() == 3 &&
+                       request.resource.data.inviteCode is string && request.resource.data.inviteCode.size() >= 6 && request.resource.data.inviteCode.size() <= 12 &&
+                       request.resource.data.memberCount is int && request.resource.data.memberCount >= 1 &&
+                       request.resource.data.active is bool;
+
+      // Members can update group name or memberCount
+      allow update: if isGroupMember(groupId) &&
+                       request.resource.data.id == resource.data.id &&
+                       request.resource.data.createdBy == resource.data.createdBy &&
+                       request.resource.data.createdAt == resource.data.createdAt &&
+                       request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 60;
+
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.createdBy;
+
+      // Subcollection: members
+      match /members/{memberUid} {
+        // Members of the group can view the roster
+        allow read: if isGroupMember(groupId) || (isAuthenticated() && request.auth.uid == memberUid);
+
+        // A user can add themselves as a member if creating or joining
+        allow create: if isAuthenticated() && request.auth.uid == memberUid &&
+                         request.resource.data.keys().hasAll(['uid', 'displayName', 'role', 'joinedAt']) &&
+                         request.resource.data.uid == memberUid &&
+                         request.resource.data.displayName is string && request.resource.data.displayName.size() >= 1 && request.resource.data.displayName.size() <= 50 &&
+                         (request.resource.data.role == 'owner' || request.resource.data.role == 'member');
+
+        // Users can update their own display name within the group
+        allow update: if isAuthenticated() && request.auth.uid == memberUid &&
+                         request.resource.data.uid == memberUid &&
+                         request.resource.data.role == resource.data.role &&
+                         request.resource.data.joinedAt == resource.data.joinedAt &&
+                         request.resource.data.displayName is string && request.resource.data.displayName.size() >= 1 && request.resource.data.displayName.size() <= 50;
+
+        // User can remove themselves or group creator can remove member
+        allow delete: if isAuthenticated() && (request.auth.uid == memberUid || isGroupCreator(groupId));
+      }
+
+      // Subcollection: expenses
+      match /expenses/{expenseId} {
+        allow read: if isGroupMember(groupId);
+
+        allow create: if isGroupMember(groupId) &&
+                         request.resource.data.keys().hasAll(['id', 'groupId', 'title', 'category', 'currency', 'totalMinor', 'date', 'splitMethod', 'payers', 'participants', 'splits', 'createdBy', 'createdAt', 'updatedAt']) &&
+                         request.resource.data.id == expenseId &&
+                         request.resource.data.groupId == groupId &&
+                         request.resource.data.createdBy == request.auth.uid &&
+                         request.resource.data.title is string && request.resource.data.title.size() >= 1 && request.resource.data.title.size() <= 100 &&
+                         request.resource.data.totalMinor is int && request.resource.data.totalMinor > 0 &&
+                         request.resource.data.currency is string && request.resource.data.currency.size() == 3 &&
+                         request.resource.data.payers is map &&
+                         request.resource.data.splits is map &&
+                         request.resource.data.participants is list;
+
+        allow update: if isGroupMember(groupId) &&
+                         request.resource.data.id == resource.data.id &&
+                         request.resource.data.groupId == groupId &&
+                         request.resource.data.title is string && request.resource.data.title.size() >= 1 && request.resource.data.title.size() <= 100 &&
+                         request.resource.data.totalMinor is int && request.resource.data.totalMinor > 0 &&
+                         request.resource.data.currency is string && request.resource.data.currency.size() == 3 &&
+                         request.resource.data.createdAt == resource.data.createdAt &&
+                         request.resource.data.createdBy == resource.data.createdBy;
+
+        allow delete: if isGroupMember(groupId);
+      }
+
+      // Subcollection: settlements
+      match /settlements/{settlementId} {
+        allow read: if isGroupMember(groupId);
+
+        allow create: if isGroupMember(groupId) &&
+                         request.resource.data.keys().hasAll(['id', 'groupId', 'fromUid', 'toUid', 'amountMinor', 'currency', 'settledAt', 'createdBy']) &&
+                         request.resource.data.id == settlementId &&
+                         request.resource.data.groupId == groupId &&
+                         request.resource.data.createdBy == request.auth.uid &&
+                         request.resource.data.fromUid is string &&
+                         request.resource.data.toUid is string &&
+                         request.resource.data.fromUid != request.resource.data.toUid &&
+                         request.resource.data.amountMinor is int && request.resource.data.amountMinor > 0 &&
+                         request.resource.data.currency is string && request.resource.data.currency.size() == 3;
+
+        allow delete: if isGroupMember(groupId);
+      }
+    }
+
+    // Public invite code resolution
+    match /invites/{inviteCode} {
+      // Authenticated users can resolve an invite by code
+      allow read: if isAuthenticated();
+
+      // Only group members or creator can publish/update an invite
+      allow create: if isAuthenticated() &&
+                       request.resource.data.keys().hasAll(['inviteCode', 'groupId', 'groupName', 'defaultCurrency', 'createdBy', 'createdAt', 'active']) &&
+                       request.resource.data.inviteCode == inviteCode &&
+                       request.resource.data.createdBy == request.auth.uid &&
+                       request.resource.data.active is bool;
+
+      allow update: if isAuthenticated() &&
+                       isGroupMember(resource.data.groupId) &&
+                       request.resource.data.groupId == resource.data.groupId &&
+                       request.resource.data.createdAt == resource.data.createdAt;
+
+      allow delete: if isAuthenticated() && isGroupCreator(resource.data.groupId);
+    }
+  }
+}

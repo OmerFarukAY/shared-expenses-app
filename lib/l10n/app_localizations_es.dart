@@ -1,0 +1,256 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Spanish Castilian (`es`).
+class AppLocalizationsEs extends AppLocalizations {
+  AppLocalizationsEs([String locale = 'es']) : super(locale);
+
+  @override
+  String get appName => 'Denk';
+
+  @override
+  String get appTagline => 'Gastos compartidos, cuentas claras';
+
+  @override
+  String get commonCancel => 'Cancelar';
+
+  @override
+  String get commonSave => 'Guardar';
+
+  @override
+  String get commonDelete => 'Eliminar';
+
+  @override
+  String get commonEdit => 'Editar';
+
+  @override
+  String get commonDone => 'Hecho';
+
+  @override
+  String get commonRetry => 'Reintentar';
+
+  @override
+  String get commonBack => 'Atrás';
+
+  @override
+  String get commonNext => 'Siguiente';
+
+  @override
+  String get commonConfirm => 'Confirmar';
+
+  @override
+  String get commonError => 'Ocurrió un error';
+
+  @override
+  String get commonLoading => 'Cargando...';
+
+  @override
+  String get navGroups => 'Grupos';
+
+  @override
+  String get navActivity => 'Actividad';
+
+  @override
+  String get navSettings => 'Ajustes';
+
+  @override
+  String get welcomeTitle => 'Bienvenido a Denk';
+
+  @override
+  String get welcomeSubtitle =>
+      'Gestiona gastos compartidos con amigos, compañeros y familia sin contraseñas ni datos personales.';
+
+  @override
+  String get chooseDisplayName => 'Elige tu nombre visible';
+
+  @override
+  String get displayNameHint => 'Ej. Carlos, Lucía, Mateo';
+
+  @override
+  String get displayNameValidation =>
+      'Por favor introduce un nombre de entre 2 y 50 caracteres';
+
+  @override
+  String get getStarted => 'Comenzar';
+
+  @override
+  String get createGroup => 'Crear Grupo';
+
+  @override
+  String get joinGroup => 'Unirse al Grupo';
+
+  @override
+  String get groupNameLabel => 'Nombre del Grupo';
+
+  @override
+  String get groupNameHint => 'Ej. Piso compartido, Viaje a Roma, Cena';
+
+  @override
+  String get groupCurrencyLabel => 'Moneda';
+
+  @override
+  String get inviteCodeLabel => 'Código de Invitación';
+
+  @override
+  String get inviteCodeHint => 'Ej. DNK-7X2K';
+
+  @override
+  String get joinButton => 'Unirme';
+
+  @override
+  String get copyInviteCode => 'Copiar Código';
+
+  @override
+  String get inviteCodeCopied => 'Código de invitación copiado al portapapeles';
+
+  @override
+  String get noGroupsTitle => 'No hay grupos todavía';
+
+  @override
+  String get noGroupsSubtitle =>
+      'Crea un grupo o introduce un código para empezar a compartir gastos.';
+
+  @override
+  String get expensesTab => 'Gastos';
+
+  @override
+  String get balancesTab => 'Balances';
+
+  @override
+  String get settleTab => 'Saldar';
+
+  @override
+  String get addExpense => 'Añadir Gasto';
+
+  @override
+  String get expenseAmount => 'Importe';
+
+  @override
+  String get expenseTitle => '¿En qué se gastó?';
+
+  @override
+  String get expenseTitleHint => 'Ej. Compra, Cena, Electricidad';
+
+  @override
+  String get expenseCategory => 'Categoría';
+
+  @override
+  String get expenseDate => 'Fecha';
+
+  @override
+  String get expensePaidBy => '¿Quién pagó?';
+
+  @override
+  String get expenseSplitWith => '¿Quiénes participaron?';
+
+  @override
+  String get expenseSplitMethod => 'Forma de Reparto';
+
+  @override
+  String get splitEqual => 'A partes iguales';
+
+  @override
+  String get splitCustom => 'Importes exactos';
+
+  @override
+  String get splitPercentage => 'Por porcentaje';
+
+  @override
+  String get categoryFood => 'Comida y Restaurantes';
+
+  @override
+  String get categoryGroceries => 'Supermercado';
+
+  @override
+  String get categoryTransport => 'Transporte';
+
+  @override
+  String get categoryHome => 'Hogar y Alquiler';
+
+  @override
+  String get categoryEntertainment => 'Ocio';
+
+  @override
+  String get categoryTravel => 'Viajes';
+
+  @override
+  String get categoryBills => 'Facturas';
+
+  @override
+  String get categoryShopping => 'Compras';
+
+  @override
+  String get categoryOther => 'Otros';
+
+  @override
+  String get totalSpending => 'Gasto Total';
+
+  @override
+  String get yourBalance => 'Tu Balance';
+
+  @override
+  String get youAreOwed => 'Te deben';
+
+  @override
+  String get youOwe => 'Debes';
+
+  @override
+  String get allSettled => 'Cuentas saldadas';
+
+  @override
+  String get noExpensesTitle => 'Sin gastos aún';
+
+  @override
+  String get noExpensesSubtitle =>
+      'Toca el botón inferior para registrar el primer gasto.';
+
+  @override
+  String get settlementTitle => 'Plan de Liquidación';
+
+  @override
+  String get markAsSettled => 'Marcar como Pagado';
+
+  @override
+  String get settlementCompleted => 'Pago registrado con éxito';
+
+  @override
+  String get settlementHistory => 'Historial de Pagos';
+
+  @override
+  String get noSettlementsNeeded =>
+      '¡Todo el mundo está al día! No hay pagos pendientes.';
+
+  @override
+  String get settingsTitle => 'Ajustes';
+
+  @override
+  String get settingsProfile => 'Perfil';
+
+  @override
+  String get settingsLanguage => 'Idioma';
+
+  @override
+  String get settingsCurrency => 'Moneda Preferida';
+
+  @override
+  String get settingsPrivacy => 'Privacidad y Datos';
+
+  @override
+  String get settingsPrivacyInfo => 'Información de Privacidad';
+
+  @override
+  String get settingsDeleteAccount => 'Eliminar Cuenta Local';
+
+  @override
+  String get settingsDeleteWarning =>
+      'Esto eliminará tu identidad anónima en este dispositivo. Perderás el acceso a los grupos salvo que te vuelvan a invitar.';
+
+  @override
+  String get settingsAbout => 'Acerca de Denk';
+
+  @override
+  String get settingsVersion => 'Versión';
+}
