@@ -1,6 +1,7 @@
 import 'package:denk/core/constants/currencies.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
 import 'package:denk/features/expenses/domain/expense_model.dart';
+import 'package:denk/features/settlements/domain/settlement_model.dart';
 
 /// Computed financial balance overview for a single member in a group.
 class MemberBalance {
@@ -62,13 +63,14 @@ class GroupFinancialSummary {
 
 abstract class GroupBalanceCalculator {
   /// Computes the complete financial summary for a group and its members
-  /// based on recorded expenses.
+  /// based on recorded expenses and completed settlement records.
   ///
   /// All computations use strict 64-bit integer minor currency units.
   static GroupFinancialSummary calculate({
     required List<ExpenseModel> expenses,
     required List<GroupMember> members,
     required String defaultCurrency,
+    List<SettlementRecord> settlements = const [],
   }) {
     final currency = Currency.fromCode(defaultCurrency);
     int totalSpending = 0;
@@ -95,6 +97,16 @@ abstract class GroupBalanceCalculator {
         expense.splits.forEach((uid, owed) {
           owedByMember[uid] = (owedByMember[uid] ?? 0) + owed;
         });
+      }
+    }
+
+    // Apply completed settlements (transfers between debtor and creditor)
+    for (final settlement in settlements) {
+      if (settlement.currency.toUpperCase() == defaultCurrency.toUpperCase()) {
+        paidByMember[settlement.fromUid] =
+            (paidByMember[settlement.fromUid] ?? 0) + settlement.amountMinor;
+        owedByMember[settlement.toUid] =
+            (owedByMember[settlement.toUid] ?? 0) + settlement.amountMinor;
       }
     }
 

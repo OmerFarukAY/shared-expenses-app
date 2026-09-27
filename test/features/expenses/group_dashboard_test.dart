@@ -11,6 +11,8 @@ import 'package:denk/features/expenses/domain/expense_category.dart';
 import 'package:denk/features/expenses/domain/expense_model.dart';
 import 'package:denk/features/expenses/presentation/expense_controller.dart';
 import 'package:denk/features/expenses/presentation/expense_detail_screen.dart';
+import 'package:denk/features/settlements/presentation/settlement_controller.dart';
+import 'package:denk/features/settlements/domain/settlement_model.dart';
 import 'package:denk/l10n/l10n.dart';
 
 void main() {
@@ -78,6 +80,9 @@ void main() {
         groupExpensesStreamProvider(
           'grp_test',
         ).overrideWith((ref) => Stream.value([testExpense])),
+        groupSettlementsStreamProvider(
+          'grp_test',
+        ).overrideWith((ref) => Stream.value(<SettlementRecord>[])),
       ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -114,6 +119,13 @@ void main() {
       // Verify members in balances list
       expect(find.text('Ömer (You)'), findsOneWidget);
       expect(find.text('Ahmet'), findsOneWidget);
+
+      // Switch to Settle Tab
+      await tester.tap(find.textContaining('Settle'));
+      await tester.pumpAndSettle();
+
+      // Verify simplified settlement transaction
+      expect(find.text('Mark as Settled'), findsOneWidget);
     },
   );
 
