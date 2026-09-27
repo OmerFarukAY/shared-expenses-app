@@ -158,3 +158,15 @@ For a given currency within a group:
 - **Riverpod 2.x**: StateNotifier / AsyncNotifier providers for auth state, active group, realtime expense stream, balance calculation, and settings.
 - **Offline Persistence**: Firestore offline cache enabled by default. UI optimistic updates and cache indicators provide clear status to the user.
 - **Real-time Sync**: Firestore snapshot listeners ensure instant synchronization across all member devices when expenses or settlements are added.
+
+---
+
+## 7. Visual Language, Design System & Iconography Standards
+
+### 7.1 Non-Negotiable Rule: Zero Decorative Emojis
+Decorative emojis are strictly forbidden throughout the entire application UI and localized copy.
+- Never use emojis (e.g. food, home, travel, fire, heart, money, or faces) as substitutes for icons, navigation items, category indicators, empty-state illustrations, buttons, or badges.
+- All iconography must use coherent, professional vector symbols (Material Rounded vector icons, custom vector SVGs, or custom Flutter `CustomPainter` widgets like `DenkLogo`).
+- User Content Isolation: Emojis are only permitted if explicitly typed by an end-user into their own user-generated text content (such as a custom group name or expense title). The application runtime itself will never inject or present decorative emojis.
+- Automated Testing: Enforced continuously via CI tests in `test/core/zero_decorative_emojis_test.dart` scanning all source code and ARB translation catalogs.
+

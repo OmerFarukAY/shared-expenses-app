@@ -6,7 +6,7 @@ Designed for roommates, couples, families, trips, shared households, events, and
 
 ---
 
-## 🌟 Core Principles & Features
+## Core Principles & Features
 
 - **Privacy-First (Strict Data Minimization)**:
   - Zero passwords, emails, phone numbers, or social logins required.
@@ -26,8 +26,10 @@ Designed for roommates, couples, families, trips, shared households, events, and
 - **Real-Time Synchronization & Offline Support**:
   - Live Firestore reactive streams update all group members' screens instantly.
   - Robust offline support with local cache persistence.
-- **Human-Centric Visual Design**:
+- **Human-Centric Visual Design & Zero Decorative Emojis**:
   - Built with warm neutrals, slate-teal primary accents, hairline borders, and tabular figures.
+  - Non-negotiable rule: zero decorative emojis in UI copy, empty states, buttons, or badges.
+  - All icons are coherent vector symbols (Material Rounded / custom CustomPainter). Emojis appear solely if typed directly by users in their own custom content.
   - Full Light and Dark themes with contrast ratios exceeding WCAG AA standards.
   - Micro-animations, responsive layout tuning, and screen-reader accessibility (`Semantics`).
 - **5-Language Localization**:
@@ -35,7 +37,7 @@ Designed for roommates, couples, families, trips, shared households, events, and
 
 ---
 
-## 🏗️ Architecture & Technical Stack
+## Architecture & Technical Stack
 
 - **Framework**: Flutter 3.49+ / Dart 3.12+
 - **State Management**: Flutter Riverpod (`flutter_riverpod`)
@@ -45,7 +47,7 @@ Designed for roommates, couples, families, trips, shared households, events, and
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -86,7 +88,7 @@ flutter run
 
 ---
 
-## 🧪 Testing & Code Quality
+## Testing & Code Quality
 
 Denk has a comprehensive, deterministic test suite covering unit math, security invariants, accessibility, Riverpod controllers, 5-language localization, and end-to-end integration journeys.
 
@@ -97,13 +99,13 @@ dart format lib test
 # Static analysis (0 issues enforced)
 flutter analyze
 
-# Run full test suite (72 tests)
+# Run full test suite (74 tests)
 flutter test
 ```
 
 ---
 
-## 📦 Production Release Builds
+## Production Release Builds
 
 ### Android Release APK & App Bundle
 
@@ -123,7 +125,7 @@ flutter build ios --release --no-codesign
 
 ---
 
-## 📖 Project Documentation
+## Project Documentation
 
 - [Architecture & Domain Details](docs/architecture.md)
 - [Privacy Philosophy & Data Model](docs/privacy.md)
@@ -131,6 +133,6 @@ flutter build ios --release --no-codesign
 
 ---
 
-## ⚖️ License
+## License
 
 MIT License. Designed with privacy, correctness, and care.
