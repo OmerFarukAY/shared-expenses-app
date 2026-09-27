@@ -13,8 +13,8 @@
 | :--- | :--- | :--- | :--- |
 | **Phase 0** | Repository audit, architecture decision, product specification, design direction | 🟢 Completed | Architecture, privacy model, progress tracker, and product specification established. |
 | **Phase 1** | Project foundation, Flutter app initialization, Firebase configuration, dependencies | 🟢 Completed | Flutter project, Riverpod, Firebase auth/firestore setup, integer Currency engine, 5-language l10n. |
-| **Phase 2** | Design system, typography, colors, themes, navigation foundation, localization setup | 🟡 In Progress | Creating design tokens, typography, brand assets, navigation scaffolding. |
-| **Phase 3** | Anonymous authentication & minimal user profile/display-name flow | ⚪ Pending | Anonymous sign-in, onboarding display name, session bootstrap. |
+| **Phase 2** | Design system, typography, colors, themes, navigation foundation, localization setup | 🟢 Completed | Custom vector DenkLogo, AppColors, AppTypography (tabular numbers), AppTheme light/dark, core widgets, widget test suite. |
+| **Phase 3** | Anonymous authentication & minimal user profile/display-name flow | 🟡 In Progress | Anonymous Firebase sign-in, display name persistence, session bootstrap. |
 | **Phase 4** | Group creation, group joining, invite code and deep-link flow | ⚪ Pending | Create group, generate unique invite code, join via code/deep link. |
 | **Phase 5** | Realtime Firestore group/member synchronization & security rules | ⚪ Pending | Member sync, security rules audit & tests. |
 | **Phase 6** | Expense domain model & financial calculation engine | ⚪ Pending | Integer minor units, equal/custom/percentage splits, pure unit tests. |
@@ -43,6 +43,6 @@
 ---
 
 ## 3. Current Phase Status
-- **Current Phase:** Phase 2 (Design system, typography, colors, themes, navigation foundation, localization setup)
-- **Last Commit:** `94b26bb` (Phase 0)
-- **Last Tests:** All 6 tests passing (Currency unit tests, App smoke test), analyzer 0 issues
+- **Current Phase:** Phase 3 (Anonymous authentication & minimal user profile/display-name flow)
+- **Last Commit:** `e74f152` (Phase 1)
+- **Last Tests:** All 10 tests passing (Widgets, Currency, App smoke tests), analyzer 0 issues

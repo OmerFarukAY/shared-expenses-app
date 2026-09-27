@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:denk/core/theme/app_theme.dart';
+import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/l10n/l10n.dart';
 
 /// Root application widget for Denk.
 class DenkApp extends ConsumerWidget {
-  const DenkApp({super.key});
+  final Locale? forcedLocale;
+
+  const DenkApp({super.key, this.forcedLocale});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       title: 'Denk',
       debugShowCheckedModeBanner: false,
+      locale: forcedLocale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -19,28 +24,9 @@ class DenkApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
-      theme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-        colorScheme: const ColorScheme.light(
-          primary: Color(0xFF0F766E), // Calm teal slate
-          onPrimary: Colors.white,
-          surface: Colors.white,
-          onSurface: Color(0xFF0F172A),
-        ),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0B0F17),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF14B8A6),
-          onPrimary: Color(0xFF042F2E),
-          surface: Color(0xFF111827),
-          onSurface: Color(0xFFF9FAFB),
-        ),
-      ),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.system,
       home: const DenkRoot(),
     );
   }
@@ -61,21 +47,7 @@ class DenkRoot extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    Icons.balance_rounded,
-                    size: 32,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
+                const DenkLogo(size: 64),
                 const SizedBox(height: 24),
                 Text(
                   l10n?.appName ?? 'Denk',
@@ -88,9 +60,11 @@ class DenkRoot extends StatelessWidget {
                 Text(
                   l10n?.appTagline ?? 'Shared expenses, settled simply',
                   textAlign: TextAlign.center,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
                 ),
               ],
             ),
