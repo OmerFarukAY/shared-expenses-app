@@ -194,4 +194,40 @@ Resolved ownership discrepancies by establishing `createdBy` as the canonical cr
 - Firestore Emulator Rules Tests: Passed (50/50 tests passing).
 - `git diff --check`: Passed (clean whitespace).
 
+## Phase 6 — Timestamp Integrity & Offline-First Strategy
+
+### Summary
+Server-enforced temporal integrity controls in Firestore Security Rules preventing arbitrary future and past timestamp spoofing, while strictly preserving offline-first functionality and local persistence replay.
+
+### Offline-First Timestamp Strategy
+1. **Asymmetric Temporal Verification**:
+   - Rather than naively constraining timestamps to a tight $\pm 5$ min window that would instantly break offline queueing and sync replay, creation timestamps (`createdAt`, `settledAt`, `joinedAt`) enforce `ts <= request.time + duration.value(5, 'm')`.
+   - This allows users to create expenses, groups, and settlements while offline on transit or without connectivity, and replay them to Firestore upon reconnection without `permission-denied` errors.
+2. **Strict Future Timestamp Prevention**:
+   - Creating any entity with a timestamp more than 5 minutes in the future (beyond reasonable clock skew) is strictly rejected at the server level.
+   - Expense event dates (`date`) allow historical records (yesterday's receipt) but strictly reject future dates beyond 24 hours (`date <= request.time + duration.value(1, 'd')`).
+3. **Retroactive Tampering Prevention (Immutability)**:
+   - On updates across `users`, `groups`, `members`, and `expenses`, `createdAt` and `joinedAt` are permanently immutable: `request.resource.data.createdAt == resource.data.createdAt`.
+4. **Monotonic Update Progress**:
+   - `updatedAt` is validated to always progress monotonically: `request.resource.data.updatedAt >= resource.data.updatedAt && request.resource.data.updatedAt <= request.time + duration.value(5, 'm')`.
+5. **Automated Test Coverage**:
+   - Added 7 new security tests in `test/security/rules.test.js`:
+     1. Creating expense with future createdAt $\rightarrow$ reject (PASSED)
+     2. Creating expense with date set far into future $\rightarrow$ reject (PASSED)
+     3. Valid past timestamp on expense creation (offline sync scenario) $\rightarrow$ allow (PASSED)
+     4. Modifying createdAt on expense update $\rightarrow$ reject (PASSED)
+     5. Recording settlement with future settledAt $\rightarrow$ reject (PASSED)
+     6. Creating group with future createdAt $\rightarrow$ reject (PASSED)
+     7. Modifying joinedAt on member update $\rightarrow$ reject (PASSED)
+   - Total passing rules tests: 57/57.
+
+### Verification Gates
+- `dart format lib test`: Passed.
+- `flutter analyze`: Passed (0 issues).
+- `flutter test`: Passed (all 74 tests passing).
+- Firestore Emulator Rules Tests: Passed (57/57 tests passing).
+- Rules compilation & deploy to `denk-262c0`: Passed.
+- `git diff --check`: Passed (clean whitespace).
+
+
 

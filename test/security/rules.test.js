@@ -860,4 +860,135 @@ describe('Phase 1 Firestore Security Rules Hardening', () => {
       }));
     });
   });
+
+  describe('Phase 6 — Timestamp Integrity', () => {
+    it('1. rejects creating an expense with future createdAt', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const futureTime = new Date(Date.now() + 60 * 60 * 1000); // 1 hour in future
+      const now = new Date();
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_future'), {
+        id: 'exp_future',
+        groupId: 'group_a',
+        title: 'Future expense',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: 10000,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 10000 },
+        participants: ['user_alice'],
+        splits: { user_alice: 10000 },
+        createdBy: 'user_alice',
+        createdAt: futureTime,
+        updatedAt: futureTime,
+      }));
+    });
+
+    it('2. rejects creating an expense with date set far into future', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const farFutureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days in future
+      const now = new Date();
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_far_date'), {
+        id: 'exp_far_date',
+        groupId: 'group_a',
+        title: 'Far future date',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: 10000,
+        date: farFutureDate,
+        splitMethod: 'equal',
+        payers: { user_alice: 10000 },
+        participants: ['user_alice'],
+        splits: { user_alice: 10000 },
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('3. allows valid past timestamp on expense creation (offline sync scenario)', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const pastTime = new Date(Date.now() - 4 * 60 * 60 * 1000); // 4 hours ago (recorded offline)
+      await assertSucceeds(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_offline_sync'), {
+        id: 'exp_offline_sync',
+        groupId: 'group_a',
+        title: 'Offline expense',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: 10000,
+        date: pastTime,
+        splitMethod: 'equal',
+        payers: { user_alice: 10000 },
+        participants: ['user_alice'],
+        splits: { user_alice: 10000 },
+        createdBy: 'user_alice',
+        createdAt: pastTime,
+        updatedAt: pastTime,
+      }));
+    });
+
+    it('4. rejects modifying createdAt on expense update', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      const tamperedCreatedTime = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // altered past
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_1'), {
+        id: 'exp_1',
+        groupId: 'group_a',
+        title: 'Dinner Edited',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: 10000,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 10000 },
+        participants: ['user_alice', 'user_bob'],
+        splits: { user_alice: 5000, user_bob: 5000 },
+        createdBy: 'user_alice',
+        createdAt: tamperedCreatedTime, // changed from original seed
+        updatedAt: now,
+      }));
+    });
+
+    it('5. rejects recording settlement with future settledAt', async () => {
+      const bobDb = testEnv.authenticatedContext('user_bob').firestore();
+      const futureTime = new Date(Date.now() + 60 * 60 * 1000);
+      await assertFails(setDoc(doc(bobDb, 'groups/group_a/settlements/set_future'), {
+        id: 'set_future',
+        groupId: 'group_a',
+        fromUid: 'user_bob',
+        toUid: 'user_alice',
+        amountMinor: 5000,
+        currency: 'TRY',
+        settledAt: futureTime,
+        createdBy: 'user_bob',
+      }));
+    });
+
+    it('6. rejects creating group with future createdAt', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const futureTime = new Date(Date.now() + 60 * 60 * 1000);
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_future'), {
+        id: 'group_future',
+        name: 'Future Group',
+        defaultCurrency: 'TRY',
+        inviteCode: 'DNK-FUTURE1',
+        createdBy: 'user_alice',
+        createdAt: futureTime,
+        updatedAt: futureTime,
+        memberCount: 1,
+        active: true,
+      }));
+    });
+
+    it('7. rejects modifying joinedAt on member update', async () => {
+      const bobDb = testEnv.authenticatedContext('user_bob').firestore();
+      const tamperedJoinedAt = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000); // 1 year ago
+      await assertFails(setDoc(doc(bobDb, 'groups/group_a/members/user_bob'), {
+        uid: 'user_bob',
+        displayName: 'Bob Renamed',
+        role: 'member',
+        joinedAt: tamperedJoinedAt, // changed joinedAt
+      }));
+    });
+  });
 });

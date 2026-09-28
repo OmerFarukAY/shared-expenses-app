@@ -33,6 +33,7 @@
 | **Security Phase 3** | High-Entropy Cryptographic Invite Codes | [Completed] | Upgraded invite generation from 4-char (810K space) to 6-char `DNK-XXXXXX` (729M space, 900x increase in entropy) with cryptographic `Random.secure()`. Added collision-safe creation with retry, maintaining 100% backward compatibility for legacy 4-char codes. |
 | **Security Phase 4** | Expense Financial Invariants & Payer/Split Rules | [Completed] | Enforced server-side integer currency invariants (`totalMinor is int && totalMinor > 0`, float reject, 3-letter ISO uppercase `^[A-Z]{3}$`), payer and split mathematical sum checks equaling `totalMinor`, membership validation for payers and split participants, and immutable `createdBy` and `groupId` on update. Verified with 11 new automated security tests (41/41 passing). |
 | **Security Phase 5** | Settlement Integrity & Canonical Ownership | [Completed] | Canonicalized `createdBy` as the standard creator/ownership field in `SettlementRecord` and Firestore schema (preserving `settledBy` backward compatibility). Enforced positive integer `amountMinor`, ISO currency regex, group membership checks for both `fromUid` and `toUid`, prevention of self-settlement (`fromUid != toUid`), creator spoofing rejection, and absolute immutability of settlements (`allow update: if false;`). Verified with 9 new automated security tests (50/50 passing). |
+| **Security Phase 6** | Timestamp Integrity & Offline-First Strategy | [Completed] | Server-enforced timestamp constraints across all collections (`users`, `groups`, `members`, `expenses`, `settlements`, `invites`). Strictly prohibited future timestamps (`createdAt <= request.time + 5m`, `date <= request.time + 1d`, `settledAt <= request.time + 5m`), prohibited retroactive tampering via update immutability on `createdAt` and `joinedAt`, enforced monotonic progression on `updatedAt`, and preserved offline sync capabilities without naive $\pm 5$ min past restrictions. Verified with 7 new automated security tests (57/57 passing). |
 
 ---
 
@@ -51,11 +52,13 @@
 11. **729M Entropy Invite Codes with Deterministic Collision Retry**: 6-character unambiguous alphanumeric codes (`DNK-XXXXXX`) generated via `Random.secure()` with automated pre-creation document collision check and retry. Full legacy compatibility for 4-character codes preserved.
 12. **Server-Side Financial Invariants & Group-Scoped Payer/Split Enforcement**: Enforced strict integer minor arithmetic in Firestore Security Rules rejecting floating-point values, non-ISO uppercase currencies, mismatched payer and split sums, foreign non-member payer/split UIDs, and mutating `createdBy` or `groupId`.
 13. **Canonical Settlement Ownership & Immutability**: Synchronized `createdBy` as the canonical audit field across Dart models, repositories, and Firestore rules. Completed financial settlements are declared strictly immutable (`allow update: if false;`) to protect financial history integrity.
+14. **Offline-First Timestamp Integrity & Future Spoofing Prevention**: Implemented asymmetric timestamp rules in Firestore Rules: strictly rejecting future-dated creation/events (`ts <= request.time + 5m`), locking creation timestamps as permanently immutable on updates, and enforcing monotonic `updatedAt >= resource.data.updatedAt`, while fully permitting legitimate offline creation timestamps to sync upon reconnect.
 
 ---
 
 ## 3. Current Phase Status
-- **Current Phase:** Security Hardening — Phase 5 (Settlement Integrity) Completed
-- **Last Verification:** All 74 Flutter tests passing, 50/50 Firestore Security Rules emulator unit tests passing, `flutter analyze` 0 issues.
+- **Current Phase:** Security Hardening — Phase 6 (Timestamp Integrity) Completed (Batch 2 Complete)
+- **Last Verification:** All 74 Flutter tests passing, 57/57 Firestore Security Rules emulator unit tests passing, `flutter analyze` 0 issues, deployed to `denk-262c0`.
+
 
 

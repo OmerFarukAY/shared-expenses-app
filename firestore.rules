@@ -97,6 +97,19 @@ service cloud.firestore {
       );
     }
 
+    // Timestamp validation helpers respecting offline persistence
+    function isValidCreationTimestamp(ts) {
+      return ts is timestamp && ts <= request.time + duration.value(5, 'm');
+    }
+
+    function isValidHistoricalDate(ts) {
+      return ts is timestamp && ts <= request.time + duration.value(1, 'd');
+    }
+
+    function isValidUpdateTimestamp(newTs, oldTs) {
+      return newTs is timestamp && newTs >= oldTs && newTs <= request.time + duration.value(5, 'm');
+    }
+
     // User document validation
     function isValidUser(data) {
       return data.keys().hasAll(['uid', 'displayName', 'preferredCurrency', 'languageCode', 'createdAt', 'updatedAt']) &&
@@ -104,8 +117,8 @@ service cloud.firestore {
              data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 50 &&
              data.preferredCurrency is string && data.preferredCurrency.size() == 3 &&
              data.languageCode is string && data.languageCode.size() >= 2 && data.languageCode.size() <= 5 &&
-             data.createdAt is timestamp &&
-             data.updatedAt is timestamp;
+             isValidCreationTimestamp(data.createdAt) &&
+             isValidCreationTimestamp(data.updatedAt);
     }
 
     // ===============================================================
@@ -118,7 +131,10 @@ service cloud.firestore {
       allow list: if false;
 
       allow create: if isOwner(uid) && isValidUser(request.resource.data);
-      allow update: if isOwner(uid) && isValidUser(request.resource.data);
+      allow update: if isOwner(uid) &&
+                       isValidUser(request.resource.data) &&
+                       request.resource.data.createdAt == resource.data.createdAt &&
+                       isValidUpdateTimestamp(request.resource.data.updatedAt, resource.data.updatedAt);
       allow delete: if isOwner(uid);
 
       match /user_groups/{groupId} {
@@ -209,6 +225,8 @@ service cloud.firestore {
              data.title is string && data.title.size() >= 1 && data.title.size() <= 100 &&
              data.totalMinor is int && data.totalMinor > 0 &&
              isValidCurrency(data.currency) &&
+             isValidCreationTimestamp(data.createdAt) &&
+             isValidHistoricalDate(data.date) &&
              arePayersValid(groupId, data.payers, data.totalMinor) &&
              areSplitsValid(groupId, data.splits, data.participants, data.totalMinor);
     }
@@ -233,13 +251,17 @@ service cloud.firestore {
                        request.resource.data.defaultCurrency is string && request.resource.data.defaultCurrency.size() == 3 &&
                        request.resource.data.inviteCode is string && request.resource.data.inviteCode.size() >= 6 && request.resource.data.inviteCode.size() <= 12 &&
                        request.resource.data.memberCount is int && request.resource.data.memberCount >= 1 &&
-                       request.resource.data.active is bool;
+                       request.resource.data.active is bool &&
+                       isValidCreationTimestamp(request.resource.data.createdAt) &&
+                       isValidCreationTimestamp(request.resource.data.updatedAt);
 
       // Members can update group details, or joining users can update memberCount
       allow update: if isAuthenticated() &&
                        request.resource.data.id == resource.data.id &&
                        request.resource.data.createdBy == resource.data.createdBy &&
                        request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 60 &&
+                       request.resource.data.createdAt == resource.data.createdAt &&
+                       isValidUpdateTimestamp(request.resource.data.updatedAt, resource.data.updatedAt) &&
                        (isGroupMember(groupId) || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount', 'updatedAt']));
 
       allow delete: if isAuthenticated() && request.auth.uid == resource.data.createdBy;
@@ -258,6 +280,7 @@ service cloud.firestore {
                          request.resource.data.displayName is string &&
                          request.resource.data.displayName.size() >= 1 &&
                          request.resource.data.displayName.size() <= 50 &&
+                         isValidCreationTimestamp(request.resource.data.joinedAt) &&
                          (
                            // Case 1: Group creator creating group with role 'owner'
                            (request.resource.data.role == 'owner' &&
@@ -279,6 +302,7 @@ service cloud.firestore {
         allow update: if isAuthenticated() && request.auth.uid == memberUid &&
                          request.resource.data.uid == memberUid &&
                          request.resource.data.role == resource.data.role &&
+                         request.resource.data.joinedAt == resource.data.joinedAt &&
                          request.resource.data.displayName is string && request.resource.data.displayName.size() >= 1 && request.resource.data.displayName.size() <= 50;
 
         // User can remove themselves or group creator can remove member
@@ -294,13 +318,16 @@ service cloud.firestore {
         allow create: if isGroupMember(groupId) &&
                          request.resource.data.id == expenseId &&
                          request.resource.data.createdBy == request.auth.uid &&
-                         isValidExpense(request.resource.data, groupId);
+                         isValidExpense(request.resource.data, groupId) &&
+                         isValidCreationTimestamp(request.resource.data.updatedAt);
 
         // ONLY group members can update expenses in their group
         allow update: if isGroupMember(groupId) &&
                          request.resource.data.id == resource.data.id &&
                          request.resource.data.groupId == resource.data.groupId &&
                          request.resource.data.createdBy == resource.data.createdBy &&
+                         request.resource.data.createdAt == resource.data.createdAt &&
+                         isValidUpdateTimestamp(request.resource.data.updatedAt, resource.data.updatedAt) &&
                          isValidExpense(request.resource.data, groupId);
 
         // ONLY group members can delete expenses in their group
@@ -324,7 +351,8 @@ service cloud.firestore {
                          exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.resource.data.fromUid)) &&
                          exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.resource.data.toUid)) &&
                          request.resource.data.amountMinor is int && request.resource.data.amountMinor > 0 &&
-                         isValidCurrency(request.resource.data.currency);
+                         isValidCurrency(request.resource.data.currency) &&
+                         isValidCreationTimestamp(request.resource.data.settledAt);
 
         // Completed financial settlements are strictly immutable
         allow update: if false;
@@ -349,11 +377,13 @@ service cloud.firestore {
                        request.resource.data.keys().hasAll(['inviteCode', 'groupId', 'groupName', 'defaultCurrency', 'createdBy', 'createdAt', 'active']) &&
                        request.resource.data.inviteCode == inviteCode &&
                        request.resource.data.createdBy == request.auth.uid &&
-                       request.resource.data.active is bool;
+                       request.resource.data.active is bool &&
+                       isValidCreationTimestamp(request.resource.data.createdAt);
 
       allow update: if isAuthenticated() &&
                        isGroupMember(resource.data.groupId) &&
-                       request.resource.data.groupId == resource.data.groupId;
+                       request.resource.data.groupId == resource.data.groupId &&
+                       request.resource.data.createdAt == resource.data.createdAt;
 
       allow delete: if isAuthenticated() && isGroupCreator(resource.data.groupId);
     }
