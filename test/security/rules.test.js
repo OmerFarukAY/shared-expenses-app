@@ -452,4 +452,260 @@ describe('Phase 1 Firestore Security Rules Hardening', () => {
       }));
     });
   });
+
+  describe('Phase 4 — Expense Financial Invariants', () => {
+    it('1. allows creating a valid expense with integer minor units, matching payers and splits', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      await assertSucceeds(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_valid'), {
+        id: 'exp_valid',
+        groupId: 'group_a',
+        title: 'Groceries',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: 15000,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 15000 },
+        participants: ['user_alice', 'user_bob'],
+        splits: { user_alice: 7500, user_bob: 7500 },
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('2. rejects floating point totalMinor', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_float'), {
+        id: 'exp_float',
+        groupId: 'group_a',
+        title: 'Float expense',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: 150.50,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 150.50 },
+        participants: ['user_alice'],
+        splits: { user_alice: 150.50 },
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('3. rejects zero or negative totalMinor', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_zero'), {
+        id: 'exp_zero',
+        groupId: 'group_a',
+        title: 'Zero expense',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: 0,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 0 },
+        participants: ['user_alice'],
+        splits: { user_alice: 0 },
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('4. rejects invalid currency format (lowercase or non-3-letter)', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      // Lowercase 'try'
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_lower_curr'), {
+        id: 'exp_lower_curr',
+        groupId: 'group_a',
+        title: 'Bad currency',
+        category: 'food',
+        currency: 'try',
+        totalMinor: 1000,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 1000 },
+        participants: ['user_alice'],
+        splits: { user_alice: 1000 },
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+
+      // 4-letter currency 'USDT'
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_4_curr'), {
+        id: 'exp_4_curr',
+        groupId: 'group_a',
+        title: 'Bad currency',
+        category: 'food',
+        currency: 'USDT',
+        totalMinor: 1000,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 1000 },
+        participants: ['user_alice'],
+        splits: { user_alice: 1000 },
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('5. rejects expense when payer sum does not match totalMinor', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_mismatch_payer'), {
+        id: 'exp_mismatch_payer',
+        groupId: 'group_a',
+        title: 'Mismatched payer',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: 10000,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 8000 }, // sum 8000 != 10000
+        participants: ['user_alice'],
+        splits: { user_alice: 10000 },
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('6. rejects expense when a payer is not a group member', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      // user_charlie is in Group B, not Group A
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_foreign_payer'), {
+        id: 'exp_foreign_payer',
+        groupId: 'group_a',
+        title: 'Foreign payer',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: 10000,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_charlie: 10000 },
+        participants: ['user_alice'],
+        splits: { user_alice: 10000 },
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('7. rejects negative or zero payer amounts', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_neg_payer'), {
+        id: 'exp_neg_payer',
+        groupId: 'group_a',
+        title: 'Negative payer',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: 10000,
+        date: now,
+        splitMethod: 'custom',
+        payers: { user_alice: 12000, user_bob: -2000 }, // negative amount
+        participants: ['user_alice'],
+        splits: { user_alice: 10000 },
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('8. rejects expense when split sum does not match totalMinor', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_mismatch_split'), {
+        id: 'exp_mismatch_split',
+        groupId: 'group_a',
+        title: 'Mismatched split',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: 10000,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 10000 },
+        participants: ['user_alice', 'user_bob'],
+        splits: { user_alice: 4000, user_bob: 4000 }, // sum 8000 != 10000
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('9. rejects expense when a split participant is not a group member', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      // user_charlie is not in Group A
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_foreign_split'), {
+        id: 'exp_foreign_split',
+        groupId: 'group_a',
+        title: 'Foreign split',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: 10000,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 10000 },
+        participants: ['user_alice', 'user_charlie'],
+        splits: { user_alice: 5000, user_charlie: 5000 },
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('10. rejects createdBy spoofing on new expense', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      // Alice tries to create expense claiming Bob created it
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_spoof_creator'), {
+        id: 'exp_spoof_creator',
+        groupId: 'group_a',
+        title: 'Spoofed creator',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: 10000,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 10000 },
+        participants: ['user_alice'],
+        splits: { user_alice: 10000 },
+        createdBy: 'user_bob',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('11. rejects modifying createdBy or groupId on expense update', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      // Try to mutate createdBy on existing exp_1
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/expenses/exp_1'), {
+        id: 'exp_1',
+        groupId: 'group_a',
+        title: 'Dinner Edited',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: 10000,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 10000 },
+        participants: ['user_alice', 'user_bob'],
+        splits: { user_alice: 5000, user_bob: 5000 },
+        createdBy: 'user_bob', // was user_alice
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+  });
 });

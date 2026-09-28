@@ -109,3 +109,49 @@ Upgraded invite code generation from 4 characters to 6 characters, increasing co
 - `flutter test`: Passed (all 74 tests passing).
 - Firestore Emulator Rules Tests: Passed (30/30 tests passing).
 - `git diff --check`: Passed (clean whitespace).
+
+## Phase 4 — Expense Financial Invariants
+
+### Summary
+Server-enforced monetary and financial invariants on Firestore expenses subcollection, eliminating reliance on client-only validation for core accounting rules.
+
+### Key Changes
+1. **Integer Minor Currency Invariants**:
+   - `totalMinor is int && totalMinor > 0` strictly blocks floating-point values, zero, or negative expenses in Firestore Rules.
+   - Verified via unit test that `totalMinor: 150.50` and `totalMinor: 0` are rejected.
+2. **Currency Validation**:
+   - `isValidCurrency(curr)` enforces 3-letter ISO uppercase format via `curr.matches('^[A-Z]{3}$')`. Rejects lowercase or non-3-letter codes.
+3. **Payer Accounting Integrity**:
+   - Validates that every payer in `data.payers` is an existing member of the group.
+   - Enforces that each payer contribution is a positive integer (`is int && > 0`).
+   - Mathematically verifies that the sum of payer contributions strictly equals `totalMinor`.
+4. **Split Accounting Integrity**:
+   - Validates that participants in `data.participants` and keys in `data.splits` are identical sets.
+   - Validates that each split allocation is a positive integer (`is int && > 0`).
+   - Validates that participants exist in the group membership roster.
+   - Mathematically verifies that the sum of split amounts equals `totalMinor` across equal, custom, or percentage allocations.
+5. **Ownership & Immutability**:
+   - `createdBy == request.auth.uid` mandatory on expense creation (blocks creator spoofing).
+   - On expense updates, `createdBy`, `groupId`, and `id` are strictly immutable (`request.resource.data.createdBy == resource.data.createdBy`).
+6. **Automated Test Coverage**:
+   - Added 11 new security tests in `test/security/rules.test.js`:
+     1. Valid expense with integer minor units, matching payers and splits $\rightarrow$ allow (PASSED)
+     2. Floating point totalMinor $\rightarrow$ reject (PASSED)
+     3. Zero or negative totalMinor $\rightarrow$ reject (PASSED)
+     4. Invalid currency format $\rightarrow$ reject (PASSED)
+     5. Payer sum mismatch $\rightarrow$ reject (PASSED)
+     6. Foreign payer UID $\rightarrow$ reject (PASSED)
+     7. Negative/zero payer amount $\rightarrow$ reject (PASSED)
+     8. Split sum mismatch $\rightarrow$ reject (PASSED)
+     9. Foreign split participant UID $\rightarrow$ reject (PASSED)
+     10. createdBy spoofing on new expense $\rightarrow$ reject (PASSED)
+     11. Modifying createdBy or groupId on expense update $\rightarrow$ reject (PASSED)
+   - Total passing rules tests: 41/41.
+
+### Verification Gates
+- `dart format lib test`: Passed.
+- `flutter analyze`: Passed (0 issues).
+- `flutter test`: Passed (all 74 tests passing).
+- Firestore Emulator Rules Tests: Passed (41/41 tests passing).
+- `git diff --check`: Passed (clean whitespace).
+

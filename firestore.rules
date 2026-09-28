@@ -126,6 +126,93 @@ service cloud.firestore {
       }
     }
 
+    function isValidCurrency(curr) {
+      return curr is string && curr.matches('^[A-Z]{3}$');
+    }
+
+    function arePayersValid(groupId, payers, totalMinor) {
+      return payers is map && payers.size() >= 1 &&
+             (
+               (payers.size() == 1 &&
+                payers.values()[0] is int && payers.values()[0] > 0 &&
+                payers.values()[0] == totalMinor &&
+                exists(/databases/$(database)/documents/groups/$(groupId)/members/$(payers.keys()[0]))) ||
+               (payers.size() == 2 &&
+                payers.values()[0] is int && payers.values()[0] > 0 &&
+                payers.values()[1] is int && payers.values()[1] > 0 &&
+                payers.values()[0] + payers.values()[1] == totalMinor &&
+                exists(/databases/$(database)/documents/groups/$(groupId)/members/$(payers.keys()[0])) &&
+                exists(/databases/$(database)/documents/groups/$(groupId)/members/$(payers.keys()[1]))) ||
+               (payers.size() == 3 &&
+                payers.values()[0] is int && payers.values()[0] > 0 &&
+                payers.values()[1] is int && payers.values()[1] > 0 &&
+                payers.values()[2] is int && payers.values()[2] > 0 &&
+                payers.values()[0] + payers.values()[1] + payers.values()[2] == totalMinor &&
+                exists(/databases/$(database)/documents/groups/$(groupId)/members/$(payers.keys()[0])) &&
+                exists(/databases/$(database)/documents/groups/$(groupId)/members/$(payers.keys()[1])) &&
+                exists(/databases/$(database)/documents/groups/$(groupId)/members/$(payers.keys()[2]))) ||
+               (payers.size() >= 4)
+             );
+    }
+
+    function areSplitsValid(groupId, splits, participants, totalMinor) {
+      return splits is map && splits.size() >= 1 &&
+             participants is list && participants.size() == splits.size() &&
+             participants.hasAll(splits.keys()) &&
+             splits.keys().hasAll(participants) &&
+             (
+               // Check group membership for split participants
+               (splits.size() == 1 && exists(/databases/$(database)/documents/groups/$(groupId)/members/$(splits.keys()[0]))) ||
+               (splits.size() == 2 && exists(/databases/$(database)/documents/groups/$(groupId)/members/$(splits.keys()[0])) &&
+                                      exists(/databases/$(database)/documents/groups/$(groupId)/members/$(splits.keys()[1]))) ||
+               (splits.size() >= 3 && exists(/databases/$(database)/documents/groups/$(groupId)/members/$(splits.keys()[0])) &&
+                                      exists(/databases/$(database)/documents/groups/$(groupId)/members/$(splits.keys()[1])) &&
+                                      exists(/databases/$(database)/documents/groups/$(groupId)/members/$(splits.keys()[2]))) ||
+               (splits.size() > 3)
+             ) &&
+             (
+               // Mathematical integer sum integrity check
+               (splits.size() == 1 && splits.values()[0] is int && splits.values()[0] > 0 && splits.values()[0] == totalMinor) ||
+               (splits.size() == 2 && splits.values()[0] is int && splits.values()[0] > 0 &&
+                                      splits.values()[1] is int && splits.values()[1] > 0 &&
+                                      splits.values()[0] + splits.values()[1] == totalMinor) ||
+               (splits.size() == 3 && splits.values()[0] is int && splits.values()[0] > 0 &&
+                                      splits.values()[1] is int && splits.values()[1] > 0 &&
+                                      splits.values()[2] is int && splits.values()[2] > 0 &&
+                                      splits.values()[0] + splits.values()[1] + splits.values()[2] == totalMinor) ||
+               (splits.size() == 4 && splits.values()[0] is int && splits.values()[0] > 0 &&
+                                      splits.values()[1] is int && splits.values()[1] > 0 &&
+                                      splits.values()[2] is int && splits.values()[2] > 0 &&
+                                      splits.values()[3] is int && splits.values()[3] > 0 &&
+                                      splits.values()[0] + splits.values()[1] + splits.values()[2] + splits.values()[3] == totalMinor) ||
+               (splits.size() == 5 && splits.values()[0] is int && splits.values()[0] > 0 &&
+                                      splits.values()[1] is int && splits.values()[1] > 0 &&
+                                      splits.values()[2] is int && splits.values()[2] > 0 &&
+                                      splits.values()[3] is int && splits.values()[3] > 0 &&
+                                      splits.values()[4] is int && splits.values()[4] > 0 &&
+                                      splits.values()[0] + splits.values()[1] + splits.values()[2] + splits.values()[3] + splits.values()[4] == totalMinor) ||
+               (splits.size() == 6 && splits.values()[0] is int && splits.values()[0] > 0 &&
+                                      splits.values()[1] is int && splits.values()[1] > 0 &&
+                                      splits.values()[2] is int && splits.values()[2] > 0 &&
+                                      splits.values()[3] is int && splits.values()[3] > 0 &&
+                                      splits.values()[4] is int && splits.values()[4] > 0 &&
+                                      splits.values()[5] is int && splits.values()[5] > 0 &&
+                                      splits.values()[0] + splits.values()[1] + splits.values()[2] + splits.values()[3] + splits.values()[4] + splits.values()[5] == totalMinor) ||
+               (splits.size() >= 7)
+             );
+    }
+
+    function isValidExpense(data, groupId) {
+      return data.keys().hasAll(['id', 'groupId', 'title', 'category', 'currency', 'totalMinor', 'date', 'splitMethod', 'payers', 'participants', 'splits', 'createdBy', 'createdAt', 'updatedAt']) &&
+             data.id is string &&
+             data.groupId == groupId &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 100 &&
+             data.totalMinor is int && data.totalMinor > 0 &&
+             isValidCurrency(data.currency) &&
+             arePayersValid(groupId, data.payers, data.totalMinor) &&
+             areSplitsValid(groupId, data.splits, data.participants, data.totalMinor);
+    }
+
     // ===============================================================
     // Groups Collection & Subcollections
     // ===============================================================
@@ -205,25 +292,16 @@ service cloud.firestore {
 
         // ONLY group members can create expenses in their group
         allow create: if isGroupMember(groupId) &&
-                         request.resource.data.keys().hasAll(['id', 'groupId', 'title', 'category', 'currency', 'totalMinor', 'date', 'splitMethod', 'payers', 'participants', 'splits', 'createdBy', 'createdAt', 'updatedAt']) &&
                          request.resource.data.id == expenseId &&
-                         request.resource.data.groupId == groupId &&
                          request.resource.data.createdBy == request.auth.uid &&
-                         request.resource.data.title is string && request.resource.data.title.size() >= 1 && request.resource.data.title.size() <= 100 &&
-                         request.resource.data.totalMinor is int && request.resource.data.totalMinor > 0 &&
-                         request.resource.data.currency is string && request.resource.data.currency.size() == 3 &&
-                         request.resource.data.payers is map &&
-                         request.resource.data.splits is map &&
-                         request.resource.data.participants is list;
+                         isValidExpense(request.resource.data, groupId);
 
         // ONLY group members can update expenses in their group
         allow update: if isGroupMember(groupId) &&
                          request.resource.data.id == resource.data.id &&
-                         request.resource.data.groupId == groupId &&
-                         request.resource.data.title is string && request.resource.data.title.size() >= 1 && request.resource.data.title.size() <= 100 &&
-                         request.resource.data.totalMinor is int && request.resource.data.totalMinor > 0 &&
-                         request.resource.data.currency is string && request.resource.data.currency.size() == 3 &&
-                         request.resource.data.createdBy == resource.data.createdBy;
+                         request.resource.data.groupId == resource.data.groupId &&
+                         request.resource.data.createdBy == resource.data.createdBy &&
+                         isValidExpense(request.resource.data, groupId);
 
         // ONLY group members can delete expenses in their group
         allow delete: if isGroupMember(groupId);
