@@ -108,9 +108,15 @@ service cloud.firestore {
              data.updatedAt is timestamp;
     }
 
-    // Match rules
+    // ===============================================================
+    // Users Collection
+    // ===============================================================
     match /users/{uid} {
-      allow read: if isOwner(uid);
+      // Direct lookup allowed only for the owning user
+      allow get: if isOwner(uid);
+      // Listing/enumerating all users is strictly forbidden
+      allow list: if false;
+
       allow create: if isOwner(uid) && isValidUser(request.resource.data);
       allow update: if isOwner(uid) && isValidUser(request.resource.data);
       allow delete: if isOwner(uid);
@@ -120,11 +126,16 @@ service cloud.firestore {
       }
     }
 
-    // Groups
+    // ===============================================================
+    // Groups Collection & Subcollections
+    // ===============================================================
     match /groups/{groupId} {
-      // Authenticated users can read group details (name, currency, memberCount)
-      // Confidential expense/settlement/member data is protected in subcollections
-      allow read: if isAuthenticated();
+      // Listing all groups across the database is forbidden
+      allow list: if false;
+
+      // Group details can ONLY be retrieved by active members or the creator.
+      // Guessing groupId by non-members is strictly blocked.
+      allow get: if isGroupMember(groupId) || (isAuthenticated() && request.auth.uid == resource.data.createdBy);
 
       // Authenticated users can create groups if they set themselves as creator
       allow create: if isAuthenticated() &&
@@ -148,8 +159,10 @@ service cloud.firestore {
 
       // Subcollection: members
       match /members/{memberUid} {
-        // Members of the group or the member themselves can view the roster
-        allow read: if isGroupMember(groupId) || (isAuthenticated() && request.auth.uid == memberUid);
+        // Only active group members can list members (roster)
+        allow list: if isGroupMember(groupId);
+        // Direct member doc lookup allowed for group members or the member themselves
+        allow get: if isGroupMember(groupId) || (isAuthenticated() && request.auth.uid == memberUid);
 
         // A user can add themselves as a member if creating or joining
         allow create: if isAuthenticated() && request.auth.uid == memberUid &&
@@ -170,8 +183,10 @@ service cloud.firestore {
 
       // Subcollection: expenses
       match /expenses/{expenseId} {
-        allow read: if isGroupMember(groupId);
+        // ONLY group members can read or list expenses
+        allow get, list: if isGroupMember(groupId);
 
+        // ONLY group members can create expenses in their group
         allow create: if isGroupMember(groupId) &&
                          request.resource.data.keys().hasAll(['id', 'groupId', 'title', 'category', 'currency', 'totalMinor', 'date', 'splitMethod', 'payers', 'participants', 'splits', 'createdBy', 'createdAt', 'updatedAt']) &&
                          request.resource.data.id == expenseId &&
@@ -184,6 +199,7 @@ service cloud.firestore {
                          request.resource.data.splits is map &&
                          request.resource.data.participants is list;
 
+        // ONLY group members can update expenses in their group
         allow update: if isGroupMember(groupId) &&
                          request.resource.data.id == resource.data.id &&
                          request.resource.data.groupId == groupId &&
@@ -192,13 +208,16 @@ service cloud.firestore {
                          request.resource.data.currency is string && request.resource.data.currency.size() == 3 &&
                          request.resource.data.createdBy == resource.data.createdBy;
 
+        // ONLY group members can delete expenses in their group
         allow delete: if isGroupMember(groupId);
       }
 
       // Subcollection: settlements
       match /settlements/{settlementId} {
-        allow read: if isGroupMember(groupId);
+        // ONLY group members can read or list settlements
+        allow get, list: if isGroupMember(groupId);
 
+        // ONLY group members can record settlements in their group
         allow create: if isGroupMember(groupId) &&
                          request.resource.data.keys().hasAll(['id', 'groupId', 'fromUid', 'toUid', 'amountMinor', 'currency', 'settledAt', 'createdBy']) &&
                          request.resource.data.id == settlementId &&
@@ -210,16 +229,22 @@ service cloud.firestore {
                          request.resource.data.amountMinor is int && request.resource.data.amountMinor > 0 &&
                          request.resource.data.currency is string && request.resource.data.currency.size() == 3;
 
+        // ONLY group members can delete settlements in their group
         allow delete: if isGroupMember(groupId);
       }
     }
 
-    // Public invite code resolution
+    // ===============================================================
+    // Public Invites Collection
+    // ===============================================================
     match /invites/{inviteCode} {
-      // Authenticated users can resolve an invite by code
-      allow read: if isAuthenticated();
+      // Direct lookup ONLY for authenticated users with the specific code
+      allow get: if isAuthenticated();
 
-      // Only group members or creator can publish/update an invite
+      // Collection listing / enumeration strictly forbidden
+      allow list: if false;
+
+      // Only group members or creator can publish an invite
       allow create: if isAuthenticated() &&
                        request.resource.data.keys().hasAll(['inviteCode', 'groupId', 'groupName', 'defaultCurrency', 'createdBy', 'createdAt', 'active']) &&
                        request.resource.data.inviteCode == inviteCode &&

@@ -12,9 +12,7 @@ void main() async {
     if (kIsWeb) {
       // Web requires explicit options — native platforms read from bundled
       // config files (GoogleService-Info.plist / google-services.json).
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.web,
-      );
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.web);
     } else {
       // iOS reads GoogleService-Info.plist; Android reads google-services.json.
       // Both are gitignored and bundled locally — never committed to source.

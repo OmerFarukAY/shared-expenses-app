@@ -28,6 +28,7 @@
 | **Phase 14**| Security hardening, Firestore rules review, performance optimization | [Completed] | Privilege escalation prevention in firestore.rules, assert invariants on ExpenseModel & SettlementRecord, index verification, 71 passing tests. |
 | **Phase 15**| Full test suite, integration testing, release validation, documentation | [Completed] | E2E user flow test, updated README, architecture & privacy docs, 72 passing tests. |
 | **Phase 16**| Final production-readiness audit | [Completed] | Android release build verified (`app-debug.apk` built in 259.9s), zero analyzer issues, all 72 tests passing, production-ready. |
+| **Security Phase 1** | Firebase Security Rules Hardening & Anti-Enumeration | [Completed] | Enforced `allow list: if false;` on `invites`, `groups`, and `users`. Restricted `groups/{groupId}` get to verified members and creators. Added automated Firestore Emulator test suite (20/20 passing tests), deployed rules to `denk-262c0`. |
 
 ---
 
@@ -41,10 +42,10 @@
 6. **Localization**: First-class support for English, Turkish, Spanish, French, and Italian via Flutter `intl` & ARB files.
 7. **Zero Decorative Emojis**: Non-negotiable UI rule prohibiting emojis across UI, empty states, copy, badges, and icons. Coherent vector iconography only. Emojis permitted solely within explicit user-generated content. Enforced by automated tests in `test/core/zero_decorative_emojis_test.dart`.
 8. **iOS Minimum Deployment Target (iOS 15.0)**: Standardized `IPHONEOS_DEPLOYMENT_TARGET` to 15.0 across Debug, Release, and Profile in `project.pbxproj` to resolve simulator build constraints while maximizing device compatibility (iPhone 7 through current iPhone models).
+9. **Granular Get vs List Separation**: Strict anti-enumeration on public collections (`invites`, `groups`, `users`) by disabling collection-wide queries (`allow list: if false;`) while permitting specific authenticated lookups (`allow get: ...`).
 
 ---
 
 ## 3. Current Phase Status
-- **Current Phase:** All Phases Completed (0 through 16) + iOS Simulator Compatibility Fix — Production Ready!
-- **Last Commit:** `e36110e` (Zero Decorative Emojis Rule)
-- **Last Verification:** Both Android build (`app-debug.apk`) and iOS Simulator build (`build/ios/iphonesimulator/Runner.app`) succeeded. All 74 tests passing, 0 static analysis issues. Fully release-ready.
+- **Current Phase:** Security Hardening — Phase 1 (Firebase Security Rules) Completed
+- **Last Verification:** All 74 Flutter tests passing, 20/20 Firestore Security Rules emulator unit tests passing, `flutter analyze` 0 issues, deployed to `denk-262c0`.

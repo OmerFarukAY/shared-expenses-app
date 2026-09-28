@@ -176,15 +176,25 @@ class FirestoreGroupRepository implements GroupRepository {
       }
 
       final String groupId = data['groupId'] as String;
-      final group = await getGroup(groupId);
-      if (group == null) {
-        throw const AppException(
-          message: 'The associated group no longer exists.',
-          code: 'group-not-found',
-        );
-      }
+      final String groupName = (data['groupName'] as String?) ?? '';
+      final String defaultCurrency =
+          (data['defaultCurrency'] as String?) ?? 'TRY';
+      final String createdBy = (data['createdBy'] as String?) ?? '';
+      final DateTime createdAt = (data['createdAt'] is Timestamp)
+          ? (data['createdAt'] as Timestamp).toDate()
+          : DateTime.now();
 
-      return group;
+      return GroupModel(
+        id: groupId,
+        name: groupName,
+        defaultCurrency: defaultCurrency,
+        inviteCode: cleanCode,
+        createdBy: createdBy,
+        createdAt: createdAt,
+        updatedAt: createdAt,
+        memberCount: (data['memberCount'] as int?) ?? 1,
+        active: isActive,
+      );
     } catch (e) {
       if (e is AppException) rethrow;
       throw AppException.fromFirebase(e);
