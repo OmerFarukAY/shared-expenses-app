@@ -4,6 +4,7 @@ import 'package:denk/core/errors/app_exception.dart';
 import 'package:denk/features/auth/domain/user_profile.dart';
 import 'package:denk/features/groups/data/group_repository.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
+import 'package:denk/features/groups/domain/join_request_model.dart';
 
 void main() {
   late FakeFirebaseFirestore fakeFirestore;
@@ -187,5 +188,194 @@ void main() {
         );
       },
     );
+
+    test(
+      'createJoinRequest creates pending request and records in user requests',
+      () async {
+        final group = await repository.createGroup(
+          name: 'Request Group',
+          defaultCurrency: 'TRY',
+          creator: creator,
+        );
+
+        final req = await repository.createJoinRequest(
+          inviteCode: group.inviteCode,
+          user: friend,
+        );
+
+        expect(req.groupId, group.id);
+        expect(req.uid, friend.uid);
+        expect(req.displayName, friend.displayName);
+        expect(req.status, JoinRequestStatus.pending);
+
+        // Verify Firestore joinRequests doc
+        final reqDoc = await fakeFirestore
+            .collection('groups')
+            .doc(group.id)
+            .collection('joinRequests')
+            .doc(friend.uid)
+            .get();
+        expect(reqDoc.exists, isTrue);
+        expect(reqDoc.data()!['status'], 'pending');
+
+        // Verify user-side join_requests doc
+        final userReqDoc = await fakeFirestore
+            .collection('users')
+            .doc(friend.uid)
+            .collection('join_requests')
+            .doc(group.id)
+            .get();
+        expect(userReqDoc.exists, isTrue);
+      },
+    );
+
+    test('createJoinRequest throws when user is already a member', () async {
+      final group = await repository.createGroup(
+        name: 'Member Group',
+        defaultCurrency: 'TRY',
+        creator: creator,
+      );
+
+      expect(
+        () => repository.createJoinRequest(
+          inviteCode: group.inviteCode,
+          user: creator,
+        ),
+        throwsA(isA<AppException>()),
+      );
+    });
+
+    test('createJoinRequest throws when request is already pending', () async {
+      final group = await repository.createGroup(
+        name: 'Pending Group',
+        defaultCurrency: 'TRY',
+        creator: creator,
+      );
+
+      await repository.createJoinRequest(
+        inviteCode: group.inviteCode,
+        user: friend,
+      );
+
+      expect(
+        () => repository.createJoinRequest(
+          inviteCode: group.inviteCode,
+          user: friend,
+        ),
+        throwsA(isA<AppException>()),
+      );
+    });
+
+    test(
+      'approveJoinRequest atomically updates request, creates member, and updates memberUids',
+      () async {
+        final group = await repository.createGroup(
+          name: 'Approval Group',
+          defaultCurrency: 'TRY',
+          creator: creator,
+        );
+
+        final req = await repository.createJoinRequest(
+          inviteCode: group.inviteCode,
+          user: friend,
+        );
+
+        await repository.approveJoinRequest(
+          groupId: group.id,
+          request: req,
+          approvedBy: creator.uid,
+        );
+
+        // Verify request is approved
+        final reqDoc = await fakeFirestore
+            .collection('groups')
+            .doc(group.id)
+            .collection('joinRequests')
+            .doc(friend.uid)
+            .get();
+        expect(reqDoc.data()!['status'], 'approved');
+        expect(reqDoc.data()!['resolvedBy'], creator.uid);
+
+        // Verify friend is now a member
+        final memberDoc = await fakeFirestore
+            .collection('groups')
+            .doc(group.id)
+            .collection('members')
+            .doc(friend.uid)
+            .get();
+        expect(memberDoc.exists, isTrue);
+        expect(memberDoc.data()!['role'], 'member');
+
+        // Verify group memberCount & memberUids
+        final updatedGroup = await repository.getGroup(group.id);
+        expect(updatedGroup!.memberCount, 2);
+      },
+    );
+
+    test(
+      'rejectJoinRequest marks request as rejected without creating member record',
+      () async {
+        final group = await repository.createGroup(
+          name: 'Reject Group',
+          defaultCurrency: 'TRY',
+          creator: creator,
+        );
+
+        await repository.createJoinRequest(
+          inviteCode: group.inviteCode,
+          user: friend,
+        );
+
+        await repository.rejectJoinRequest(
+          groupId: group.id,
+          requestUid: friend.uid,
+          rejectedBy: creator.uid,
+        );
+
+        final reqDoc = await fakeFirestore
+            .collection('groups')
+            .doc(group.id)
+            .collection('joinRequests')
+            .doc(friend.uid)
+            .get();
+        expect(reqDoc.data()!['status'], 'rejected');
+        expect(reqDoc.data()!['resolvedBy'], creator.uid);
+
+        // Friend must NOT be a member
+        final memberDoc = await fakeFirestore
+            .collection('groups')
+            .doc(group.id)
+            .collection('members')
+            .doc(friend.uid)
+            .get();
+        expect(memberDoc.exists, isFalse);
+
+        final updatedGroup = await repository.getGroup(group.id);
+        expect(updatedGroup!.memberCount, 1);
+      },
+    );
+
+    test('cancelJoinRequest marks request as cancelled', () async {
+      final group = await repository.createGroup(
+        name: 'Cancel Group',
+        defaultCurrency: 'TRY',
+        creator: creator,
+      );
+
+      await repository.createJoinRequest(
+        inviteCode: group.inviteCode,
+        user: friend,
+      );
+
+      await repository.cancelJoinRequest(groupId: group.id, uid: friend.uid);
+
+      final reqDoc = await fakeFirestore
+          .collection('groups')
+          .doc(group.id)
+          .collection('joinRequests')
+          .doc(friend.uid)
+          .get();
+      expect(reqDoc.exists, isFalse);
+    });
   });
 }

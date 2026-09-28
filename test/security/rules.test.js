@@ -390,13 +390,13 @@ describe('Phase 1 Firestore Security Rules Hardening', () => {
       }));
     });
 
-    it('6. allows joining with a valid, active invite code for the group', async () => {
-      // Dave joins Group A using Group A's active invite code DNK-ALICE1
+    it('6. rejects direct member document write by joining user (must use joinRequest + approval)', async () => {
+      // Dave tries to join directly using invite code — strictly DENIED under Phase 15
       const daveDb = testEnv.authenticatedContext('user_dave').firestore();
       const now = new Date();
-      await assertSucceeds(setDoc(doc(daveDb, 'groups/group_a/members/user_dave'), {
+      await assertFails(setDoc(doc(daveDb, 'groups/group_a/members/user_dave'), {
         uid: 'user_dave',
-        displayName: 'Dave Legitimate',
+        displayName: 'Dave DirectJoin',
         role: 'member',
         joinedAt: now,
         inviteCode: 'DNK-ALICE1',
@@ -1030,10 +1030,10 @@ describe('Phase 1 Firestore Security Rules Hardening', () => {
       }));
     });
 
-    it('3. allows legitimate join adding self to memberUids with valid active invite', async () => {
+    it('3. rejects direct join write attempting to add self to memberUids (must use joinRequest + approval)', async () => {
       const eveDb = testEnv.authenticatedContext('user_eve').firestore();
       const now = new Date();
-      await assertSucceeds(updateDoc(doc(eveDb, 'groups/group_a'), {
+      await assertFails(updateDoc(doc(eveDb, 'groups/group_a'), {
         memberUids: ['user_alice', 'user_bob', 'user_eve'],
         memberCount: 3,
         updatedAt: now,
@@ -1503,24 +1503,481 @@ describe('Phase 1 Firestore Security Rules Hardening', () => {
       }));
     });
 
-    it('21. sequential joins (Eve then Frank) maintain atomic projection integrity', async () => {
+    it('21. rejects non-creator sequential joins trying to directly mutate memberUids', async () => {
       const eveDb = testEnv.authenticatedContext('user_eve').firestore();
       const now = new Date();
 
-      // Step 1: Eve joins
-      await assertSucceeds(updateDoc(doc(eveDb, 'groups/group_a'), {
+      // Step 1: Eve tries to join directly -> DENIED
+      await assertFails(updateDoc(doc(eveDb, 'groups/group_a'), {
         memberUids: ['user_alice', 'user_bob', 'user_eve'],
         memberCount: 3,
         updatedAt: now,
       }));
 
-      // Step 2: Frank joins group_a (with Eve already in)
+      // Step 2: Frank tries to join directly -> DENIED
       const frankDb = testEnv.authenticatedContext('user_frank').firestore();
-      await assertSucceeds(updateDoc(doc(frankDb, 'groups/group_a'), {
-        memberUids: ['user_alice', 'user_bob', 'user_eve', 'user_frank'],
-        memberCount: 4,
+      await assertFails(updateDoc(doc(frankDb, 'groups/group_a'), {
+        memberUids: ['user_alice', 'user_bob', 'user_frank'],
+        memberCount: 3,
         updatedAt: now,
       }));
+    });
+  });
+
+  // ===============================================================
+  // Phase 15 — Join Request Security & Approval Matrix
+  // ===============================================================
+  describe('Phase 15 — Join Request Security & Approval Matrix', () => {
+    beforeEach(async () => {
+      // Ensure group_a and invite DNK-ALICE1 are available
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        const db = adminCtx.firestore();
+        const now = new Date();
+        await setDoc(doc(db, 'groups/group_a'), {
+          id: 'group_a',
+          name: 'Group A',
+          defaultCurrency: 'TRY',
+          inviteCode: 'DNK-ALICE1',
+          createdBy: 'user_alice',
+          createdAt: now,
+          updatedAt: now,
+          memberCount: 2,
+          memberUids: ['user_alice', 'user_bob'],
+          active: true,
+        });
+
+        await setDoc(doc(db, 'invites/DNK-ALICE1'), {
+          inviteCode: 'DNK-ALICE1',
+          groupId: 'group_a',
+          groupName: 'Group A',
+          defaultCurrency: 'TRY',
+          createdBy: 'user_alice',
+          createdAt: now,
+          active: true,
+        });
+
+        await setDoc(doc(db, 'invites/DNK-INACTIVE'), {
+          inviteCode: 'DNK-INACTIVE',
+          groupId: 'group_a',
+          groupName: 'Group A',
+          defaultCurrency: 'TRY',
+          createdBy: 'user_alice',
+          createdAt: now,
+          active: false,
+        });
+      });
+    });
+
+    it('1. allows valid join request creation by authenticated requester', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+      await assertSucceeds(setDoc(doc(eveDb, 'groups/group_a/joinRequests/user_eve'), {
+        uid: 'user_eve',
+        groupId: 'group_a',
+        displayName: 'Eve Requester',
+        inviteCode: 'DNK-ALICE1',
+        status: 'pending',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('2. rejects join request with invalid invite code', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(eveDb, 'groups/group_a/joinRequests/user_eve'), {
+        uid: 'user_eve',
+        groupId: 'group_a',
+        displayName: 'Eve Requester',
+        inviteCode: 'DNK-NONEXISTENT',
+        status: 'pending',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('3. rejects join request with inactive invite code', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(eveDb, 'groups/group_a/joinRequests/user_eve'), {
+        uid: 'user_eve',
+        groupId: 'group_a',
+        displayName: 'Eve Requester',
+        inviteCode: 'DNK-INACTIVE',
+        status: 'pending',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('4. rejects already member creating a join request', async () => {
+      const bobDb = testEnv.authenticatedContext('user_bob').firestore();
+      const now = new Date();
+      // Bob is already in memberUids of group_a
+      await assertFails(setDoc(doc(bobDb, 'groups/group_a/joinRequests/user_bob'), {
+        uid: 'user_bob',
+        groupId: 'group_a',
+        displayName: 'Bob Member',
+        inviteCode: 'DNK-ALICE1',
+        status: 'pending',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('5. rejects join request with forged status (e.g. status: "approved")', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(eveDb, 'groups/group_a/joinRequests/user_eve'), {
+        uid: 'user_eve',
+        groupId: 'group_a',
+        displayName: 'Eve Hacker',
+        inviteCode: 'DNK-ALICE1',
+        status: 'approved',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('6. rejects join request with forged UID (request.auth.uid != requestUid)', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+      // Eve attempts to create a request document under Frank's UID
+      await assertFails(setDoc(doc(eveDb, 'groups/group_a/joinRequests/user_frank'), {
+        uid: 'user_frank',
+        groupId: 'group_a',
+        displayName: 'Frank Spoofed',
+        inviteCode: 'DNK-ALICE1',
+        status: 'pending',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('7. rejects join request with future timestamp', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const future = new Date(Date.now() + 60 * 60 * 1000); // 1 hour into future
+      await assertFails(setDoc(doc(eveDb, 'groups/group_a/joinRequests/user_eve'), {
+        uid: 'user_eve',
+        groupId: 'group_a',
+        displayName: 'Eve Future',
+        inviteCode: 'DNK-ALICE1',
+        status: 'pending',
+        createdAt: future,
+        updatedAt: future,
+      }));
+    });
+
+    it('8. allows requester to read their own join request', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_a/joinRequests/user_eve'), {
+          uid: 'user_eve',
+          groupId: 'group_a',
+          displayName: 'Eve Requester',
+          inviteCode: 'DNK-ALICE1',
+          status: 'pending',
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      await assertSucceeds(getDoc(doc(eveDb, 'groups/group_a/joinRequests/user_eve')));
+    });
+
+    it('9. rejects requester reading another user join request', async () => {
+      const frankDb = testEnv.authenticatedContext('user_frank').firestore();
+      const now = new Date();
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_a/joinRequests/user_eve'), {
+          uid: 'user_eve',
+          groupId: 'group_a',
+          displayName: 'Eve Requester',
+          inviteCode: 'DNK-ALICE1',
+          status: 'pending',
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      await assertFails(getDoc(doc(frankDb, 'groups/group_a/joinRequests/user_eve')));
+    });
+
+    it('10. allows group creator to read and list join requests', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_a/joinRequests/user_eve'), {
+          uid: 'user_eve',
+          groupId: 'group_a',
+          displayName: 'Eve Requester',
+          inviteCode: 'DNK-ALICE1',
+          status: 'pending',
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      // Alice is creator of group_a
+      await assertSucceeds(getDoc(doc(aliceDb, 'groups/group_a/joinRequests/user_eve')));
+      await assertSucceeds(getDocs(collection(aliceDb, 'groups/group_a/joinRequests')));
+    });
+
+    it('11. rejects regular group member listing join requests', async () => {
+      const bobDb = testEnv.authenticatedContext('user_bob').firestore();
+      // Bob is member, not creator
+      await assertFails(getDocs(collection(bobDb, 'groups/group_a/joinRequests')));
+    });
+
+    it('12. isolates pending requester from group data (expenses, settlements, roster, details)', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_a/joinRequests/user_eve'), {
+          uid: 'user_eve',
+          groupId: 'group_a',
+          displayName: 'Eve Requester',
+          inviteCode: 'DNK-ALICE1',
+          status: 'pending',
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      // Pending requester CANNOT read group details
+      await assertFails(getDoc(doc(eveDb, 'groups/group_a')));
+      // Pending requester CANNOT read members list
+      await assertFails(getDocs(collection(eveDb, 'groups/group_a/members')));
+      // Pending requester CANNOT read expenses
+      await assertFails(getDocs(collection(eveDb, 'groups/group_a/expenses')));
+      // Pending requester CANNOT read settlements
+      await assertFails(getDocs(collection(eveDb, 'groups/group_a/settlements')));
+    });
+
+    it('13. allows requester to cancel their own pending request', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_a/joinRequests/user_eve'), {
+          uid: 'user_eve',
+          groupId: 'group_a',
+          displayName: 'Eve Requester',
+          inviteCode: 'DNK-ALICE1',
+          status: 'pending',
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      await assertSucceeds(updateDoc(doc(eveDb, 'groups/group_a/joinRequests/user_eve'), {
+        status: 'cancelled',
+        updatedAt: now,
+      }));
+    });
+
+    it('14. rejects requester attempting to approve own request', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_a/joinRequests/user_eve'), {
+          uid: 'user_eve',
+          groupId: 'group_a',
+          displayName: 'Eve Requester',
+          inviteCode: 'DNK-ALICE1',
+          status: 'pending',
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      await assertFails(updateDoc(doc(eveDb, 'groups/group_a/joinRequests/user_eve'), {
+        status: 'approved',
+        resolvedBy: 'user_eve',
+        resolvedAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('15. rejects normal member attempting to approve request', async () => {
+      const bobDb = testEnv.authenticatedContext('user_bob').firestore();
+      const now = new Date();
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_a/joinRequests/user_eve'), {
+          uid: 'user_eve',
+          groupId: 'group_a',
+          displayName: 'Eve Requester',
+          inviteCode: 'DNK-ALICE1',
+          status: 'pending',
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      // Bob is a member, not the creator
+      await assertFails(updateDoc(doc(bobDb, 'groups/group_a/joinRequests/user_eve'), {
+        status: 'approved',
+        resolvedBy: 'user_bob',
+        resolvedAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('16. allows group creator to approve request and atomically add member', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_a/joinRequests/user_eve'), {
+          uid: 'user_eve',
+          groupId: 'group_a',
+          displayName: 'Eve Requester',
+          inviteCode: 'DNK-ALICE1',
+          status: 'pending',
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      // Step 1: Alice updates joinRequest to approved
+      await assertSucceeds(updateDoc(doc(aliceDb, 'groups/group_a/joinRequests/user_eve'), {
+        status: 'approved',
+        resolvedBy: 'user_alice',
+        resolvedAt: now,
+        updatedAt: now,
+      }));
+
+      // Step 2: Alice creates member document for user_eve
+      await assertSucceeds(setDoc(doc(aliceDb, 'groups/group_a/members/user_eve'), {
+        uid: 'user_eve',
+        displayName: 'Eve Member',
+        role: 'member',
+        joinedAt: now,
+      }));
+
+      // Step 3: Alice updates group memberUids and memberCount
+      await assertSucceeds(updateDoc(doc(aliceDb, 'groups/group_a'), {
+        memberUids: ['user_alice', 'user_bob', 'user_eve'],
+        memberCount: 3,
+        updatedAt: now,
+      }));
+    });
+
+    it('17. allows group creator to reject a pending request', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_a/joinRequests/user_eve'), {
+          uid: 'user_eve',
+          groupId: 'group_a',
+          displayName: 'Eve Requester',
+          inviteCode: 'DNK-ALICE1',
+          status: 'pending',
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      await assertSucceeds(updateDoc(doc(aliceDb, 'groups/group_a/joinRequests/user_eve'), {
+        status: 'rejected',
+        resolvedBy: 'user_alice',
+        resolvedAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('18. rejects modifying or replaying already approved/rejected request', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_a/joinRequests/user_eve'), {
+          uid: 'user_eve',
+          groupId: 'group_a',
+          displayName: 'Eve Requester',
+          inviteCode: 'DNK-ALICE1',
+          status: 'approved',
+          resolvedBy: 'user_alice',
+          resolvedAt: now,
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      // Eve cannot change already approved request
+      await assertFails(updateDoc(doc(eveDb, 'groups/group_a/joinRequests/user_eve'), {
+        status: 'cancelled',
+        updatedAt: now,
+      }));
+
+      // Alice cannot re-approve already approved request
+      await assertFails(updateDoc(doc(aliceDb, 'groups/group_a/joinRequests/user_eve'), {
+        status: 'approved',
+        resolvedBy: 'user_alice',
+        resolvedAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('19. rejects approval with forged resolvedBy (resolvedBy != creatorUid)', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_a/joinRequests/user_eve'), {
+          uid: 'user_eve',
+          groupId: 'group_a',
+          displayName: 'Eve Requester',
+          inviteCode: 'DNK-ALICE1',
+          status: 'pending',
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      // Alice tries to claim resolvedBy is 'user_bob'
+      await assertFails(updateDoc(doc(aliceDb, 'groups/group_a/joinRequests/user_eve'), {
+        status: 'approved',
+        resolvedBy: 'user_bob',
+        resolvedAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('20. approved member gains access to group expenses, but rejected does not', async () => {
+      const now = new Date();
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        const db = adminCtx.firestore();
+        // Eve is approved and added to memberUids
+        await updateDoc(doc(db, 'groups/group_a'), {
+          memberUids: ['user_alice', 'user_bob', 'user_eve'],
+          memberCount: 3,
+        });
+        await setDoc(doc(db, 'groups/group_a/members/user_eve'), {
+          uid: 'user_eve',
+          displayName: 'Eve Member',
+          role: 'member',
+          joinedAt: now,
+        });
+      });
+
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      // Eve can now read group expenses!
+      await assertSucceeds(getDocs(collection(eveDb, 'groups/group_a/expenses')));
+
+      // Frank (rejected or non-member) is still blocked
+      const frankDb = testEnv.authenticatedContext('user_frank').firestore();
+      await assertFails(getDocs(collection(frankDb, 'groups/group_a/expenses')));
     });
   });
 });

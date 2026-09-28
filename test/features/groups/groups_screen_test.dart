@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:denk/core/theme/app_theme.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
+import 'package:denk/features/groups/domain/join_request_model.dart';
 import 'package:denk/features/groups/presentation/group_controller.dart';
 import 'package:denk/features/groups/presentation/groups_list_screen.dart';
 import 'package:denk/l10n/l10n.dart';
@@ -22,11 +23,15 @@ void main() {
 
   Widget buildTestable({
     required List<GroupModel> groups,
+    List<JoinRequestModel> userRequests = const [],
     ValueChanged<GroupModel>? onGroupSelected,
   }) {
     return ProviderScope(
       overrides: [
         userGroupsStreamProvider.overrideWith((ref) => Stream.value(groups)),
+        userJoinRequestsStreamProvider.overrideWith(
+          (ref) => Stream.value(userRequests),
+        ),
       ],
       child: MaterialApp(
         theme: AppTheme.light,
@@ -73,4 +78,34 @@ void main() {
     expect(selected, isNotNull);
     expect(selected!.id, 'grp_123');
   });
+
+  testWidgets(
+    'GroupsListScreen displays pending join request card without exposing group',
+    (tester) async {
+      final pendingReq = JoinRequestModel(
+        id: 'user_bob',
+        groupId: 'grp_secret_999',
+        uid: 'user_bob',
+        displayName: 'Bob',
+        status: JoinRequestStatus.pending,
+        inviteCode: 'DNK-9999',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      await tester.pumpWidget(
+        buildTestable(groups: [], userRequests: [pendingReq]),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify pending approval card is rendered
+      expect(find.text('Pending Approval'), findsWidgets);
+      expect(find.text('Waiting for group owner approval.'), findsWidgets);
+      expect(find.text('Cancel Request'), findsOneWidget);
+
+      // Verify secret group is NOT listed as a joined group
+      expect(find.text('grp_secret_999'), findsNothing);
+      expect(find.text('Secret Group'), findsNothing);
+    },
+  );
 }
