@@ -39,6 +39,7 @@ void main() {
         createdAt: now,
         updatedAt: now,
         memberCount: 3,
+        memberUids: const ['user_1', 'user_2', 'user_3'],
         active: true,
       );
 
@@ -48,6 +49,7 @@ void main() {
       expect(map['defaultCurrency'], 'TRY');
       expect(map['inviteCode'], 'DNK-7X2K');
       expect(map['memberCount'], 3);
+      expect(map['memberUids'], ['user_1', 'user_2', 'user_3']);
 
       final restored = GroupModel.fromMap(map, 'group_abc');
       expect(restored.id, 'group_abc');
@@ -56,7 +58,29 @@ void main() {
       expect(restored.defaultCurrency, 'TRY');
       expect(restored.inviteCode, 'DNK-7X2K');
       expect(restored.memberCount, 3);
+      expect(restored.memberUids, ['user_1', 'user_2', 'user_3']);
     });
+
+    test(
+      'GroupModel.fromMap gracefully backfills memberUids from createdBy on legacy documents',
+      () {
+        final legacyMap = {
+          'id': 'legacy_group',
+          'name': 'Old Group',
+          'defaultCurrency': 'TRY',
+          'inviteCode': 'DNK-OLD1',
+          'createdBy': 'user_creator',
+          'createdAt': Timestamp.fromDate(now),
+          'updatedAt': Timestamp.fromDate(now),
+          'memberCount': 1,
+          // 'memberUids' is omitted as in pre-Option-B documents
+        };
+
+        final restored = GroupModel.fromMap(legacyMap, 'legacy_group');
+        expect(restored.memberUids, ['user_creator']);
+        expect(restored.memberCount, 1);
+      },
+    );
   });
 
   group('InviteCodeGenerator', () {

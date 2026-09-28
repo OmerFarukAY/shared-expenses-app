@@ -107,6 +107,7 @@ class FirestoreGroupRepository implements GroupRepository {
         createdAt: now,
         updatedAt: now,
         memberCount: 1,
+        memberUids: [creator.uid],
         active: true,
       );
 
@@ -259,9 +260,10 @@ class FirestoreGroupRepository implements GroupRepository {
         'joinedAt': Timestamp.fromDate(now),
       });
 
-      // 3. Increment group memberCount
+      // 3. Increment group memberCount and add to memberUids projection
       final groupRef = _firestore.collection('groups').doc(group.id);
       batch.update(groupRef, {
+        'memberUids': FieldValue.arrayUnion([user.uid]),
         'memberCount': FieldValue.increment(1),
         'updatedAt': Timestamp.fromDate(now),
       });
@@ -310,6 +312,7 @@ class FirestoreGroupRepository implements GroupRepository {
 
       final groupRef = _firestore.collection('groups').doc(groupId);
       batch.update(groupRef, {
+        'memberUids': FieldValue.arrayRemove([uid]),
         'memberCount': FieldValue.increment(-1),
         'updatedAt': Timestamp.fromDate(DateTime.now()),
       });

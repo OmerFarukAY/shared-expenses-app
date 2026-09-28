@@ -74,6 +74,7 @@ class GroupModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final int memberCount;
+  final List<String> memberUids;
   final bool active;
 
   const GroupModel({
@@ -86,6 +87,7 @@ class GroupModel {
     required this.createdAt,
     required this.updatedAt,
     this.memberCount = 1,
+    this.memberUids = const [],
     this.active = true,
   });
 
@@ -96,6 +98,7 @@ class GroupModel {
     String? inviteCode,
     DateTime? updatedAt,
     int? memberCount,
+    List<String>? memberUids,
     bool? active,
   }) {
     return GroupModel(
@@ -108,6 +111,7 @@ class GroupModel {
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       memberCount: memberCount ?? this.memberCount,
+      memberUids: memberUids ?? this.memberUids,
       active: active ?? this.active,
     );
   }
@@ -124,6 +128,7 @@ class GroupModel {
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
       'memberCount': memberCount,
+      'memberUids': memberUids,
       'active': active,
     };
   }
@@ -135,16 +140,25 @@ class GroupModel {
       return DateTime.now();
     }
 
+    final createdByStr = (map['createdBy'] as String?) ?? '';
+    final parsedMemberUids =
+        (map['memberUids'] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList() ??
+        (createdByStr.isNotEmpty ? [createdByStr] : const <String>[]);
+
     return GroupModel(
       id: (map['id'] as String?) ?? docId,
       name: (map['name'] as String?) ?? '',
       description: map['description'] as String?,
       defaultCurrency: (map['defaultCurrency'] as String?) ?? 'TRY',
       inviteCode: (map['inviteCode'] as String?) ?? '',
-      createdBy: (map['createdBy'] as String?) ?? '',
+      createdBy: createdByStr,
       createdAt: parseDate(map['createdAt']),
       updatedAt: parseDate(map['updatedAt']),
-      memberCount: (map['memberCount'] as num?)?.toInt() ?? 1,
+      memberCount:
+          (map['memberCount'] as num?)?.toInt() ?? parsedMemberUids.length,
+      memberUids: parsedMemberUids,
       active: (map['active'] as bool?) ?? true,
     );
   }
