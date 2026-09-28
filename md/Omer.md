@@ -260,6 +260,60 @@ Integrated `firebase_app_check` across iOS and Android with environment-aware pr
 - `flutter build apk --debug`: Passed (`build/app/outputs/flutter-apk/app-debug.apk`).
 - `git diff --check`: Passed (clean whitespace).
 
+## Phase 8 — Existing Firebase Configuration & Leak Audit
+
+### Summary
+Verified existing real Firebase credentials and performed an exhaustive security audit of git history and file tracking for credential exposure.
+
+### Key Verifications
+1. **Target Firebase Project Identifiers**:
+   - Firebase Project ID: `denk-262c0` (verified in `.firebaserc`, `lib/firebase_options.dart`).
+   - Android Application ID: `com.omerfarukay.denk` (verified in `android/app/build.gradle.kts`).
+   - iOS Product Bundle ID: `com.denk.denk` (verified in `ios/Runner.xcodeproj/project.pbxproj`).
+   - Legacy Project ID: `denk-shared-expenses` completely eliminated across all files (0 occurrences).
+2. **Secret & Key Leakage Audit**:
+   - Audited git commit log for service account private keys (`BEGIN PRIVATE KEY`, `private_key`): 0 matches.
+   - Verified that native credential files (`google-services.json`, `GoogleService-Info.plist`, `.env`) are properly gitignored and not tracked in the git index.
+
+---
+
+## Phase 9 — Firebase Console Verification & Environment Boundaries
+
+### Summary
+Verified server-side assets and established a clear checklist distinguishing code-verifiable components from manual Firebase Console administration tasks.
+
+### Key Verifications
+1. **Verified via Code / CLI**:
+   - Firestore Security Rules: Deployed and active on `denk-262c0` (`npx firebase deploy --only firestore:rules`).
+   - Firestore Composite Indexes: Deployed and active on `denk-262c0` (`npx firebase deploy --only firestore:indexes`).
+   - Backend Architecture: 100% server-enforced in Firestore Security Rules; zero external server or Cloud Function required.
+2. **Console-Only Action Items Identified**:
+   - **Play Integrity Keystore Fingerprints**: Registered SHA-1 & SHA-256 for Android in Firebase Console:
+     - Debug Keystore SHA-1: `9A:DE:80:04:32:44:B9:D6:F7:C8:71:AA:DE:09:6A:E0:70:C7:31:D2`
+     - Debug Keystore SHA-256: `EB:9A:C1:80:53:47:59:6F:60:F2:AF:77:CB:61:57:02:E7:75:27:09:3F:7E:B6:04:61:55:9E:02:3A:91:6B:C9`
+   - **App Check Enforcement**: Maintained in monitoring mode in Firebase Console until production release metrics are reviewed.
+
+---
+
+## Phase 10 — Privacy/Data Minimization Audit
+
+### Summary
+Audited codebase and customer-facing documentation to ensure strict data minimization and eliminate inaccurate privacy claims.
+
+### Key Verifications
+1. **Zero Collection of Sensitive Personal Vectors**:
+   - Confirmed zero collection or requests for email, phone number, contacts, GPS location, birth date, physical address, profile photos, or advertising tracking IDs.
+2. **Standardized Privacy Terminology**:
+   - Replaced any colloquial phrases with the formal standard: `Privacy-First, Data-Minimized Architecture`.
+   - Updated `docs/privacy.md` and in-app privacy information dialog in `lib/features/settings/presentation/settings_screen.dart` and aligned test expectations.
+
+### Verification Gates
+- `dart format lib test`: Passed.
+- `flutter analyze`: Passed (0 issues).
+- `flutter test`: Passed (all 74 tests passing).
+- `git diff --check`: Passed (clean whitespace).
+
+
 
 
 

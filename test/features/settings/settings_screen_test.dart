@@ -69,7 +69,10 @@ void main() {
       // Verify Privacy Info Dialog
       await tester.tap(find.text('Read'));
       await tester.pumpAndSettle();
-      expect(find.text('Data Minimization in Denk'), findsOneWidget);
+      expect(
+        find.text('Privacy-First, Data-Minimized Architecture'),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('Done'));
       await tester.pumpAndSettle();

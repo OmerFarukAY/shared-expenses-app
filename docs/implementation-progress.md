@@ -35,6 +35,9 @@
 | **Security Phase 5** | Settlement Integrity & Canonical Ownership | [Completed] | Canonicalized `createdBy` as the standard creator/ownership field in `SettlementRecord` and Firestore schema (preserving `settledBy` backward compatibility). Enforced positive integer `amountMinor`, ISO currency regex, group membership checks for both `fromUid` and `toUid`, prevention of self-settlement (`fromUid != toUid`), creator spoofing rejection, and absolute immutability of settlements (`allow update: if false;`). Verified with 9 new automated security tests (50/50 passing). |
 | **Security Phase 6** | Timestamp Integrity & Offline-First Strategy | [Completed] | Server-enforced timestamp constraints across all collections (`users`, `groups`, `members`, `expenses`, `settlements`, `invites`). Strictly prohibited future timestamps (`createdAt <= request.time + 5m`, `date <= request.time + 1d`, `settledAt <= request.time + 5m`), prohibited retroactive tampering via update immutability on `createdAt` and `joinedAt`, enforced monotonic progression on `updatedAt`, and preserved offline sync capabilities without naive $\pm 5$ min past restrictions. Verified with 7 new automated security tests (57/57 passing). |
 | **Security Phase 7** | Firebase App Check Integration | [Completed] | Integrated `firebase_app_check` across client platforms. Configured dual-mode provider architecture: `AppleDebugProvider` & `AndroidDebugProvider` in debug mode (preserving developer tooling, iOS Simulator, and Android debug builds), and `AppleAppAttestWithDeviceCheckFallbackProvider` (iOS) & `AndroidPlayIntegrityProvider` (Android) in production release mode. Verified with zero analyze issues, passing all 74 unit/widget tests, successful iOS simulator build (`Runner.app`), and successful Android build (`app-debug.apk`). Enforced monitoring-first policy before console enforcement. |
+| **Security Phase 8** | Existing Firebase Verification & Secret Audit | [Completed] | Verified project configuration against real Firebase project `denk-262c0` (Android `com.omerfarukay.denk`, iOS `com.denk.denk`). Confirmed zero occurrences of legacy `denk-shared-expenses`. Audited git commit history and working tree for private key and credential leaks (0 leaks detected, native config files properly gitignored). |
+| **Security Phase 9** | Firebase Console Verification & Environment Boundaries | [Completed] | Verified Firestore rules and composite indexes deployment (`npx firebase deploy --only firestore:rules,firestore:indexes`). Documented exact console verification items (Anonymous Auth, SHA-1/SHA-256 certificate fingerprints for Play Integrity: `SHA1: 9A:DE:...`, `SHA256: EB:9A:...`, App Check monitoring vs enforcement). Confirmed zero external Cloud Function dependency. |
+| **Security Phase 10**| Privacy-First Data Minimization Audit | [Completed] | Audited codebase and documentation against data collection vectors. Verified zero collection of emails, phone numbers, contacts, location, DOB, address, profile photos, or ad trackers. Standardized all user-facing copy and documentation on the accurate terminology: `Privacy-First, Data-Minimized Architecture` (eliminating inaccurate "zero personal data" claims while protecting anonymous user profile integrity). |
 
 ---
 
@@ -55,12 +58,14 @@
 13. **Canonical Settlement Ownership & Immutability**: Synchronized `createdBy` as the canonical audit field across Dart models, repositories, and Firestore rules. Completed financial settlements are declared strictly immutable (`allow update: if false;`) to protect financial history integrity.
 14. **Offline-First Timestamp Integrity & Future Spoofing Prevention**: Implemented asymmetric timestamp rules in Firestore Rules: strictly rejecting future-dated creation/events (`ts <= request.time + 5m`), locking creation timestamps as permanently immutable on updates, and enforcing monotonic `updatedAt >= resource.data.updatedAt`, while fully permitting legitimate offline creation timestamps to sync upon reconnect.
 15. **Dual-Mode Firebase App Check Architecture**: Automated attestation with Play Integrity (Android) and App Attest / DeviceCheck (iOS) in production release builds, backed by debug providers in development, preventing unauthorized API scrapers without breaking local development or simulator workflows.
+16. **Privacy-First, Data-Minimized Architecture Standards**: Enforced zero collection of device contacts, locations, emails, phone numbers, or advertising identifiers. Accurately defined the data boundary: anonymous Firebase UID and user-chosen display name stored solely for in-group expense attribution.
 
 ---
 
 ## 3. Current Phase Status
-- **Current Phase:** Security Hardening — Phase 7 (Firebase App Check) Completed (Batch 3 Complete)
-- **Last Verification:** All 74 Flutter tests passing, `flutter analyze` 0 issues, iOS Simulator Runner.app built, Android APK app-debug.apk built.
+- **Current Phase:** Security Hardening — Phase 10 (Privacy/Data Minimization) Completed (Batch 4 Complete)
+- **Last Verification:** All 74 Flutter tests passing, 57/57 Firestore Security Rules emulator unit tests passing, `flutter analyze` 0 issues, indexes and rules deployed to `denk-262c0`.
+
 
 
 

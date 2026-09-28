@@ -1,4 +1,4 @@
-# Privacy Philosophy & Data Model
+# Privacy-First, Data-Minimized Architecture
 
 **Application:** Denk  
 **Platform:** Mobile (Flutter / Firebase)
