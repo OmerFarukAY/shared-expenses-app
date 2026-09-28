@@ -19,6 +19,7 @@ import 'package:denk/features/expenses/presentation/group_insights_sheet.dart';
 import 'package:denk/features/settlements/domain/settlement_engine.dart';
 import 'package:denk/features/settlements/domain/settlement_model.dart';
 import 'package:denk/features/settlements/presentation/settlement_controller.dart';
+import 'package:denk/features/groups/presentation/join_requests_sheet.dart';
 import 'package:denk/l10n/l10n.dart';
 
 class GroupDashboardScreen extends ConsumerStatefulWidget {
@@ -215,6 +216,32 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
             loading: () => const SizedBox.shrink(),
             error: (_, _) => const SizedBox.shrink(),
           ),
+
+          // Join Requests Badge & Button (Creator only)
+          if (widget.group.createdBy == currentUserId)
+            Consumer(
+              builder: (context, ref, _) {
+                final reqsAsync = ref.watch(
+                  groupJoinRequestsStreamProvider(widget.group.id),
+                );
+                final count = reqsAsync.value?.length ?? 0;
+                return IconButton(
+                  tooltip:
+                      l10n?.manageJoinRequestsTooltip ?? 'Manage Join Requests',
+                  icon: Badge(
+                    isLabelVisible: count > 0,
+                    label: Text('$count'),
+                    child: const Icon(Icons.person_add_outlined),
+                  ),
+                  onPressed: () {
+                    JoinRequestsSheet.show(
+                      context: context,
+                      group: widget.group,
+                    );
+                  },
+                );
+              },
+            ),
 
           // Invite Code Badge
           Padding(

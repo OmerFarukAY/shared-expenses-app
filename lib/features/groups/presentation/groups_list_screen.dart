@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
+import 'package:denk/features/groups/domain/join_request_model.dart';
 import 'package:denk/features/groups/presentation/create_group_sheet.dart';
 import 'package:denk/features/groups/presentation/group_controller.dart';
 import 'package:denk/features/groups/presentation/group_dashboard_screen.dart';
@@ -20,6 +21,13 @@ class GroupsListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final groupsAsync = ref.watch(userGroupsStreamProvider);
+    final userRequestsAsync = ref.watch(userJoinRequestsStreamProvider);
+
+    final pendingRequests =
+        userRequestsAsync.asData?.value
+            .where((r) => r.status == JoinRequestStatus.pending)
+            .toList() ??
+        [];
 
     return Scaffold(
       appBar: AppBar(
@@ -55,7 +63,7 @@ class GroupsListScreen extends ConsumerWidget {
       ),
       body: groupsAsync.when(
         data: (groups) {
-          if (groups.isEmpty) {
+          if (groups.isEmpty && pendingRequests.isEmpty) {
             return Center(
               child: SingleChildScrollView(
                 child: Column(
@@ -82,28 +90,104 @@ class GroupsListScreen extends ConsumerWidget {
             );
           }
 
-          return ListView.separated(
+          return ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            itemCount: groups.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final group = groups[index];
-              return _GroupCard(
-                group: group,
-                onTap: () {
-                  ref.read(selectedGroupIdProvider.notifier).state = group.id;
-                  if (onGroupSelected != null) {
-                    onGroupSelected!(group);
-                  } else {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => GroupDashboardScreen(group: group),
+            children: [
+              if (pendingRequests.isNotEmpty) ...[
+                _PendingRequestsSection(
+                  requests: pendingRequests,
+                  onCancel: (req) async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text(
+                          l10n?.cancelRequestButton ?? 'Cancel Request',
+                        ),
+                        content: Text(
+                          l10n?.pendingApprovalCardSubtitle ??
+                              'Waiting for group owner approval.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(ctx).pop(false),
+                            child: Text(l10n?.commonCancel ?? 'Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(ctx).pop(true),
+                            child: Text(
+                              l10n?.commonDelete ?? 'Delete',
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
                       ),
                     );
-                  }
-                },
-              );
-            },
+                    if (confirmed == true) {
+                      await ref
+                          .read(groupRepositoryProvider)
+                          .cancelJoinRequest(
+                            groupId: req.groupId,
+                            uid: req.uid,
+                          );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              l10n?.joinRequestCancelled ??
+                                  'Join request cancelled.',
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+              ],
+              if (groups.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          l10n?.noGroupsTitle ?? 'No joined groups yet',
+                          style: AppTypography.h3,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n?.pendingApprovalCardSubtitle ??
+                              'Waiting for group owner approval.',
+                          style: AppTypography.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                ...groups.map(
+                  (group) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _GroupCard(
+                      group: group,
+                      onTap: () {
+                        ref.read(selectedGroupIdProvider.notifier).state =
+                            group.id;
+                        if (onGroupSelected != null) {
+                          onGroupSelected!(group);
+                        } else {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  GroupDashboardScreen(group: group),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ),
+            ],
           );
         },
         loading: () => const Center(child: DenkLoadingView()),
@@ -114,6 +198,114 @@ class GroupsListScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PendingRequestsSection extends StatelessWidget {
+  final List<JoinRequestModel> requests;
+  final ValueChanged<JoinRequestModel> onCancel;
+
+  const _PendingRequestsSection({
+    required this.requests,
+    required this.onCancel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.pending_actions_rounded,
+              size: 18,
+              color: theme.colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              l10n?.pendingApprovalCardTitle ?? 'Pending Approval',
+              style: AppTypography.h3.copyWith(fontSize: 16),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ...requests.map((req) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.4,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.hourglass_top_rounded,
+                    color: Colors.amber,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n?.joinRequestPending ?? 'Pending Approval',
+                        style: AppTypography.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        l10n?.pendingApprovalCardSubtitle ??
+                            'Waiting for group owner approval.',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => onCancel(req),
+                  style: TextButton.styleFrom(
+                    foregroundColor: theme.colorScheme.error,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    l10n?.cancelRequestButton ?? 'Cancel',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
     );
   }
 }
@@ -226,7 +418,7 @@ class _GroupCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'Copy',
+                          l10n?.copyAction ?? 'Copy',
                           style: AppTypography.labelSmall.copyWith(
                             color: theme.colorScheme.primary,
                           ),

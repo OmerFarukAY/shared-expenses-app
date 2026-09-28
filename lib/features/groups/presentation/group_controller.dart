@@ -3,6 +3,8 @@ import 'package:denk/features/auth/presentation/auth_controller.dart';
 import 'package:denk/features/groups/data/group_repository.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
 
+import 'package:denk/features/groups/domain/join_request_model.dart';
+
 /// Provider for the singleton [GroupRepository].
 final groupRepositoryProvider = Provider<GroupRepository>((ref) {
   return FirestoreGroupRepository();
@@ -51,3 +53,21 @@ final groupMembersStreamProvider =
       final repository = ref.watch(groupRepositoryProvider);
       return repository.watchGroupMembers(groupId);
     });
+
+/// Stream provider for pending join requests of a specific group (owner/admin view).
+final groupJoinRequestsStreamProvider =
+    StreamProvider.family<List<JoinRequestModel>, String>((ref, groupId) {
+      final repository = ref.watch(groupRepositoryProvider);
+      return repository.watchGroupJoinRequests(groupId);
+    });
+
+/// Stream provider for join requests created by the current user.
+final userJoinRequestsStreamProvider = StreamProvider<List<JoinRequestModel>>((
+  ref,
+) {
+  final userProfile = ref.watch(userProfileControllerProvider).value;
+  if (userProfile == null) return const Stream.empty();
+
+  final repository = ref.watch(groupRepositoryProvider);
+  return repository.watchUserJoinRequests(userProfile.uid);
+});
