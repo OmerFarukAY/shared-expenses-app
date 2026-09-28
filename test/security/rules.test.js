@@ -708,4 +708,156 @@ describe('Phase 1 Firestore Security Rules Hardening', () => {
       }));
     });
   });
+
+  describe('Phase 5 — Settlement Integrity', () => {
+    it('1. allows recording a valid settlement between group members', async () => {
+      const bobDb = testEnv.authenticatedContext('user_bob').firestore();
+      const now = new Date();
+      await assertSucceeds(setDoc(doc(bobDb, 'groups/group_a/settlements/set_valid'), {
+        id: 'set_valid',
+        groupId: 'group_a',
+        fromUid: 'user_bob',
+        toUid: 'user_alice',
+        amountMinor: 5000,
+        currency: 'TRY',
+        settledAt: now,
+        createdBy: 'user_bob',
+      }));
+    });
+
+    it('2. rejects arbitrary non-member fromUid', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/settlements/set_bad_from'), {
+        id: 'set_bad_from',
+        groupId: 'group_a',
+        fromUid: 'user_unknown',
+        toUid: 'user_alice',
+        amountMinor: 5000,
+        currency: 'TRY',
+        settledAt: now,
+        createdBy: 'user_alice',
+      }));
+    });
+
+    it('3. rejects arbitrary non-member toUid', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/settlements/set_bad_to'), {
+        id: 'set_bad_to',
+        groupId: 'group_a',
+        fromUid: 'user_alice',
+        toUid: 'user_unknown',
+        amountMinor: 5000,
+        currency: 'TRY',
+        settledAt: now,
+        createdBy: 'user_alice',
+      }));
+    });
+
+    it('4. rejects cross-group UID in settlement', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      // user_charlie is in Group B, not Group A
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/settlements/set_cross'), {
+        id: 'set_cross',
+        groupId: 'group_a',
+        fromUid: 'user_alice',
+        toUid: 'user_charlie',
+        amountMinor: 5000,
+        currency: 'TRY',
+        settledAt: now,
+        createdBy: 'user_alice',
+      }));
+    });
+
+    it('5. rejects self-settlement (fromUid == toUid)', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/settlements/set_self'), {
+        id: 'set_self',
+        groupId: 'group_a',
+        fromUid: 'user_alice',
+        toUid: 'user_alice',
+        amountMinor: 5000,
+        currency: 'TRY',
+        settledAt: now,
+        createdBy: 'user_alice',
+      }));
+    });
+
+    it('6. rejects invalid amount (float, zero, or negative)', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      // Float
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/settlements/set_float'), {
+        id: 'set_float',
+        groupId: 'group_a',
+        fromUid: 'user_alice',
+        toUid: 'user_bob',
+        amountMinor: 50.50,
+        currency: 'TRY',
+        settledAt: now,
+        createdBy: 'user_alice',
+      }));
+      // Zero
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/settlements/set_zero'), {
+        id: 'set_zero',
+        groupId: 'group_a',
+        fromUid: 'user_alice',
+        toUid: 'user_bob',
+        amountMinor: 0,
+        currency: 'TRY',
+        settledAt: now,
+        createdBy: 'user_alice',
+      }));
+    });
+
+    it('7. rejects invalid currency format', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/settlements/set_bad_curr'), {
+        id: 'set_bad_curr',
+        groupId: 'group_a',
+        fromUid: 'user_alice',
+        toUid: 'user_bob',
+        amountMinor: 5000,
+        currency: 'try', // lowercase
+        settledAt: now,
+        createdBy: 'user_alice',
+      }));
+    });
+
+    it('8. rejects createdBy spoofing on settlement', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      // Alice tries to record settlement claiming Bob recorded it
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/settlements/set_spoofed_creator'), {
+        id: 'set_spoofed_creator',
+        groupId: 'group_a',
+        fromUid: 'user_bob',
+        toUid: 'user_alice',
+        amountMinor: 5000,
+        currency: 'TRY',
+        settledAt: now,
+        createdBy: 'user_bob',
+      }));
+    });
+
+    it('9. rejects modifying / updating an existing settlement (immutable)', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      // Try to mutate existing set_1
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_a/settlements/set_1'), {
+        id: 'set_1',
+        groupId: 'group_a',
+        fromUid: 'user_bob',
+        toUid: 'user_alice',
+        amountMinor: 9999, // tampered amount
+        currency: 'TRY',
+        settledAt: now,
+        createdBy: 'user_alice',
+      }));
+    });
+  });
 });

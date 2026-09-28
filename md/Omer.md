@@ -155,3 +155,43 @@ Server-enforced monetary and financial invariants on Firestore expenses subcolle
 - Firestore Emulator Rules Tests: Passed (41/41 tests passing).
 - `git diff --check`: Passed (clean whitespace).
 
+## Phase 5 — Settlement Integrity
+
+### Summary
+Resolved ownership discrepancies by establishing `createdBy` as the canonical creator/audit field across models, repositories, rules, and tests. Enforced strict group membership for payer/recipient, blocked self-settlement, and locked down settlements as immutable financial events in Firestore Security Rules.
+
+### Key Changes
+1. **Canonical Ownership Field (`createdBy`)**:
+   - `SettlementRecord` now uses `createdBy` as the canonical creator UID field matching `ExpenseModel` and `GroupModel`.
+   - Maintained backward compatibility via a `settledBy` getter and constructor fallback, serializing both `createdBy` and `settledBy` in `toMap()`.
+2. **Server-Enforced Membership Validation**:
+   - Both `fromUid` and `toUid` are verified to exist in `groups/{groupId}/members/`.
+   - Arbitrary or cross-group UIDs are strictly rejected at the database layer.
+3. **Self-Settlement Prevention**:
+   - `request.resource.data.fromUid != request.resource.data.toUid` strictly prohibits zero-sum self-settlements.
+4. **Monetary & Currency Integrity**:
+   - Validates that `amountMinor` is a positive integer (`is int && amountMinor > 0`), rejecting floats, zero, or negative numbers.
+   - Validates that `currency` matches 3-letter uppercase ISO format (`^[A-Z]{3}$`).
+5. **Absolute Immutability**:
+   - `allow update: if false;` on `groups/{groupId}/settlements/{settlementId}` guarantees that recorded settlements can never be tampered with or modified.
+6. **Automated Test Coverage**:
+   - Added 9 new security tests in `test/security/rules.test.js`:
+     1. Valid settlement between group members $\rightarrow$ allow (PASSED)
+     2. Arbitrary non-member fromUid $\rightarrow$ reject (PASSED)
+     3. Arbitrary non-member toUid $\rightarrow$ reject (PASSED)
+     4. Cross-group UID $\rightarrow$ reject (PASSED)
+     5. Self-settlement (fromUid == toUid) $\rightarrow$ reject (PASSED)
+     6. Invalid amount (float, zero, negative) $\rightarrow$ reject (PASSED)
+     7. Invalid currency format $\rightarrow$ reject (PASSED)
+     8. createdBy spoofing $\rightarrow$ reject (PASSED)
+     9. Modifying/updating existing settlement $\rightarrow$ reject (PASSED)
+   - Total passing rules tests: 50/50.
+
+### Verification Gates
+- `dart format lib test`: Passed.
+- `flutter analyze`: Passed (0 issues).
+- `flutter test`: Passed (all 74 tests passing).
+- Firestore Emulator Rules Tests: Passed (50/50 tests passing).
+- `git diff --check`: Passed (clean whitespace).
+
+

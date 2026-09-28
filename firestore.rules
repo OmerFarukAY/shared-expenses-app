@@ -312,7 +312,7 @@ service cloud.firestore {
         // ONLY group members can read or list settlements
         allow get, list: if isGroupMember(groupId);
 
-        // ONLY group members can record settlements in their group
+        // ONLY group members can record settlements between members of their group
         allow create: if isGroupMember(groupId) &&
                          request.resource.data.keys().hasAll(['id', 'groupId', 'fromUid', 'toUid', 'amountMinor', 'currency', 'settledAt', 'createdBy']) &&
                          request.resource.data.id == settlementId &&
@@ -321,10 +321,15 @@ service cloud.firestore {
                          request.resource.data.fromUid is string &&
                          request.resource.data.toUid is string &&
                          request.resource.data.fromUid != request.resource.data.toUid &&
+                         exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.resource.data.fromUid)) &&
+                         exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.resource.data.toUid)) &&
                          request.resource.data.amountMinor is int && request.resource.data.amountMinor > 0 &&
-                         request.resource.data.currency is string && request.resource.data.currency.size() == 3;
+                         isValidCurrency(request.resource.data.currency);
 
-        // ONLY group members can delete settlements in their group
+        // Completed financial settlements are strictly immutable
+        allow update: if false;
+
+        // Group members can delete/revert settlements
         allow delete: if isGroupMember(groupId);
       }
     }

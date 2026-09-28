@@ -111,7 +111,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
         amountMinor: tx.amountMinor,
         currency: tx.currency,
         settledAt: DateTime.now(),
-        settledBy: user.uid,
+        createdBy: user.uid,
       );
 
       try {

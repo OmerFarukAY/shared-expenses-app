@@ -48,8 +48,11 @@ class SettlementRecord {
   final int amountMinor;
   final String currency;
   final DateTime settledAt;
-  final String settledBy;
+  final String createdBy;
   final String? notes;
+
+  /// Alias for backward compatibility with older UI/references.
+  String get settledBy => createdBy;
 
   const SettlementRecord({
     required this.id,
@@ -61,9 +64,11 @@ class SettlementRecord {
     required this.amountMinor,
     required this.currency,
     required this.settledAt,
-    required this.settledBy,
+    String? createdBy,
+    String? settledBy,
     this.notes,
-  }) : assert(amountMinor > 0, 'Settlement amount must be positive'),
+  }) : createdBy = createdBy ?? settledBy ?? '',
+       assert(amountMinor > 0, 'Settlement amount must be positive'),
        assert(fromUid != toUid, 'Payer and recipient must differ');
 
   Map<String, dynamic> toMap() {
@@ -77,7 +82,8 @@ class SettlementRecord {
       'amountMinor': amountMinor,
       'currency': currency,
       'settledAt': Timestamp.fromDate(settledAt),
-      'settledBy': settledBy,
+      'createdBy': createdBy,
+      'settledBy': createdBy,
       if (notes != null && notes!.isNotEmpty) 'notes': notes,
     };
   }
@@ -89,6 +95,9 @@ class SettlementRecord {
       return DateTime.now();
     }
 
+    final creator =
+        (map['createdBy'] as String?) ?? (map['settledBy'] as String?) ?? '';
+
     return SettlementRecord(
       id: (map['id'] as String?) ?? docId,
       groupId: (map['groupId'] as String?) ?? '',
@@ -99,7 +108,7 @@ class SettlementRecord {
       amountMinor: (map['amountMinor'] as num?)?.toInt() ?? 0,
       currency: (map['currency'] as String?) ?? 'TRY',
       settledAt: parseDate(map['settledAt']),
-      settledBy: (map['settledBy'] as String?) ?? '',
+      createdBy: creator,
       notes: map['notes'] as String?,
     );
   }

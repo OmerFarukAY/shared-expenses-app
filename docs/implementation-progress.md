@@ -32,6 +32,7 @@
 | **Security Phase 2** | Secure Group Join & Anti-Escalation Flow | [Completed] | Prevented guessed groupId self-join, role escalation (`owner`/`admin`), and UID spoofing. Required valid active group invite verification in Firestore Security Rules. Verified with 10 new automated security tests (30/30 passing), deployed rules to `denk-262c0`. |
 | **Security Phase 3** | High-Entropy Cryptographic Invite Codes | [Completed] | Upgraded invite generation from 4-char (810K space) to 6-char `DNK-XXXXXX` (729M space, 900x increase in entropy) with cryptographic `Random.secure()`. Added collision-safe creation with retry, maintaining 100% backward compatibility for legacy 4-char codes. |
 | **Security Phase 4** | Expense Financial Invariants & Payer/Split Rules | [Completed] | Enforced server-side integer currency invariants (`totalMinor is int && totalMinor > 0`, float reject, 3-letter ISO uppercase `^[A-Z]{3}$`), payer and split mathematical sum checks equaling `totalMinor`, membership validation for payers and split participants, and immutable `createdBy` and `groupId` on update. Verified with 11 new automated security tests (41/41 passing). |
+| **Security Phase 5** | Settlement Integrity & Canonical Ownership | [Completed] | Canonicalized `createdBy` as the standard creator/ownership field in `SettlementRecord` and Firestore schema (preserving `settledBy` backward compatibility). Enforced positive integer `amountMinor`, ISO currency regex, group membership checks for both `fromUid` and `toUid`, prevention of self-settlement (`fromUid != toUid`), creator spoofing rejection, and absolute immutability of settlements (`allow update: if false;`). Verified with 9 new automated security tests (50/50 passing). |
 
 ---
 
@@ -49,10 +50,12 @@
 10. **Proof-of-Invite Membership Authorization**: Joining a group requires submitting the matching active `inviteCode` verified by Firestore Rules (`exists(/invites/$(code))` & `groupId == group.id`), strictly preventing role escalation and guessed `groupId` self-joins.
 11. **729M Entropy Invite Codes with Deterministic Collision Retry**: 6-character unambiguous alphanumeric codes (`DNK-XXXXXX`) generated via `Random.secure()` with automated pre-creation document collision check and retry. Full legacy compatibility for 4-character codes preserved.
 12. **Server-Side Financial Invariants & Group-Scoped Payer/Split Enforcement**: Enforced strict integer minor arithmetic in Firestore Security Rules rejecting floating-point values, non-ISO uppercase currencies, mismatched payer and split sums, foreign non-member payer/split UIDs, and mutating `createdBy` or `groupId`.
+13. **Canonical Settlement Ownership & Immutability**: Synchronized `createdBy` as the canonical audit field across Dart models, repositories, and Firestore rules. Completed financial settlements are declared strictly immutable (`allow update: if false;`) to protect financial history integrity.
 
 ---
 
 ## 3. Current Phase Status
-- **Current Phase:** Security Hardening — Phase 4 (Expense Financial Invariants) Completed
-- **Last Verification:** All 74 Flutter tests passing, 41/41 Firestore Security Rules emulator unit tests passing, `flutter analyze` 0 issues.
+- **Current Phase:** Security Hardening — Phase 5 (Settlement Integrity) Completed
+- **Last Verification:** All 74 Flutter tests passing, 50/50 Firestore Security Rules emulator unit tests passing, `flutter analyze` 0 issues.
+
 
