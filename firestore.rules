@@ -86,7 +86,10 @@ service cloud.firestore {
     }
 
     function isGroupMember(groupId) {
-      return isAuthenticated() && (
+      return isAuthenticated() && exists(/databases/$(database)/documents/groups/$(groupId)) && (
+        ('memberUids' in get(/databases/$(database)/documents/groups/$(groupId)).data &&
+         request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.memberUids)
+        ||
         exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid))
       );
     }
@@ -146,79 +149,60 @@ service cloud.firestore {
       return curr is string && curr.matches('^[A-Z]{3}$');
     }
 
-    function arePayersValid(groupId, payers, totalMinor) {
-      return payers is map && payers.size() >= 1 &&
-             (
-               (payers.size() == 1 &&
-                payers.values()[0] is int && payers.values()[0] > 0 &&
-                payers.values()[0] == totalMinor &&
-                exists(/databases/$(database)/documents/groups/$(groupId)/members/$(payers.keys()[0]))) ||
-               (payers.size() == 2 &&
-                payers.values()[0] is int && payers.values()[0] > 0 &&
-                payers.values()[1] is int && payers.values()[1] > 0 &&
-                payers.values()[0] + payers.values()[1] == totalMinor &&
-                exists(/databases/$(database)/documents/groups/$(groupId)/members/$(payers.keys()[0])) &&
-                exists(/databases/$(database)/documents/groups/$(groupId)/members/$(payers.keys()[1]))) ||
-               (payers.size() == 3 &&
-                payers.values()[0] is int && payers.values()[0] > 0 &&
-                payers.values()[1] is int && payers.values()[1] > 0 &&
-                payers.values()[2] is int && payers.values()[2] > 0 &&
-                payers.values()[0] + payers.values()[1] + payers.values()[2] == totalMinor &&
-                exists(/databases/$(database)/documents/groups/$(groupId)/members/$(payers.keys()[0])) &&
-                exists(/databases/$(database)/documents/groups/$(groupId)/members/$(payers.keys()[1])) &&
-                exists(/databases/$(database)/documents/groups/$(groupId)/members/$(payers.keys()[2]))) ||
-               (payers.size() >= 4)
-             );
+    function arePayersValid(payers, totalMinor, groupMembers) {
+      let s = payers.size();
+      let v = payers.values();
+      return payers is map && s >= 1 && s <= 5 &&
+             groupMembers.hasAll(payers.keys()) &&
+             ((s == 1 && v[0] is int && v[0] > 0 && v[0] == totalMinor) ||
+              (s == 2 && v[0] is int && v[0] > 0 && v[1] is int && v[1] > 0 && v[0] + v[1] == totalMinor) ||
+              (s == 3 && v[0] is int && v[0] > 0 && v[1] is int && v[1] > 0 && v[2] is int && v[2] > 0 && v[0] + v[1] + v[2] == totalMinor) ||
+              (s == 4 && v[0] is int && v[0] > 0 && v[1] is int && v[1] > 0 && v[2] is int && v[2] > 0 && v[3] is int && v[3] > 0 && v[0] + v[1] + v[2] + v[3] == totalMinor) ||
+              (s == 5 && v[0] is int && v[0] > 0 && v[1] is int && v[1] > 0 && v[2] is int && v[2] > 0 && v[3] is int && v[3] > 0 && v[4] is int && v[4] > 0 && v[0] + v[1] + v[2] + v[3] + v[4] == totalMinor));
     }
 
-    function areSplitsValid(groupId, splits, participants, totalMinor) {
-      return splits is map && splits.size() >= 1 &&
-             participants is list && participants.size() == splits.size() &&
+    function isValidSplitSum(splits, totalMinor) {
+      let s = splits.size();
+      let v = splits.values();
+      return (s == 1 && v[0] == totalMinor) ||
+             (s == 2 && v[0] + v[1] == totalMinor) ||
+             (s == 3 && v[0] + v[1] + v[2] == totalMinor) ||
+             (s == 4 && v[0] + v[1] + v[2] + v[3] == totalMinor) ||
+             (s == 5 && v[0] + v[1] + v[2] + v[3] + v[4] == totalMinor) ||
+             (s == 6 && v[0] + v[1] + v[2] + v[3] + v[4] + v[5] == totalMinor) ||
+             (s == 7 && v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] == totalMinor) ||
+             (s == 8 && v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7] == totalMinor) ||
+             (s == 9 && v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7] + v[8] == totalMinor) ||
+             (s == 10 && v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7] + v[8] + v[9] == totalMinor) ||
+             (s == 11 && v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7] + v[8] + v[9] + v[10] == totalMinor) ||
+             (s == 12 && v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7] + v[8] + v[9] + v[10] + v[11] == totalMinor) ||
+             (s == 13 && v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7] + v[8] + v[9] + v[10] + v[11] + v[12] == totalMinor) ||
+             (s == 14 && v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7] + v[8] + v[9] + v[10] + v[11] + v[12] + v[13] == totalMinor) ||
+             (s == 15 && v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7] + v[8] + v[9] + v[10] + v[11] + v[12] + v[13] + v[14] == totalMinor) ||
+             (s == 16 && v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7] + v[8] + v[9] + v[10] + v[11] + v[12] + v[13] + v[14] + v[15] == totalMinor) ||
+             (s == 17 && v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7] + v[8] + v[9] + v[10] + v[11] + v[12] + v[13] + v[14] + v[15] + v[16] == totalMinor) ||
+             (s == 18 && v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7] + v[8] + v[9] + v[10] + v[11] + v[12] + v[13] + v[14] + v[15] + v[16] + v[17] == totalMinor) ||
+             (s == 19 && v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7] + v[8] + v[9] + v[10] + v[11] + v[12] + v[13] + v[14] + v[15] + v[16] + v[17] + v[18] == totalMinor) ||
+             (s == 20 && v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7] + v[8] + v[9] + v[10] + v[11] + v[12] + v[13] + v[14] + v[15] + v[16] + v[17] + v[18] + v[19] == totalMinor);
+    }
+
+    function areSplitsValid(splits, participants, totalMinor, groupMembers) {
+      let s = splits.size();
+      let v = splits.values();
+      return splits is map && s >= 1 && s <= 20 &&
+             participants is list && participants.size() == s &&
+             v[0] is int && v[0] > 0 &&
+             v[s - 1] is int && v[s - 1] > 0 &&
              participants.hasAll(splits.keys()) &&
              splits.keys().hasAll(participants) &&
-             (
-               // Check group membership for split participants
-               (splits.size() == 1 && exists(/databases/$(database)/documents/groups/$(groupId)/members/$(splits.keys()[0]))) ||
-               (splits.size() == 2 && exists(/databases/$(database)/documents/groups/$(groupId)/members/$(splits.keys()[0])) &&
-                                      exists(/databases/$(database)/documents/groups/$(groupId)/members/$(splits.keys()[1]))) ||
-               (splits.size() >= 3 && exists(/databases/$(database)/documents/groups/$(groupId)/members/$(splits.keys()[0])) &&
-                                      exists(/databases/$(database)/documents/groups/$(groupId)/members/$(splits.keys()[1])) &&
-                                      exists(/databases/$(database)/documents/groups/$(groupId)/members/$(splits.keys()[2]))) ||
-               (splits.size() > 3)
-             ) &&
-             (
-               // Mathematical integer sum integrity check
-               (splits.size() == 1 && splits.values()[0] is int && splits.values()[0] > 0 && splits.values()[0] == totalMinor) ||
-               (splits.size() == 2 && splits.values()[0] is int && splits.values()[0] > 0 &&
-                                      splits.values()[1] is int && splits.values()[1] > 0 &&
-                                      splits.values()[0] + splits.values()[1] == totalMinor) ||
-               (splits.size() == 3 && splits.values()[0] is int && splits.values()[0] > 0 &&
-                                      splits.values()[1] is int && splits.values()[1] > 0 &&
-                                      splits.values()[2] is int && splits.values()[2] > 0 &&
-                                      splits.values()[0] + splits.values()[1] + splits.values()[2] == totalMinor) ||
-               (splits.size() == 4 && splits.values()[0] is int && splits.values()[0] > 0 &&
-                                      splits.values()[1] is int && splits.values()[1] > 0 &&
-                                      splits.values()[2] is int && splits.values()[2] > 0 &&
-                                      splits.values()[3] is int && splits.values()[3] > 0 &&
-                                      splits.values()[0] + splits.values()[1] + splits.values()[2] + splits.values()[3] == totalMinor) ||
-               (splits.size() == 5 && splits.values()[0] is int && splits.values()[0] > 0 &&
-                                      splits.values()[1] is int && splits.values()[1] > 0 &&
-                                      splits.values()[2] is int && splits.values()[2] > 0 &&
-                                      splits.values()[3] is int && splits.values()[3] > 0 &&
-                                      splits.values()[4] is int && splits.values()[4] > 0 &&
-                                      splits.values()[0] + splits.values()[1] + splits.values()[2] + splits.values()[3] + splits.values()[4] == totalMinor) ||
-               (splits.size() == 6 && splits.values()[0] is int && splits.values()[0] > 0 &&
-                                      splits.values()[1] is int && splits.values()[1] > 0 &&
-                                      splits.values()[2] is int && splits.values()[2] > 0 &&
-                                      splits.values()[3] is int && splits.values()[3] > 0 &&
-                                      splits.values()[4] is int && splits.values()[4] > 0 &&
-                                      splits.values()[5] is int && splits.values()[5] > 0 &&
-                                      splits.values()[0] + splits.values()[1] + splits.values()[2] + splits.values()[3] + splits.values()[4] + splits.values()[5] == totalMinor) ||
-               (splits.size() >= 7)
-             );
+             groupMembers.hasAll(participants) &&
+             groupMembers.hasAll(splits.keys()) &&
+             isValidSplitSum(splits, totalMinor);
     }
 
     function isValidExpense(data, groupId) {
+      let group = get(/databases/$(database)/documents/groups/$(groupId));
+      let memberUids = 'memberUids' in group.data ? group.data.memberUids : [group.data.createdBy];
       return data.keys().hasAll(['id', 'groupId', 'title', 'category', 'currency', 'totalMinor', 'date', 'splitMethod', 'payers', 'participants', 'splits', 'createdBy', 'createdAt', 'updatedAt']) &&
              data.id is string &&
              data.groupId == groupId &&
@@ -227,8 +211,9 @@ service cloud.firestore {
              isValidCurrency(data.currency) &&
              isValidCreationTimestamp(data.createdAt) &&
              isValidHistoricalDate(data.date) &&
-             arePayersValid(groupId, data.payers, data.totalMinor) &&
-             areSplitsValid(groupId, data.splits, data.participants, data.totalMinor);
+             request.auth.uid in memberUids &&
+             arePayersValid(data.payers, data.totalMinor, memberUids) &&
+             areSplitsValid(data.splits, data.participants, data.totalMinor, memberUids);
     }
 
     // ===============================================================
@@ -244,25 +229,64 @@ service cloud.firestore {
 
       // Authenticated users can create groups if they set themselves as creator
       allow create: if isAuthenticated() &&
-                       request.resource.data.keys().hasAll(['id', 'name', 'defaultCurrency', 'inviteCode', 'createdBy', 'createdAt', 'updatedAt', 'memberCount', 'active']) &&
+                       request.resource.data.keys().hasAll(['id', 'name', 'defaultCurrency', 'inviteCode', 'createdBy', 'createdAt', 'updatedAt', 'memberCount', 'memberUids', 'active']) &&
                        request.resource.data.id == groupId &&
                        request.resource.data.createdBy == request.auth.uid &&
                        request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 60 &&
                        request.resource.data.defaultCurrency is string && request.resource.data.defaultCurrency.size() == 3 &&
                        request.resource.data.inviteCode is string && request.resource.data.inviteCode.size() >= 6 && request.resource.data.inviteCode.size() <= 12 &&
-                       request.resource.data.memberCount is int && request.resource.data.memberCount >= 1 &&
+                       request.resource.data.memberUids is list &&
+                       request.resource.data.memberUids.size() == 1 &&
+                       request.resource.data.memberUids[0] == request.auth.uid &&
+                       request.resource.data.memberCount == 1 &&
                        request.resource.data.active is bool &&
                        isValidCreationTimestamp(request.resource.data.createdAt) &&
                        isValidCreationTimestamp(request.resource.data.updatedAt);
 
-      // Members can update group details, or joining users can update memberCount
+      // Members can update group details, or joining users can update memberUids and memberCount
       allow update: if isAuthenticated() &&
                        request.resource.data.id == resource.data.id &&
                        request.resource.data.createdBy == resource.data.createdBy &&
                        request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 60 &&
                        request.resource.data.createdAt == resource.data.createdAt &&
                        isValidUpdateTimestamp(request.resource.data.updatedAt, resource.data.updatedAt) &&
-                       (isGroupMember(groupId) || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount', 'updatedAt']));
+                       (
+                         // Case 1: Existing member updates group metadata (memberUids stays untouched)
+                         (isGroupMember(groupId) &&
+                          (!('memberUids' in resource.data) || request.resource.data.memberUids == resource.data.memberUids) &&
+                          (!('memberCount' in resource.data) || request.resource.data.memberCount == resource.data.memberCount))
+                         ||
+                         // Case 2: Joining member with valid active invite code adds self only
+                         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt']) &&
+                          request.resource.data.memberUids is list &&
+                          request.resource.data.memberUids.size() == resource.data.memberUids.size() + 1 &&
+                          request.resource.data.memberUids.hasAll(resource.data.memberUids) &&
+                          request.resource.data.memberUids.hasAll([request.auth.uid]) &&
+                          !(request.auth.uid in resource.data.memberUids) &&
+                          request.resource.data.memberCount == request.resource.data.memberUids.size() &&
+                          exists(/databases/$(database)/documents/invites/$(resource.data.inviteCode)) &&
+                          get(/databases/$(database)/documents/invites/$(resource.data.inviteCode)).data.active == true &&
+                          get(/databases/$(database)/documents/invites/$(resource.data.inviteCode)).data.groupId == groupId)
+                         ||
+                         // Case 3: Member self-leaves group (removes self only, creator cannot leave)
+                         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt']) &&
+                          request.resource.data.memberUids is list &&
+                          request.resource.data.memberUids.size() == resource.data.memberUids.size() - 1 &&
+                          resource.data.memberUids.hasAll(request.resource.data.memberUids) &&
+                          !(request.auth.uid in request.resource.data.memberUids) &&
+                          request.auth.uid != resource.data.createdBy &&
+                          request.resource.data.memberUids.hasAll([resource.data.createdBy]) &&
+                          request.resource.data.memberCount == request.resource.data.memberUids.size())
+                         ||
+                         // Case 4: Group creator removes a member (creator cannot remove self)
+                         (request.auth.uid == resource.data.createdBy &&
+                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt']) &&
+                          request.resource.data.memberUids is list &&
+                          request.resource.data.memberUids.size() == resource.data.memberUids.size() - 1 &&
+                          resource.data.memberUids.hasAll(request.resource.data.memberUids) &&
+                          request.resource.data.memberUids.hasAll([resource.data.createdBy]) &&
+                          request.resource.data.memberCount == request.resource.data.memberUids.size())
+                       );
 
       allow delete: if isAuthenticated() && request.auth.uid == resource.data.createdBy;
 

@@ -6,7 +6,7 @@ import {
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { doc, getDoc, getDocs, setDoc, collection } from 'firebase/firestore';
+import { doc, getDoc, getDocs, setDoc, updateDoc, collection } from 'firebase/firestore';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -54,6 +54,7 @@ describe('Phase 1 Firestore Security Rules Hardening', () => {
         createdAt: now,
         updatedAt: now,
         memberCount: 2,
+        memberUids: ['user_alice', 'user_bob'],
         active: true,
       });
 
@@ -122,6 +123,7 @@ describe('Phase 1 Firestore Security Rules Hardening', () => {
         createdAt: now,
         updatedAt: now,
         memberCount: 1,
+        memberUids: ['user_charlie'],
         active: true,
       });
 
@@ -973,6 +975,7 @@ describe('Phase 1 Firestore Security Rules Hardening', () => {
         defaultCurrency: 'TRY',
         inviteCode: 'DNK-FUTURE1',
         createdBy: 'user_alice',
+        memberUids: ['user_alice'],
         createdAt: futureTime,
         updatedAt: futureTime,
         memberCount: 1,
@@ -988,6 +991,535 @@ describe('Phase 1 Firestore Security Rules Hardening', () => {
         displayName: 'Bob Renamed',
         role: 'member',
         joinedAt: tamperedJoinedAt, // changed joinedAt
+      }));
+    });
+  });
+
+  describe('Phase 14 — Option B Membership Projection & 20-Participant Scale', () => {
+    it('1. allows creating a new group with memberUids: [creatorUid] and memberCount: 1', async () => {
+      const daveDb = testEnv.authenticatedContext('user_dave').firestore();
+      const now = new Date();
+      await assertSucceeds(setDoc(doc(daveDb, 'groups/group_dave'), {
+        id: 'group_dave',
+        name: 'Dave Group',
+        defaultCurrency: 'USD',
+        inviteCode: 'DNK-DAVE01',
+        createdBy: 'user_dave',
+        memberUids: ['user_dave'],
+        memberCount: 1,
+        active: true,
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('2. rejects creating group with multiple or non-creator memberUids', async () => {
+      const daveDb = testEnv.authenticatedContext('user_dave').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(daveDb, 'groups/group_dave_bad'), {
+        id: 'group_dave_bad',
+        name: 'Dave Bad Group',
+        defaultCurrency: 'USD',
+        inviteCode: 'DNK-DAVE02',
+        createdBy: 'user_dave',
+        memberUids: ['user_dave', 'victim_user'], // attack: multiple initial members
+        memberCount: 2,
+        active: true,
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('3. allows legitimate join adding self to memberUids with valid active invite', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+      await assertSucceeds(updateDoc(doc(eveDb, 'groups/group_a'), {
+        memberUids: ['user_alice', 'user_bob', 'user_eve'],
+        memberCount: 3,
+        updatedAt: now,
+      }));
+    });
+
+    it('4. Attack A: rejects join attempting to add self + victim UID simultaneously', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+      await assertFails(updateDoc(doc(eveDb, 'groups/group_a'), {
+        memberUids: ['user_alice', 'user_bob', 'user_eve', 'victim_uid'], // Attack A
+        memberCount: 4,
+        updatedAt: now,
+      }));
+    });
+
+    it('5. Attack B: rejects regular member removing a victim member (unauthorized kick)', async () => {
+      const bobDb = testEnv.authenticatedContext('user_bob').firestore();
+      const now = new Date();
+      await assertFails(updateDoc(doc(bobDb, 'groups/group_a'), {
+        memberUids: ['user_bob'], // Bob attempting to remove Alice
+        memberCount: 1,
+        updatedAt: now,
+      }));
+    });
+
+    it('6. Attack C: rejects completely fabricated memberUids overwrite', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+      await assertFails(updateDoc(doc(eveDb, 'groups/group_a'), {
+        memberUids: ['fake_1', 'fake_2', 'user_eve'], // completely fabricated
+        memberCount: 3,
+        updatedAt: now,
+      }));
+    });
+
+    it('7. allows member self-leave (removing self only)', async () => {
+      const bobDb = testEnv.authenticatedContext('user_bob').firestore();
+      const now = new Date();
+      await assertSucceeds(updateDoc(doc(bobDb, 'groups/group_a'), {
+        memberUids: ['user_alice'], // Bob leaves, only Alice remains
+        memberCount: 1,
+        updatedAt: now,
+      }));
+    });
+
+    it('8. rejects creator leaving their own group', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      await assertFails(updateDoc(doc(aliceDb, 'groups/group_a'), {
+        memberUids: ['user_bob'], // Alice attempting to leave group_a
+        memberCount: 1,
+        updatedAt: now,
+      }));
+    });
+
+    it('9. allows group creator to kick a member', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      await assertSucceeds(updateDoc(doc(aliceDb, 'groups/group_a'), {
+        memberUids: ['user_alice'], // Alice kicks Bob
+        memberCount: 1,
+        updatedAt: now,
+      }));
+    });
+
+    it('10. allows valid expense with up to 20 participants and exact split sum', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      // Setup a group with 20 members using admin context
+      const members20 = Array.from({ length: 20 }, (_, i) => `user_${i + 1}`);
+      members20[0] = 'user_alice';
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_20m'), {
+          id: 'group_20m',
+          name: 'Big Group',
+          defaultCurrency: 'TRY',
+          inviteCode: 'DNK-BIG001',
+          createdBy: 'user_alice',
+          memberUids: members20,
+          memberCount: 20,
+          active: true,
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      const totalMinor = 20000;
+      const splits = {};
+      members20.forEach(uid => { splits[uid] = 1000; });
+
+      await assertSucceeds(setDoc(doc(aliceDb, 'groups/group_20m/expenses/exp_20p'), {
+        id: 'exp_20p',
+        groupId: 'group_20m',
+        title: 'Huge Dinner',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: totalMinor,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 20000 },
+        participants: members20,
+        splits: splits,
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('11. rejects expense with 21 participants (exceeds safe ceiling of 20)', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      const members21 = Array.from({ length: 21 }, (_, i) => `user_${i + 1}`);
+      members21[0] = 'user_alice';
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_21m'), {
+          id: 'group_21m',
+          name: 'Over-limit Group',
+          defaultCurrency: 'TRY',
+          inviteCode: 'DNK-BIG002',
+          createdBy: 'user_alice',
+          memberUids: members21,
+          memberCount: 21,
+          active: true,
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      const totalMinor = 21000;
+      const splits = {};
+      members21.forEach(uid => { splits[uid] = 1000; });
+
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_21m/expenses/exp_21p'), {
+        id: 'exp_21p',
+        groupId: 'group_21m',
+        title: '21 People Dinner',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: totalMinor,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 21000 },
+        participants: members21,
+        splits: splits,
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('12. allows multi-payer expense with 5 payers', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      const members5 = ['user_alice', 'user_p2', 'user_p3', 'user_p4', 'user_p5'];
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_5p'), {
+          id: 'group_5p',
+          name: '5 Payer Group',
+          defaultCurrency: 'TRY',
+          inviteCode: 'DNK-5PAY01',
+          createdBy: 'user_alice',
+          memberUids: members5,
+          memberCount: 5,
+          active: true,
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      const totalMinor = 25000;
+      const payers = {
+        user_alice: 5000,
+        user_p2: 5000,
+        user_p3: 5000,
+        user_p4: 5000,
+        user_p5: 5000,
+      };
+      const splits = {};
+      members5.forEach(uid => { splits[uid] = 5000; });
+
+      await assertSucceeds(setDoc(doc(aliceDb, 'groups/group_5p/expenses/exp_5payers'), {
+        id: 'exp_5payers',
+        groupId: 'group_5p',
+        title: 'Shared Trip Rental',
+        category: 'transportation',
+        currency: 'TRY',
+        totalMinor: totalMinor,
+        date: now,
+        splitMethod: 'equal',
+        payers: payers,
+        participants: members5,
+        splits: splits,
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('13. rejects expense with 6 payers (exceeds safe ceiling of 5)', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      const members6 = ['user_alice', 'user_p2', 'user_p3', 'user_p4', 'user_p5', 'user_p6'];
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_6p'), {
+          id: 'group_6p',
+          name: '6 Payer Group',
+          defaultCurrency: 'TRY',
+          inviteCode: 'DNK-6PAY01',
+          createdBy: 'user_alice',
+          memberUids: members6,
+          memberCount: 6,
+          active: true,
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      const totalMinor = 30000;
+      const payers = {
+        user_alice: 5000,
+        user_p2: 5000,
+        user_p3: 5000,
+        user_p4: 5000,
+        user_p5: 5000,
+        user_p6: 5000,
+      };
+      const splits = {};
+      members6.forEach(uid => { splits[uid] = 5000; });
+
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_6p/expenses/exp_6payers'), {
+        id: 'exp_6payers',
+        groupId: 'group_6p',
+        title: '6 Payers Exceeded',
+        category: 'transportation',
+        currency: 'TRY',
+        totalMinor: totalMinor,
+        date: now,
+        splitMethod: 'equal',
+        payers: payers,
+        participants: members6,
+        splits: splits,
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('14. rejects 20-participant expense with 1 off-by-one kuruş arithmetic mismatch (0 bypass)', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      const members20 = Array.from({ length: 20 }, (_, i) => `user_${i + 1}`);
+      members20[0] = 'user_alice';
+
+      const totalMinor = 20000;
+      const badSplits = {};
+      members20.forEach(uid => { badSplits[uid] = 1000; });
+      badSplits['user_2'] = 1001; // Off by 1 kuruş -> 20001 != 20000
+
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_20m/expenses/exp_20p_bad_sum'), {
+        id: 'exp_20p_bad_sum',
+        groupId: 'group_20m',
+        title: 'Bad Sum 20P',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: totalMinor,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 20000 },
+        participants: members20,
+        splits: badSplits,
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('15. rejects 20-participant expense with foreign non-member UID (0 bypass)', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      const members20 = Array.from({ length: 20 }, (_, i) => `user_${i + 1}`);
+      members20[0] = 'user_alice';
+
+      const totalMinor = 20000;
+      const foreignSplits = {};
+      members20.slice(0, 19).forEach(uid => { foreignSplits[uid] = 1000; });
+      foreignSplits['intruder_external'] = 1000; // Foreign non-member UID
+
+      const foreignParticipants = members20.slice(0, 19).concat(['intruder_external']);
+
+      await assertFails(setDoc(doc(aliceDb, 'groups/group_20m/expenses/exp_20p_foreign'), {
+        id: 'exp_20p_foreign',
+        groupId: 'group_20m',
+        title: 'Foreign Intruder in 20P',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: totalMinor,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 20000 },
+        participants: foreignParticipants,
+        splits: foreignSplits,
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('16. rejects join with memberCount mismatch (memberCount manipulation)', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+      await assertFails(updateDoc(doc(eveDb, 'groups/group_a'), {
+        memberUids: ['user_alice', 'user_bob', 'user_eve'],
+        memberCount: 99, // Mismatched count
+        updatedAt: now,
+      }));
+    });
+
+    it('17. allows valid expense with 8 participants', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      const members8 = Array.from({ length: 8 }, (_, i) => `user_${i + 1}`);
+      members8[0] = 'user_alice';
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_8m'), {
+          id: 'group_8m',
+          name: '8 Members Group',
+          defaultCurrency: 'TRY',
+          inviteCode: 'DNK-8MEM01',
+          createdBy: 'user_alice',
+          memberUids: members8,
+          memberCount: 8,
+          active: true,
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      const totalMinor = 8000;
+      const splits = {};
+      members8.forEach(uid => { splits[uid] = 1000; });
+
+      await assertSucceeds(setDoc(doc(aliceDb, 'groups/group_8m/expenses/exp_8p'), {
+        id: 'exp_8p',
+        groupId: 'group_8m',
+        title: '8 Person Brunch',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: totalMinor,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 8000 },
+        participants: members8,
+        splits: splits,
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('18. allows valid expense with 15 participants', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      const members15 = Array.from({ length: 15 }, (_, i) => `user_${i + 1}`);
+      members15[0] = 'user_alice';
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_15m'), {
+          id: 'group_15m',
+          name: '15 Members Group',
+          defaultCurrency: 'TRY',
+          inviteCode: 'DNK-15MEM1',
+          createdBy: 'user_alice',
+          memberUids: members15,
+          memberCount: 15,
+          active: true,
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      const totalMinor = 15000;
+      const splits = {};
+      members15.forEach(uid => { splits[uid] = 1000; });
+
+      await assertSucceeds(setDoc(doc(aliceDb, 'groups/group_15m/expenses/exp_15p'), {
+        id: 'exp_15p',
+        groupId: 'group_15m',
+        title: '15 Person Event',
+        category: 'entertainment',
+        currency: 'TRY',
+        totalMinor: totalMinor,
+        date: now,
+        splitMethod: 'equal',
+        payers: { user_alice: 15000 },
+        participants: members15,
+        splits: splits,
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('19. allows valid multi-payer expense with 3 payers', async () => {
+      const aliceDb = testEnv.authenticatedContext('user_alice').firestore();
+      const now = new Date();
+      const members3 = ['user_alice', 'user_bob', 'user_p3'];
+
+      await testEnv.withSecurityRulesDisabled(async (adminCtx) => {
+        await setDoc(doc(adminCtx.firestore(), 'groups/group_3p'), {
+          id: 'group_3p',
+          name: '3 Payer Group',
+          defaultCurrency: 'TRY',
+          inviteCode: 'DNK-3PAY01',
+          createdBy: 'user_alice',
+          memberUids: members3,
+          memberCount: 3,
+          active: true,
+          createdAt: now,
+          updatedAt: now,
+        });
+      });
+
+      const totalMinor = 9000;
+      const payers = {
+        user_alice: 3000,
+        user_bob: 3000,
+        user_p3: 3000,
+      };
+      const splits = {
+        user_alice: 3000,
+        user_bob: 3000,
+        user_p3: 3000,
+      };
+
+      await assertSucceeds(setDoc(doc(aliceDb, 'groups/group_3p/expenses/exp_3payers'), {
+        id: 'exp_3payers',
+        groupId: 'group_3p',
+        title: '3 Way Bill',
+        category: 'food',
+        currency: 'TRY',
+        totalMinor: totalMinor,
+        date: now,
+        splitMethod: 'equal',
+        payers: payers,
+        participants: members3,
+        splits: splits,
+        createdBy: 'user_alice',
+        createdAt: now,
+        updatedAt: now,
+      }));
+    });
+
+    it('20. rejects stale snapshot overwrite trying to regress memberUids', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+      // Attempting to overwrite memberUids back to 1 member while pretending to join
+      await assertFails(updateDoc(doc(eveDb, 'groups/group_a'), {
+        memberUids: ['user_eve'], // Discards alice and bob
+        memberCount: 1,
+        updatedAt: now,
+      }));
+    });
+
+    it('21. sequential joins (Eve then Frank) maintain atomic projection integrity', async () => {
+      const eveDb = testEnv.authenticatedContext('user_eve').firestore();
+      const now = new Date();
+
+      // Step 1: Eve joins
+      await assertSucceeds(updateDoc(doc(eveDb, 'groups/group_a'), {
+        memberUids: ['user_alice', 'user_bob', 'user_eve'],
+        memberCount: 3,
+        updatedAt: now,
+      }));
+
+      // Step 2: Frank joins group_a (with Eve already in)
+      const frankDb = testEnv.authenticatedContext('user_frank').firestore();
+      await assertSucceeds(updateDoc(doc(frankDb, 'groups/group_a'), {
+        memberUids: ['user_alice', 'user_bob', 'user_eve', 'user_frank'],
+        memberCount: 4,
+        updatedAt: now,
       }));
     });
   });
