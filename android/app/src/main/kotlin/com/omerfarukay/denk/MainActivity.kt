@@ -1,4 +1,4 @@
-package com.denk.denk
+package com.omerfarukay.denk
 
 import io.flutter.embedding.android.FlutterActivity
 
