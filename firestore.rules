@@ -141,7 +141,13 @@ service cloud.firestore {
       allow delete: if isOwner(uid);
 
       match /user_groups/{groupId} {
-        allow read, write: if isOwner(uid);
+        allow read: if isOwner(uid);
+        allow write: if isOwner(uid) || (isAuthenticated() && isGroupCreator(groupId));
+      }
+
+      match /join_requests/{groupId} {
+        allow read: if isOwner(uid);
+        allow write: if isOwner(uid) || (isAuthenticated() && isGroupCreator(groupId));
       }
     }
 
@@ -243,7 +249,7 @@ service cloud.firestore {
                        isValidCreationTimestamp(request.resource.data.createdAt) &&
                        isValidCreationTimestamp(request.resource.data.updatedAt);
 
-      // Members can update group details, or joining users can update memberUids and memberCount
+      // Members can update group details, or group creator can approve pending requests or kick
       allow update: if isAuthenticated() &&
                        request.resource.data.id == resource.data.id &&
                        request.resource.data.createdBy == resource.data.createdBy &&
@@ -256,17 +262,14 @@ service cloud.firestore {
                           (!('memberUids' in resource.data) || request.resource.data.memberUids == resource.data.memberUids) &&
                           (!('memberCount' in resource.data) || request.resource.data.memberCount == resource.data.memberCount))
                          ||
-                         // Case 2: Joining member with valid active invite code adds self only
-                         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt']) &&
+                         // Case 2: Group creator approves a pending join request (+1 member)
+                         (request.auth.uid == resource.data.createdBy &&
+                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt']) &&
                           request.resource.data.memberUids is list &&
                           request.resource.data.memberUids.size() == resource.data.memberUids.size() + 1 &&
                           request.resource.data.memberUids.hasAll(resource.data.memberUids) &&
-                          request.resource.data.memberUids.hasAll([request.auth.uid]) &&
-                          !(request.auth.uid in resource.data.memberUids) &&
-                          request.resource.data.memberCount == request.resource.data.memberUids.size() &&
-                          exists(/databases/$(database)/documents/invites/$(resource.data.inviteCode)) &&
-                          get(/databases/$(database)/documents/invites/$(resource.data.inviteCode)).data.active == true &&
-                          get(/databases/$(database)/documents/invites/$(resource.data.inviteCode)).data.groupId == groupId)
+                          request.resource.data.memberUids.hasAll([resource.data.createdBy]) &&
+                          request.resource.data.memberCount == request.resource.data.memberUids.size())
                          ||
                          // Case 3: Member self-leaves group (removes self only, creator cannot leave)
                          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt']) &&
@@ -290,6 +293,63 @@ service cloud.firestore {
 
       allow delete: if isAuthenticated() && request.auth.uid == resource.data.createdBy;
 
+      // Subcollection: joinRequests
+      match /joinRequests/{requestUid} {
+        // Only group creator can list join requests for this group
+        allow list: if isGroupCreator(groupId);
+
+        // Individual request lookup: requester or group creator
+        allow get: if isAuthenticated() && (request.auth.uid == requestUid || isGroupCreator(groupId));
+
+        // Create: An authenticated user creates a pending join request with a valid active invite
+        allow create: if isAuthenticated() &&
+                         request.auth.uid == requestUid &&
+                         request.resource.data.keys().hasAll(['uid', 'groupId', 'displayName', 'status', 'createdAt', 'updatedAt', 'inviteCode']) &&
+                         request.resource.data.uid == requestUid &&
+                         request.resource.data.groupId == groupId &&
+                         request.resource.data.status == 'pending' &&
+                         request.resource.data.displayName is string &&
+                         request.resource.data.displayName.size() >= 1 &&
+                         request.resource.data.displayName.size() <= 50 &&
+                         request.resource.data.inviteCode is string &&
+                         isValidCreationTimestamp(request.resource.data.createdAt) &&
+                         isValidCreationTimestamp(request.resource.data.updatedAt) &&
+                         exists(/databases/$(database)/documents/groups/$(groupId)) &&
+                         get(/databases/$(database)/documents/groups/$(groupId)).data.active == true &&
+                         !(request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.memberUids) &&
+                         exists(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)) &&
+                         get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.active == true &&
+                         get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.groupId == groupId;
+
+        // Update:
+        // Case 1: Group creator resolves request (approve or reject)
+        // Case 2: Requester cancels own pending request
+        allow update: if isAuthenticated() && (
+                         // Case 1: Creator approves or rejects
+                         (isGroupCreator(groupId) &&
+                          resource.data.status == 'pending' &&
+                          (request.resource.data.status == 'approved' || request.resource.data.status == 'rejected') &&
+                          request.resource.data.resolvedBy == request.auth.uid &&
+                          isValidCreationTimestamp(request.resource.data.resolvedAt) &&
+                          request.resource.data.uid == resource.data.uid &&
+                          request.resource.data.groupId == resource.data.groupId &&
+                          request.resource.data.createdAt == resource.data.createdAt &&
+                          isValidUpdateTimestamp(request.resource.data.updatedAt, resource.data.updatedAt))
+                         ||
+                         // Case 2: Requester cancels own pending request
+                         (request.auth.uid == requestUid &&
+                          resource.data.status == 'pending' &&
+                          request.resource.data.status == 'cancelled' &&
+                          request.resource.data.uid == resource.data.uid &&
+                          request.resource.data.groupId == resource.data.groupId &&
+                          request.resource.data.createdAt == resource.data.createdAt &&
+                          isValidUpdateTimestamp(request.resource.data.updatedAt, resource.data.updatedAt))
+                       );
+
+        // Delete: Requester can cancel/delete own request, or creator can delete
+        allow delete: if isAuthenticated() && (request.auth.uid == requestUid || isGroupCreator(groupId));
+      }
+
       // Subcollection: members
       match /members/{memberUid} {
         // Only active group members can list members (roster)
@@ -297,8 +357,10 @@ service cloud.firestore {
         // Direct member doc lookup allowed for group members or the member themselves
         allow get: if isGroupMember(groupId) || (isAuthenticated() && request.auth.uid == memberUid);
 
-        // A user can add themselves as a member if creating or joining:
-        allow create: if isAuthenticated() && request.auth.uid == memberUid &&
+        // Member document creation:
+        // Case 1: Group creator creating group with role 'owner'
+        // Case 2: Group creator approving pending request for memberUid (role strictly 'member')
+        allow create: if isAuthenticated() &&
                          request.resource.data.keys().hasAll(['uid', 'displayName', 'role', 'joinedAt']) &&
                          request.resource.data.uid == memberUid &&
                          request.resource.data.displayName is string &&
@@ -307,19 +369,14 @@ service cloud.firestore {
                          isValidCreationTimestamp(request.resource.data.joinedAt) &&
                          (
                            // Case 1: Group creator creating group with role 'owner'
-                           (request.resource.data.role == 'owner' &&
+                           (request.auth.uid == memberUid &&
+                            request.resource.data.role == 'owner' &&
                             getAfter(/databases/$(database)/documents/groups/$(groupId)).data.createdBy == request.auth.uid)
                            ||
-                           // Case 2: Joining member with valid active invite code (role strictly 'member')
-                           (request.resource.data.role == 'member' &&
-                            request.resource.data.keys().hasAll(['inviteCode']) &&
-                            request.resource.data.inviteCode is string &&
-                            exists(/databases/$(database)/documents/groups/$(groupId)) &&
-                            get(/databases/$(database)/documents/groups/$(groupId)).data.active == true &&
-                            get(/databases/$(database)/documents/groups/$(groupId)).data.inviteCode == request.resource.data.inviteCode &&
-                            exists(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)) &&
-                            get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.active == true &&
-                            get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.groupId == groupId)
+                           // Case 2: Group creator approving pending request for memberUid
+                           (isGroupCreator(groupId) &&
+                            request.resource.data.role == 'member' &&
+                            exists(/databases/$(database)/documents/groups/$(groupId)/joinRequests/$(memberUid)))
                          );
 
         // Users can update their own display name within the group
