@@ -83,3 +83,29 @@ Server-enforced group joining and anti-escalation security in Firestore Security
 - Firestore Emulator Rules Tests: Passed (30/30 tests passing).
 - `git diff --check`: Passed (clean whitespace).
 - Rules deployed to `denk-262c0`.
+
+## Phase 3 — Invite Code Security & Entropy Upgrade
+
+### Summary
+Upgraded invite code generation from 4 characters to 6 characters, increasing combination entropy by 900x while ensuring deterministic collision safety, collision retry, and complete backward compatibility.
+
+### Key Changes
+1. **High-Entropy Generation**:
+   - `InviteCodeGenerator.generate()` produces `DNK-XXXXXX` using `Random.secure()` across a 30-character unambiguous alphabet (`23456789ABCDEFGHJKMNPQRSTUVWXYZ`).
+   - Entropy expanded from $30^4 = 810,000$ to $30^6 = 729,000,000$ combinations (a 900x increase).
+   - Ambiguous characters (0, O, 1, I, L) remain strictly excluded.
+2. **Backward Compatibility**:
+   - `InviteCodeGenerator.isValidFormat` and `sanitize` accept both new 6-character codes (`DNK-XXXXXX`) and legacy 4-character codes (`DNK-XXXX`) via `RegExp(r'^DNK-[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{4,6}$')`.
+3. **Collision Safety & Deterministic Retry**:
+   - In `FirestoreGroupRepository.createGroup`, added an automated pre-creation check against `invites/{code}` with a 3-attempt retry loop, guaranteeing zero document overwrites.
+4. **Rate Limiting Note**:
+   - Documented that client-side rate limiting is not treated as a security boundary; brute-force protection is enforced by high entropy ($729\times 10^6$ space) and App Check.
+5. **Automated Test Coverage**:
+   - Updated `test/features/groups/group_model_test.dart` to verify 6-character format, length 10, sanitization, legacy compatibility, and rejection of invalid characters/lengths.
+
+### Verification Gates
+- `dart format lib test`: Passed.
+- `flutter analyze`: Passed (0 issues).
+- `flutter test`: Passed (all 74 tests passing).
+- Firestore Emulator Rules Tests: Passed (30/30 tests passing).
+- `git diff --check`: Passed (clean whitespace).

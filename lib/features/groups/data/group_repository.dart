@@ -81,7 +81,20 @@ class FirestoreGroupRepository implements GroupRepository {
 
     try {
       final groupId = _uuid.v4();
-      final inviteCode = InviteCodeGenerator.generate();
+
+      // Cryptographically secure collision check with deterministic retry
+      String inviteCode = InviteCodeGenerator.generate();
+      for (int attempt = 0; attempt < 3; attempt++) {
+        final existingInvite = await _firestore
+            .collection('invites')
+            .doc(inviteCode)
+            .get();
+        if (!existingInvite.exists) {
+          break;
+        }
+        inviteCode = InviteCodeGenerator.generate();
+      }
+
       final now = DateTime.now();
 
       final newGroup = GroupModel(

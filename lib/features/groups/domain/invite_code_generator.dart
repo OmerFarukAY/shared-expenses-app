@@ -7,17 +7,18 @@ abstract class InviteCodeGenerator {
   static const String _alphabet = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
   static final Random _random = Random.secure();
 
-  /// Generates a standardized invite code formatted as `DNK-XXXX`.
+  /// Generates a standardized, high-entropy invite code formatted as `DNK-XXXXXX`
+  /// using 6 cryptographically secure characters (30^6 = 729,000,000 combinations).
   static String generate() {
     final buffer = StringBuffer('DNK-');
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 6; i++) {
       final index = _random.nextInt(_alphabet.length);
       buffer.write(_alphabet[index]);
     }
     return buffer.toString();
   }
 
-  /// Sanitizes user input for code resolution (e.g. "dnk 7x2k", "7x2k", "DNK-7X2K" -> "DNK-7X2K").
+  /// Sanitizes user input for code resolution (e.g. "dnk 7x2k9p", "7x2k9p", "DNK-7X2K9P" -> "DNK-7X2K9P").
   static String sanitize(String input) {
     String clean = input
         .trim()
@@ -33,10 +34,11 @@ abstract class InviteCodeGenerator {
     return '';
   }
 
-  /// Validates format of an invite code.
+  /// Validates format of an invite code (supports high-entropy 6-char codes
+  /// as well as legacy 4-char codes for full backward compatibility).
   static bool isValidFormat(String code) {
     final clean = sanitize(code);
-    final regex = RegExp(r'^DNK-[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{4}$');
+    final regex = RegExp(r'^DNK-[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{4,6}$');
     return regex.hasMatch(clean);
   }
 }

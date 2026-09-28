@@ -30,6 +30,7 @@
 | **Phase 16**| Final production-readiness audit | [Completed] | Android release build verified (`app-debug.apk` built in 259.9s), zero analyzer issues, all 72 tests passing, production-ready. |
 | **Security Phase 1** | Firebase Security Rules Hardening & Anti-Enumeration | [Completed] | Enforced `allow list: if false;` on `invites`, `groups`, and `users`. Restricted `groups/{groupId}` get to verified members and creators. Added automated Firestore Emulator test suite (20/20 passing tests), deployed rules to `denk-262c0`. |
 | **Security Phase 2** | Secure Group Join & Anti-Escalation Flow | [Completed] | Prevented guessed groupId self-join, role escalation (`owner`/`admin`), and UID spoofing. Required valid active group invite verification in Firestore Security Rules. Verified with 10 new automated security tests (30/30 passing), deployed rules to `denk-262c0`. |
+| **Security Phase 3** | High-Entropy Cryptographic Invite Codes | [Completed] | Upgraded invite generation from 4-char (810K space) to 6-char `DNK-XXXXXX` (729M space, 900x increase in entropy) with cryptographic `Random.secure()`. Added collision-safe creation with retry, maintaining 100% backward compatibility for legacy 4-char codes. |
 
 ---
 
@@ -45,9 +46,10 @@
 8. **iOS Minimum Deployment Target (iOS 15.0)**: Standardized `IPHONEOS_DEPLOYMENT_TARGET` to 15.0 across Debug, Release, and Profile in `project.pbxproj` to resolve simulator build constraints while maximizing device compatibility (iPhone 7 through current iPhone models).
 9. **Granular Get vs List Separation**: Strict anti-enumeration on public collections (`invites`, `groups`, `users`) by disabling collection-wide queries (`allow list: if false;`) while permitting specific authenticated lookups (`allow get: ...`).
 10. **Proof-of-Invite Membership Authorization**: Joining a group requires submitting the matching active `inviteCode` verified by Firestore Rules (`exists(/invites/$(code))` & `groupId == group.id`), strictly preventing role escalation and guessed `groupId` self-joins.
+11. **729M Entropy Invite Codes with Deterministic Collision Retry**: 6-character unambiguous alphanumeric codes (`DNK-XXXXXX`) generated via `Random.secure()` with automated pre-creation document collision check and retry. Full legacy compatibility for 4-character codes preserved.
 
 ---
 
 ## 3. Current Phase Status
-- **Current Phase:** Security Hardening — Phase 2 (Secure Group Join & Anti-Escalation Flow) Completed
+- **Current Phase:** Security Hardening — Phase 3 (Invite Code Security) Completed
 - **Last Verification:** All 74 Flutter tests passing, 30/30 Firestore Security Rules emulator unit tests passing, `flutter analyze` 0 issues, deployed to `denk-262c0`.

@@ -60,43 +60,76 @@ void main() {
   });
 
   group('InviteCodeGenerator', () {
-    test('generates valid unambiguous format', () {
-      for (int i = 0; i < 20; i++) {
-        final code = InviteCodeGenerator.generate();
-        expect(code.startsWith('DNK-'), isTrue);
-        expect(code.length, 8);
-        expect(InviteCodeGenerator.isValidFormat(code), isTrue);
-        // Ensure no ambiguous characters
-        expect(code.contains('0'), isFalse);
-        expect(code.contains('O'), isFalse);
-        expect(code.contains('1'), isFalse);
-        expect(code.contains('I'), isFalse);
-        expect(code.contains('L'), isFalse);
-      }
-    });
+    test(
+      'generates valid unambiguous format with 6 characters (length 10)',
+      () {
+        for (int i = 0; i < 20; i++) {
+          final code = InviteCodeGenerator.generate();
+          expect(code.startsWith('DNK-'), isTrue);
+          expect(code.length, 10);
+          expect(InviteCodeGenerator.isValidFormat(code), isTrue);
+          // Ensure no ambiguous characters
+          expect(code.contains('0'), isFalse);
+          expect(code.contains('O'), isFalse);
+          expect(code.contains('1'), isFalse);
+          expect(code.contains('I'), isFalse);
+          expect(code.contains('L'), isFalse);
+        }
+      },
+    );
 
     test('sanitizes user input correctly', () {
-      expect(InviteCodeGenerator.sanitize('dnk-7x2k'), 'DNK-7X2K');
+      expect(InviteCodeGenerator.sanitize('dnk-7x2k9p'), 'DNK-7X2K9P');
+      expect(InviteCodeGenerator.sanitize('7x2k9p'), 'DNK-7X2K9P');
+      expect(InviteCodeGenerator.sanitize('DNK 7X2K9P'), 'DNK-7X2K9P');
+      expect(InviteCodeGenerator.sanitize('  7x2k9p  '), 'DNK-7X2K9P');
+      // Legacy format sanitization
       expect(InviteCodeGenerator.sanitize('7x2k'), 'DNK-7X2K');
-      expect(InviteCodeGenerator.sanitize('DNK 7X2K'), 'DNK-7X2K');
-      expect(InviteCodeGenerator.sanitize('  7x2k  '), 'DNK-7X2K');
     });
 
-    test('validates format strictly', () {
-      expect(InviteCodeGenerator.isValidFormat('DNK-7X2K'), isTrue);
-      expect(
-        InviteCodeGenerator.isValidFormat('7X2K'),
-        isTrue,
-      ); // Auto-sanitizes
-      expect(
-        InviteCodeGenerator.isValidFormat('DNK-702K'),
-        isFalse,
-      ); // '0' is invalid
-      expect(
-        InviteCodeGenerator.isValidFormat('DNK-7I2K'),
-        isFalse,
-      ); // 'I' is invalid
-      expect(InviteCodeGenerator.isValidFormat('INVALID_TOO_LONG'), isFalse);
-    });
+    test(
+      'validates format strictly (6-char high entropy and legacy 4-char)',
+      () {
+        // High-entropy 6-character codes
+        expect(InviteCodeGenerator.isValidFormat('DNK-7X2K9P'), isTrue);
+        expect(
+          InviteCodeGenerator.isValidFormat('7X2K9P'),
+          isTrue,
+        ); // Auto-sanitizes
+
+        // Legacy 4-character backward compatibility
+        expect(InviteCodeGenerator.isValidFormat('DNK-7X2K'), isTrue);
+        expect(
+          InviteCodeGenerator.isValidFormat('7X2K'),
+          isTrue,
+        ); // Auto-sanitizes
+
+        // Rejections
+        expect(
+          InviteCodeGenerator.isValidFormat('DNK-702K9P'),
+          isFalse,
+        ); // '0' is invalid
+        expect(
+          InviteCodeGenerator.isValidFormat('DNK-7I2K9P'),
+          isFalse,
+        ); // 'I' is invalid
+        expect(
+          InviteCodeGenerator.isValidFormat('DNK-7L2K9P'),
+          isFalse,
+        ); // 'L' is invalid
+        expect(
+          InviteCodeGenerator.isValidFormat('DNK-7O2K9P'),
+          isFalse,
+        ); // 'O' is invalid
+        expect(
+          InviteCodeGenerator.isValidFormat('INVALID_TOO_LONG_12345'),
+          isFalse,
+        );
+        expect(
+          InviteCodeGenerator.isValidFormat('DNK-2'),
+          isFalse,
+        ); // Too short
+      },
+    );
   });
 }
