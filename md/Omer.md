@@ -229,5 +229,37 @@ Server-enforced temporal integrity controls in Firestore Security Rules preventi
 - Rules compilation & deploy to `denk-262c0`: Passed.
 - `git diff --check`: Passed (clean whitespace).
 
+## Phase 7 — Firebase App Check Integration
+
+### Summary
+Integrated `firebase_app_check` across iOS and Android with environment-aware provider selection, safeguarding backend resources against bot traffic and unauthorized scraping while preserving local development and simulator testing.
+
+### Key Changes
+1. **Dependency Addition**:
+   - Added `firebase_app_check: 0.4.8` to `pubspec.yaml`, fully compatible with `firebase_core 4.15.0`.
+2. **Dual-Mode Provider Architecture (`lib/main.dart`)**:
+   - **Development / Debug (`kDebugMode`)**:
+     - iOS / macOS: `AppleDebugProvider()` (enables iOS Simulator without App Attest hardware restrictions).
+     - Android: `AndroidDebugProvider()` (enables local Android emulator/debug device testing).
+   - **Production Release**:
+     - iOS: `AppleAppAttestWithDeviceCheckFallbackProvider()` (uses hardware-backed App Attest on modern iOS devices, falling back gracefully to DeviceCheck on older hardware).
+     - Android: `AndroidPlayIntegrityProvider()` (hardware-backed Google Play Integrity attestation).
+3. **Safe Initialization & Non-Blocking Design**:
+   - App Check activation occurs inside the guarded Firebase bootstrap sequence without blocking offline startup or test executions.
+4. **Enforcement Policy**:
+   - App Check is integrated in monitor mode. Automatic enforcement in Firebase Console is intentionally deferred until production metrics are established in Firebase Console.
+5. **Compilation & Build Verification**:
+   - Built iOS Simulator bundle: `Runner.app` (39.1s, exit code 0).
+   - Built Android Debug APK: `app-debug.apk` (22.6s, exit code 0).
+
+### Verification Gates
+- `dart format lib test`: Passed.
+- `flutter analyze`: Passed (0 issues).
+- `flutter test`: Passed (all 74 tests passing).
+- `flutter build ios --simulator --no-codesign`: Passed (`build/ios/iphonesimulator/Runner.app`).
+- `flutter build apk --debug`: Passed (`build/app/outputs/flutter-apk/app-debug.apk`).
+- `git diff --check`: Passed (clean whitespace).
+
+
 
 

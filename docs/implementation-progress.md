@@ -34,6 +34,7 @@
 | **Security Phase 4** | Expense Financial Invariants & Payer/Split Rules | [Completed] | Enforced server-side integer currency invariants (`totalMinor is int && totalMinor > 0`, float reject, 3-letter ISO uppercase `^[A-Z]{3}$`), payer and split mathematical sum checks equaling `totalMinor`, membership validation for payers and split participants, and immutable `createdBy` and `groupId` on update. Verified with 11 new automated security tests (41/41 passing). |
 | **Security Phase 5** | Settlement Integrity & Canonical Ownership | [Completed] | Canonicalized `createdBy` as the standard creator/ownership field in `SettlementRecord` and Firestore schema (preserving `settledBy` backward compatibility). Enforced positive integer `amountMinor`, ISO currency regex, group membership checks for both `fromUid` and `toUid`, prevention of self-settlement (`fromUid != toUid`), creator spoofing rejection, and absolute immutability of settlements (`allow update: if false;`). Verified with 9 new automated security tests (50/50 passing). |
 | **Security Phase 6** | Timestamp Integrity & Offline-First Strategy | [Completed] | Server-enforced timestamp constraints across all collections (`users`, `groups`, `members`, `expenses`, `settlements`, `invites`). Strictly prohibited future timestamps (`createdAt <= request.time + 5m`, `date <= request.time + 1d`, `settledAt <= request.time + 5m`), prohibited retroactive tampering via update immutability on `createdAt` and `joinedAt`, enforced monotonic progression on `updatedAt`, and preserved offline sync capabilities without naive $\pm 5$ min past restrictions. Verified with 7 new automated security tests (57/57 passing). |
+| **Security Phase 7** | Firebase App Check Integration | [Completed] | Integrated `firebase_app_check` across client platforms. Configured dual-mode provider architecture: `AppleDebugProvider` & `AndroidDebugProvider` in debug mode (preserving developer tooling, iOS Simulator, and Android debug builds), and `AppleAppAttestWithDeviceCheckFallbackProvider` (iOS) & `AndroidPlayIntegrityProvider` (Android) in production release mode. Verified with zero analyze issues, passing all 74 unit/widget tests, successful iOS simulator build (`Runner.app`), and successful Android build (`app-debug.apk`). Enforced monitoring-first policy before console enforcement. |
 
 ---
 
@@ -53,12 +54,14 @@
 12. **Server-Side Financial Invariants & Group-Scoped Payer/Split Enforcement**: Enforced strict integer minor arithmetic in Firestore Security Rules rejecting floating-point values, non-ISO uppercase currencies, mismatched payer and split sums, foreign non-member payer/split UIDs, and mutating `createdBy` or `groupId`.
 13. **Canonical Settlement Ownership & Immutability**: Synchronized `createdBy` as the canonical audit field across Dart models, repositories, and Firestore rules. Completed financial settlements are declared strictly immutable (`allow update: if false;`) to protect financial history integrity.
 14. **Offline-First Timestamp Integrity & Future Spoofing Prevention**: Implemented asymmetric timestamp rules in Firestore Rules: strictly rejecting future-dated creation/events (`ts <= request.time + 5m`), locking creation timestamps as permanently immutable on updates, and enforcing monotonic `updatedAt >= resource.data.updatedAt`, while fully permitting legitimate offline creation timestamps to sync upon reconnect.
+15. **Dual-Mode Firebase App Check Architecture**: Automated attestation with Play Integrity (Android) and App Attest / DeviceCheck (iOS) in production release builds, backed by debug providers in development, preventing unauthorized API scrapers without breaking local development or simulator workflows.
 
 ---
 
 ## 3. Current Phase Status
-- **Current Phase:** Security Hardening — Phase 6 (Timestamp Integrity) Completed (Batch 2 Complete)
-- **Last Verification:** All 74 Flutter tests passing, 57/57 Firestore Security Rules emulator unit tests passing, `flutter analyze` 0 issues, deployed to `denk-262c0`.
+- **Current Phase:** Security Hardening — Phase 7 (Firebase App Check) Completed (Batch 3 Complete)
+- **Last Verification:** All 74 Flutter tests passing, `flutter analyze` 0 issues, iOS Simulator Runner.app built, Android APK app-debug.apk built.
+
 
 
 
