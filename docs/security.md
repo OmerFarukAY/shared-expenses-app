@@ -81,6 +81,39 @@ Denk operates on an anonymous, privacy-first authentication model where clients 
   - Production Release: `AppleAppAttestWithDeviceCheckFallbackProvider` (iOS) & `AndroidPlayIntegrityProvider` (Android).
 - **Enforcement Policy**: Monitor mode first; console enforcement applied after validating attestation telemetry.
 
+### 2.8 Option B: Trusted Membership Projection & 0-Bypass Expense Validation (Phase 14)
+- **The Firestore Rules Limit Problem**:
+  - Cloud Firestore Security Rules enforce a hard limit of **10 document read calls** (`get()` / `exists()`) per rule evaluation.
+  - Checking `exists(/groups/$(groupId)/members/$(uid))` for each payer and each split participant consumed $N + M$ document lookups. To prevent runtime crash on large groups, legacy rules had 3 security bypasses (`payers.size() >= 4`, `splits.size() > 3`, and `splits.size() >= 7`), where membership or arithmetic verification was bypassed with `true`.
+- **The Option B Architectural Solution**:
+  - Maintained existing `groups/{groupId}/members/{uid}` subcollection for rich metadata and role tracking.
+  - Added a trusted denormalized projection directly onto the parent document: `groups/{groupId}.memberUids: List<String>`.
+  - Expense validation now executes **exactly 1 document read**: `get(/databases/$(database)/documents/groups/$(groupId))`.
+  - Membership of all payers and split participants is verified in-memory within CEL via `memberUids.hasAll(payers.keys())`, `memberUids.hasAll(participants)`, and `memberUids.hasAll(splits.keys())`.
+- **Complete Elimination of All 3 Bypasses**:
+  - `payers.size() >= 4`: **REMOVED**.
+  - `splits.size() > 3`: **REMOVED**.
+  - `splits.size() >= 7`: **REMOVED**.
+  - 0 bypass paths remain in `firestore.rules`.
+- **Definitive Production Scale Limits**:
+  - Participants: strictly between 1 and 20. Any expense with $>20$ participants is **DENIED**.
+  - Payers: strictly between 1 and 5. Any expense with $>5$ payers is **DENIED**.
+  - Full server-side arithmetic validation for 1..20 split participants: `sum(splits.values()) == totalMinor`.
+  - Full server-side arithmetic validation for 1..5 payers: `sum(payers.values()) == totalMinor`.
+- **Projection Security Invariants (Attacks Prevented)**:
+  - **Attack A (Inject self + victim)**: Blocked. Joining only permits `size() == old_size + 1` with `hasAll([auth.uid])`.
+  - **Attack B (Unauthorized member kick)**: Blocked. Only creator or self-leave allowed. Member cannot remove others.
+  - **Attack C (Fabricated overwrite)**: Blocked. `hasAll(resource.data.memberUids)` enforces preservation of existing members.
+  - **Attack D (Creator leaving own group)**: Blocked. Group creator cannot leave their own group.
+  - **MemberCount tampering**: Blocked. Rules strictly enforce `memberCount == memberUids.size()`.
+- **Safe Backfill / Migration Strategy**:
+  - Script: `scripts/migrate_member_uids.js` (uses `firebase-admin`).
+  - Scans `groups`, compiles distinct UIDs from `members` subcollections, and updates `memberUids` and `memberCount`.
+  - 100% idempotent: runs in dry-run mode by default, requires `--execute` to write, and skips already-synchronized documents.
+- **Production Status**:
+  - Migration executed and verified on live project `denk-262c0`.
+  - Rules compiled and deployed to `denk-262c0`.
+
 ---
 
 ## 3. Automated Security Test Matrix
@@ -94,7 +127,8 @@ Denk maintains an automated test suite executed against the Firebase Firestore E
 | **Phase 4: Financial Invariants** | 11 | Float rejection, zero/negative total rejection, currency regex, payer/split sums, foreign UIDs, createdBy immutability | **PASSED** |
 | **Phase 5: Settlement Integrity** | 9 | Member validation, self-settlement rejection, invalid currency/amount rejection, settlement immutability | **PASSED** |
 | **Phase 6: Timestamp Integrity** | 7 | Future timestamp rejection, offline sync past timestamp allowance, createdAt/joinedAt immutability | **PASSED** |
-| **Total Automated Rules Tests** | **57** | **100% of defined security invariants** | **PASSED** |
+| **Phase 14: Option B Projection & Scale** | 21 | Group creation, join, leave, kick, Attacks A-D, memberCount manipulation, 1..20 participants, 1..5 payers, arithmetic mismatch rejection, foreign UID rejection, stale snapshot rejection, sequential join integrity | **PASSED** |
+| **Total Automated Rules Tests** | **78** | **100% of defined security invariants, 0 bypass paths** | **PASSED** |
 
 ---
 
@@ -103,6 +137,6 @@ Denk maintains an automated test suite executed against the Firebase Firestore E
 Before every commit, the codebase must pass all 5 verification gates:
 1. `dart format lib test`: Code formatting verified.
 2. `flutter analyze`: Static analysis passed (0 issues).
-3. `flutter test`: 74 unit, widget, and integration tests passed.
-4. `npm test` (Firestore Emulator): 57 security rules unit tests passed.
+3. `flutter test`: 75 unit, widget, and integration tests passed.
+4. `npm test` (Firestore Emulator): 78 security rules unit tests passed.
 5. `git diff --check`: Clean whitespace and diff verified.

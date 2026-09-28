@@ -377,3 +377,35 @@ Conducted a final, read-only security review across all 12 core vulnerability ve
 10. **Timestamp Manipulation**: PROTECTED. Future timestamps blocked; creation timestamps immutable; offline sync supported.
 11. **Secret Exposure**: CLEAN. Zero private keys, `.env`, or service account secrets in git history or repo.
 12. **Git History**: CLEAN. All native config files gitignored; 0 leaked credentials.
+
+---
+
+## Phase 14 — Option B: Membership Projection & Elimination of All Security Bypasses
+
+### Summary
+Designed, implemented, migrated, and verified Option B (Rules-only + `groups/{groupId}.memberUids` trusted membership projection).
+This architectural enhancement completely eliminates all 3 legacy security bypasses (`payers.size() >= 4`, `splits.size() > 3`, and `splits.size() >= 7`), scaling server-side expense validation up to 20 participants and 5 payers with **strictly 1 document access** (`get(/databases/$(database)/documents/groups/$(groupId))`).
+
+### Key Implementations
+1. **Domain & Data Models**:
+   - Added `List<String> memberUids` to `GroupModel` with backward-compatible deserialization (fallback to `[createdBy]`).
+   - Updated `createGroup`: writes `memberUids: [creator.uid]` and `memberCount: 1`.
+   - Updated `joinGroupWithInvite`: atomically writes `memberUids: FieldValue.arrayUnion([user.uid])` and `memberCount: FieldValue.increment(1)`.
+   - Updated `leaveGroup`: atomically writes `memberUids: FieldValue.arrayRemove([uid])` and `memberCount: FieldValue.increment(-1)`.
+2. **Backfill Migration**:
+   - Created `scripts/migrate_member_uids.js` using `firebase-admin`.
+   - Verified 100% idempotent: safely scanned all production groups in `denk-262c0`, populated `memberUids` from existing `members` subcollections, and validated subsequent dry-runs as clean skips.
+3. **Firestore Security Rules**:
+   - `isValidExpense(data, groupId)` reads group document exactly once via `get()`.
+   - Replaced all subcollection roster `get()` calls in expenses with `memberUids.hasAll(payers.keys())`, `memberUids.hasAll(participants)`, and `memberUids.hasAll(splits.keys())`.
+   - Arithmetic split validation unrolled for 1..20 participants (`isValidSplitSum`).
+   - Arithmetic payer validation unrolled for 1..5 payers (`arePayersValid`).
+   - Strictly rejects any expense with $>20$ participants or $>5$ payers (0 bypasses remaining).
+   - Group document create/update rules strictly enforce atomic `arrayUnion` on join with valid invite, self-leave only, creator kick only, and reject arbitrary array overwrites (Attacks A..D).
+4. **Production Deployment**:
+   - Deployed hardened rules to Firebase production project `denk-262c0`.
+5. **Verification**:
+   - Expanded `rules.test.js` from 57 to 78 tests. All 78 tests passed against the Firestore Emulator.
+   - All 75 Flutter unit and widget tests passed.
+   - `flutter analyze`: 0 issues.
+   - Android debug APK and iOS simulator app built successfully.

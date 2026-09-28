@@ -52,6 +52,7 @@ groups/{groupId}
   - createdAt: timestamp
   - updatedAt: timestamp
   - memberCount: int
+  - memberUids: List<String> (trusted membership projection for 1-read expense validation)
   - active: bool
 
 groups/{groupId}/members/{uid}
@@ -142,7 +143,11 @@ For a given currency within a group:
 
 - Authentication required on every read and write (`request.auth != null`).
 - Group membership is mandatory for reading group details, member rosters, expenses, and settlements.
-- Writing expenses requires the authenticated user to be an active member of `groups/{groupId}/members`.
+- **Option B Trusted Membership Projection (`memberUids`)**:
+  - Validates all payers and split participants using a single `get()` of `groups/{groupId}`, consuming exactly **1 document read**.
+  - All 3 legacy security bypasses (`payers >= 4`, `splits > 3`, `splits >= 7`) are completely eliminated.
+  - Scale limits: up to **20 participants** and up to **5 payers** per expense. Greater numbers are strictly denied.
+  - Server-side arithmetic verification enforces exact split summation (1..20) and payer summation (1..5) equaling `totalMinor`.
 - Expense data validation enforces:
   - Valid string lengths for titles (1 to 100 characters).
   - Positive integer minor totals (`totalMinor > 0`).

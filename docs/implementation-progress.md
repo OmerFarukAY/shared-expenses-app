@@ -41,6 +41,7 @@
 | **Security Phase 11**| Complete Unified Security Test Suite | [Completed] | Unified and executed all 57 security test cases against Firestore Emulator: auth protection, group isolation, anti-enumeration, proof-of-invite, role escalation rejection, financial invariants, settlement integrity, and offline timestamp validation (57/57 passed). |
 | **Security Phase 12**| Production Security Documentation | [Completed] | Published comprehensive `docs/security.md`, updated `docs/architecture.md`, `docs/privacy.md`, and `md/Omer.md` reflecting verified production security architecture. |
 | **Security Phase 13**| Final Read-Only Security Audit | [Completed] | Executed read-only audit across all 12 core vulnerability vectors (unauthenticated access, group/invite enumeration, guessed groupId join, role escalation, cross-group access, arbitrary member UID, malformed financial records, creator spoofing, timestamp manipulation, secret exposure, git history). 100% verified. |
+| **Security Phase 14**| Option B: Trusted Membership Projection & 0-Bypass Rules | [Completed] | Added `memberUids: List<String>` projection to `GroupModel` and `FirestoreGroupRepository`. Executed 100% idempotent backfill migration in production. Hardened `firestore.rules` for 1-read expense validation up to 20 participants and 5 payers with exact integer arithmetic. Eliminated all 3 security bypasses (`payers >= 4`, `splits > 3`, `splits >= 7`). All 78 rules tests and 75 Flutter tests passing. Deployed to `denk-262c0`. |
 
 ---
 
@@ -62,6 +63,8 @@
 14. **Offline-First Timestamp Integrity & Future Spoofing Prevention**: Implemented asymmetric timestamp rules in Firestore Rules: strictly rejecting future-dated creation/events (`ts <= request.time + 5m`), locking creation timestamps as permanently immutable on updates, and enforcing monotonic `updatedAt >= resource.data.updatedAt`, while fully permitting legitimate offline creation timestamps to sync upon reconnect.
 15. **Dual-Mode Firebase App Check Architecture**: Automated attestation with Play Integrity (Android) and App Attest / DeviceCheck (iOS) in production release builds, backed by debug providers in development, preventing unauthorized API scrapers without breaking local development or simulator workflows.
 16. **Privacy-First, Data-Minimized Architecture Standards**: Enforced zero collection of device contacts, locations, emails, phone numbers, or advertising identifiers. Accurately defined the data boundary: anonymous Firebase UID and user-chosen display name stored solely for in-group expense attribution.
+17. **Option B Trusted Membership Projection & Zero-Bypass Scale**: Replaced multi-document subcollection lookups in expense validation with a single `groups/{groupId}.memberUids` read. Scaled safe participant limit to 20 and payers to 5 with unrolled server-side integer arithmetic, eliminating all previous security bypasses (`payers >= 4`, `splits > 3`, `splits >= 7`) while remaining well within Firestore's 10-call limit (using exactly 1 document read).
+
 
 ---
 
