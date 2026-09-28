@@ -164,12 +164,29 @@ service cloud.firestore {
         // Direct member doc lookup allowed for group members or the member themselves
         allow get: if isGroupMember(groupId) || (isAuthenticated() && request.auth.uid == memberUid);
 
-        // A user can add themselves as a member if creating or joining
+        // A user can add themselves as a member if creating or joining:
         allow create: if isAuthenticated() && request.auth.uid == memberUid &&
                          request.resource.data.keys().hasAll(['uid', 'displayName', 'role', 'joinedAt']) &&
                          request.resource.data.uid == memberUid &&
-                         request.resource.data.displayName is string && request.resource.data.displayName.size() >= 1 && request.resource.data.displayName.size() <= 50 &&
-                         (request.resource.data.role == 'member' || request.resource.data.role == 'owner');
+                         request.resource.data.displayName is string &&
+                         request.resource.data.displayName.size() >= 1 &&
+                         request.resource.data.displayName.size() <= 50 &&
+                         (
+                           // Case 1: Group creator creating group with role 'owner'
+                           (request.resource.data.role == 'owner' &&
+                            getAfter(/databases/$(database)/documents/groups/$(groupId)).data.createdBy == request.auth.uid)
+                           ||
+                           // Case 2: Joining member with valid active invite code (role strictly 'member')
+                           (request.resource.data.role == 'member' &&
+                            request.resource.data.keys().hasAll(['inviteCode']) &&
+                            request.resource.data.inviteCode is string &&
+                            exists(/databases/$(database)/documents/groups/$(groupId)) &&
+                            get(/databases/$(database)/documents/groups/$(groupId)).data.active == true &&
+                            get(/databases/$(database)/documents/groups/$(groupId)).data.inviteCode == request.resource.data.inviteCode &&
+                            exists(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)) &&
+                            get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.active == true &&
+                            get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.groupId == groupId)
+                         );
 
         // Users can update their own display name within the group
         allow update: if isAuthenticated() && request.auth.uid == memberUid &&

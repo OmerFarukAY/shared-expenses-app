@@ -9,12 +9,14 @@ class GroupMember {
   final String displayName;
   final MemberRole role;
   final DateTime joinedAt;
+  final String? inviteCode;
 
   const GroupMember({
     required this.uid,
     required this.displayName,
     this.role = MemberRole.member,
     required this.joinedAt,
+    this.inviteCode,
   });
 
   bool get isOwner => role == MemberRole.owner;
@@ -25,6 +27,8 @@ class GroupMember {
       'displayName': displayName,
       'role': role == MemberRole.owner ? 'owner' : 'member',
       'joinedAt': Timestamp.fromDate(joinedAt),
+      if (inviteCode != null && inviteCode!.isNotEmpty)
+        'inviteCode': inviteCode,
     };
   }
 
@@ -42,6 +46,7 @@ class GroupMember {
           ? MemberRole.owner
           : MemberRole.member,
       joinedAt: parseDate(map['joinedAt']),
+      inviteCode: map['inviteCode'] as String?,
     );
   }
 

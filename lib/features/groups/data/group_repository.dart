@@ -227,6 +227,7 @@ class FirestoreGroupRepository implements GroupRepository {
         displayName: user.displayName,
         role: MemberRole.member,
         joinedAt: now,
+        inviteCode: group.inviteCode,
       );
 
       final batch = _firestore.batch();

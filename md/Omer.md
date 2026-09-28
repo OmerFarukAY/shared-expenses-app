@@ -39,3 +39,47 @@ Comprehensive audit and hardening of Firestore Security Rules to close collectio
 - `flutter test`: Passed (all 74 tests passing).
 - Firestore Emulator Rules Tests: Passed (20/20 tests passing).
 - `git diff --check`: Passed (clean whitespace).
+
+## Phase 2 — Secure Group Join / Anti-Escalation Flow
+
+### Summary
+Server-enforced group joining and anti-escalation security in Firestore Security Rules without requiring external backend servers or Cloud Functions.
+
+### Key Changes
+1. **Guessed GroupId Self-Join Blocked**:
+   - An attacker attempting to join `groups/{groupId}/members/{uid}` without possessing the group's active `inviteCode` is rejected.
+2. **Anti-Escalation & Role Enforcement**:
+   - `role: 'owner'` is strictly restricted to group creators during group creation in an atomic batch (`getAfter(...).data.createdBy == request.auth.uid`).
+   - Any user joining an existing group can ONLY receive `role: 'member'`.
+   - Any injection attempt with `role: 'owner'` or `role: 'admin'` is rejected.
+   - Member updates enforce immutable role: `request.resource.data.role == resource.data.role`.
+3. **Active Invite Validation in Rules**:
+   - Rules verify that the supplied `inviteCode`:
+     - Matches `groups/{groupId}.data.inviteCode`.
+     - Exists in `/invites/{inviteCode}` with `active == true`.
+     - Matches `invites/{inviteCode}.data.groupId == groupId`.
+4. **UID Spoofing Prevention**:
+   - Enforces `request.auth.uid == memberUid` and `request.resource.data.uid == memberUid`.
+5. **Cross-Group Membership Blocked**:
+   - Users cannot use an invite code from Group A to join Group B.
+6. **Automated Test Coverage**:
+   - Added 10 dedicated security test cases in `test/security/rules.test.js`:
+     1. guessed groupId $\rightarrow$ reject (PASSED)
+     2. no invite $\rightarrow$ reject (PASSED)
+     3. invalid invite $\rightarrow$ reject (PASSED)
+     4. inactive invite $\rightarrow$ reject (PASSED)
+     5. wrong-group invite $\rightarrow$ reject (PASSED)
+     6. valid invite $\rightarrow$ allow (PASSED)
+     7. another UID $\rightarrow$ reject (PASSED)
+     8. owner role injection $\rightarrow$ reject (PASSED)
+     9. admin role injection $\rightarrow$ reject (PASSED)
+     10. cross-group membership $\rightarrow$ reject (PASSED)
+   - Total passing rules tests: 30/30.
+
+### Verification Gates
+- `dart format lib test`: Passed.
+- `flutter analyze`: Passed (0 issues).
+- `flutter test`: Passed (all 74 tests passing).
+- Firestore Emulator Rules Tests: Passed (30/30 tests passing).
+- `git diff --check`: Passed (clean whitespace).
+- Rules deployed to `denk-262c0`.

@@ -312,4 +312,144 @@ describe('Phase 1 Firestore Security Rules Hardening', () => {
       await assertFails(getDocs(collection(bobDb, 'users')));
     });
   });
+
+  describe('Phase 2 — Secure Group Join & Anti-Escalation Flow', () => {
+    it('1. rejects joining by guessed groupId without valid invite', async () => {
+      // Dave tries to join Group A just by knowing the groupId
+      const daveDb = testEnv.authenticatedContext('user_dave').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(daveDb, 'groups/group_a/members/user_dave'), {
+        uid: 'user_dave',
+        displayName: 'Dave Guesser',
+        role: 'member',
+        joinedAt: now,
+      }));
+    });
+
+    it('2. rejects joining without an invite code provided', async () => {
+      const daveDb = testEnv.authenticatedContext('user_dave').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(daveDb, 'groups/group_a/members/user_dave'), {
+        uid: 'user_dave',
+        displayName: 'Dave NoInvite',
+        role: 'member',
+        joinedAt: now,
+      }));
+    });
+
+    it('3. rejects joining with an invalid invite code', async () => {
+      const daveDb = testEnv.authenticatedContext('user_dave').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(daveDb, 'groups/group_a/members/user_dave'), {
+        uid: 'user_dave',
+        displayName: 'Dave BadCode',
+        role: 'member',
+        joinedAt: now,
+        inviteCode: 'DNK-FAKE99',
+      }));
+    });
+
+    it('4. rejects joining with an inactive invite code', async () => {
+      // Create an inactive invite for Group A
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = context.firestore();
+        await setDoc(doc(db, 'invites/DNK-INACTIVE'), {
+          inviteCode: 'DNK-INACTIVE',
+          groupId: 'group_a',
+          groupName: 'Group A',
+          defaultCurrency: 'TRY',
+          createdBy: 'user_alice',
+          createdAt: new Date(),
+          active: false,
+        });
+      });
+
+      const daveDb = testEnv.authenticatedContext('user_dave').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(daveDb, 'groups/group_a/members/user_dave'), {
+        uid: 'user_dave',
+        displayName: 'Dave InactiveInvite',
+        role: 'member',
+        joinedAt: now,
+        inviteCode: 'DNK-INACTIVE',
+      }));
+    });
+
+    it('5. rejects joining with a wrong-group invite code', async () => {
+      // Using Group B's invite (DNK-CHARL1) to join Group A
+      const daveDb = testEnv.authenticatedContext('user_dave').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(daveDb, 'groups/group_a/members/user_dave'), {
+        uid: 'user_dave',
+        displayName: 'Dave WrongGroup',
+        role: 'member',
+        joinedAt: now,
+        inviteCode: 'DNK-CHARL1',
+      }));
+    });
+
+    it('6. allows joining with a valid, active invite code for the group', async () => {
+      // Dave joins Group A using Group A's active invite code DNK-ALICE1
+      const daveDb = testEnv.authenticatedContext('user_dave').firestore();
+      const now = new Date();
+      await assertSucceeds(setDoc(doc(daveDb, 'groups/group_a/members/user_dave'), {
+        uid: 'user_dave',
+        displayName: 'Dave Legitimate',
+        role: 'member',
+        joinedAt: now,
+        inviteCode: 'DNK-ALICE1',
+      }));
+    });
+
+    it('7. rejects joining using another user UID (UID spoofing)', async () => {
+      // Dave tries to add a member document for Eve
+      const daveDb = testEnv.authenticatedContext('user_dave').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(daveDb, 'groups/group_a/members/user_eve'), {
+        uid: 'user_eve',
+        displayName: 'Eve Spoofed',
+        role: 'member',
+        joinedAt: now,
+        inviteCode: 'DNK-ALICE1',
+      }));
+    });
+
+    it('8. rejects owner role injection on joining an existing group', async () => {
+      // Dave tries to escalate himself to 'owner' using a valid invite
+      const daveDb = testEnv.authenticatedContext('user_dave').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(daveDb, 'groups/group_a/members/user_dave'), {
+        uid: 'user_dave',
+        displayName: 'Dave WannaBeOwner',
+        role: 'owner',
+        joinedAt: now,
+        inviteCode: 'DNK-ALICE1',
+      }));
+    });
+
+    it('9. rejects admin role injection', async () => {
+      const daveDb = testEnv.authenticatedContext('user_dave').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(daveDb, 'groups/group_a/members/user_dave'), {
+        uid: 'user_dave',
+        displayName: 'Dave AdminInjection',
+        role: 'admin',
+        joinedAt: now,
+        inviteCode: 'DNK-ALICE1',
+      }));
+    });
+
+    it('10. rejects cross-group membership injection', async () => {
+      // Dave tries to inject himself into Group B with Group A's invite code
+      const daveDb = testEnv.authenticatedContext('user_dave').firestore();
+      const now = new Date();
+      await assertFails(setDoc(doc(daveDb, 'groups/group_b/members/user_dave'), {
+        uid: 'user_dave',
+        displayName: 'Dave CrossGroup',
+        role: 'member',
+        joinedAt: now,
+        inviteCode: 'DNK-ALICE1',
+      }));
+    });
+  });
 });
