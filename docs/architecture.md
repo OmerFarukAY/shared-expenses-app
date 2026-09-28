@@ -61,6 +61,24 @@ groups/{groupId}/members/{uid}
   - role: "owner" | "member"
   - joinedAt: timestamp
 
+groups/{groupId}/joinRequests/{requestUid}
+  - id: string (user uid)
+  - groupId: string
+  - uid: string
+  - displayName: string
+  - status: "pending" | "approved" | "rejected" | "cancelled"
+  - inviteCode: string
+  - createdAt: timestamp
+  - updatedAt: timestamp
+  - resolvedAt: timestamp (optional)
+  - resolvedBy: string (creator uid, optional)
+
+*Join Request Lifecycle:*
+- `pending -> approved`: Group creator approves request in an atomic batch that creates `members/{uid}`, appends to `memberUids`, and sets `memberCount == memberUids.size()`.
+- `pending -> rejected`: Group creator rejects request. The user does not become a member.
+- `pending -> cancelled`: Requester cancels their pending request before resolution.
+- *Data Isolation:* While in `pending` status, the requester has zero access to group details, rosters, expenses, settlements, or balances.
+
 groups/{groupId}/expenses/{expenseId}
   - id: string
   - groupId: string

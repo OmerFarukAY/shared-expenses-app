@@ -114,6 +114,26 @@ Denk operates on an anonymous, privacy-first authentication model where clients 
   - Migration executed and verified on live project `denk-262c0`.
   - Rules compiled and deployed to `denk-262c0`.
 
+### 2.6 Join Request Security, Pre-Approval Data Isolation & Atomic Approvals (Phase 15)
+- **Invite Code Is Not Authorization**:
+  - An invite code only grants authorization to submit a **pending join request** (`groups/{groupId}/joinRequests/{requestUid}`).
+  - Direct self-join writes to `groups/{groupId}.memberUids` or `members/{uid}` are completely eliminated.
+- **Pre-Approval Complete Data Isolation**:
+  - A user with a pending join request has **zero access** to:
+    - Group details (`groups/{groupId}`)
+    - Member rosters (`groups/{groupId}/members`)
+    - Expenses (`groups/{groupId}/expenses`)
+    - Settlements (`groups/{groupId}/settlements`)
+    - `memberUids` list
+- **Atomic Approval Batch**:
+  - Only the group creator (`isGroupCreator(groupId)`) can approve join requests.
+  - Approval updates `joinRequests/{uid}` (`status: 'approved'`), creates `members/{uid}` (`role: 'member'`), appends the UID to `memberUids` (`size() == old_size + 1`), sets `memberCount == memberUids.size()`, and updates `users/{uid}/user_groups/{groupId}` in a single atomic batch.
+  - Requesters cannot approve themselves, nor can regular group members.
+- **Race Condition & Abuse Protection**:
+  - Duplicate requests are structurally impossible: the request document ID equals `requestUid`.
+  - Stale approval/rejection or re-approval attempts are rejected (`resource.data.status == 'pending'`).
+  - Requester can cancel their own pending request (`status -> 'cancelled'` or document deletion).
+
 ---
 
 ## 3. Automated Security Test Matrix
@@ -123,12 +143,13 @@ Denk maintains an automated test suite executed against the Firebase Firestore E
 | Test Suite | Tests | Verification Scope | Status |
 | :--- | :--- | :--- | :--- |
 | **Phase 1: Rules Hardening** | 20 | Anti-enumeration, unauthenticated rejection, group isolation, profile protection | **PASSED** |
-| **Phase 2: Group Join & Anti-Escalation** | 10 | Guessed groupId rejection, invalid/inactive invite rejection, role escalation rejection, UID spoofing | **PASSED** |
+| **Phase 2: Group Join & Anti-Escalation** | 10 | Guessed groupId rejection, invalid/inactive invite rejection, role escalation rejection, direct member write rejection | **PASSED** |
 | **Phase 4: Financial Invariants** | 11 | Float rejection, zero/negative total rejection, currency regex, payer/split sums, foreign UIDs, createdBy immutability | **PASSED** |
 | **Phase 5: Settlement Integrity** | 9 | Member validation, self-settlement rejection, invalid currency/amount rejection, settlement immutability | **PASSED** |
 | **Phase 6: Timestamp Integrity** | 7 | Future timestamp rejection, offline sync past timestamp allowance, createdAt/joinedAt immutability | **PASSED** |
-| **Phase 14: Option B Projection & Scale** | 21 | Group creation, join, leave, kick, Attacks A-D, memberCount manipulation, 1..20 participants, 1..5 payers, arithmetic mismatch rejection, foreign UID rejection, stale snapshot rejection, sequential join integrity | **PASSED** |
-| **Total Automated Rules Tests** | **78** | **100% of defined security invariants, 0 bypass paths** | **PASSED** |
+| **Phase 14: Option B Projection & Scale** | 21 | Group creation, self-leave, creator kick, Attacks A-D, memberCount manipulation, 1..20 participants, 1..5 payers, arithmetic mismatch rejection, foreign UID rejection, stale snapshot rejection, direct join write rejection | **PASSED** |
+| **Phase 15: Join Request Security & Approval Matrix** | 20 | Valid request creation, invalid/inactive invite rejection, already-member rejection, forged status/UID rejection, future timestamp rejection, requester isolation, creator read/list, regular member list rejection, cancellation, self-approval rejection, creator atomic approval, creator rejection, replay prevention, forged resolvedBy rejection, post-approval expense access | **PASSED** |
+| **Total Automated Rules Tests** | **98** | **100% of defined security invariants, 0 bypass paths** | **PASSED** |
 
 ---
 
@@ -137,6 +158,6 @@ Denk maintains an automated test suite executed against the Firebase Firestore E
 Before every commit, the codebase must pass all 5 verification gates:
 1. `dart format lib test`: Code formatting verified.
 2. `flutter analyze`: Static analysis passed (0 issues).
-3. `flutter test`: 75 unit, widget, and integration tests passed.
-4. `npm test` (Firestore Emulator): 78 security rules unit tests passed.
+3. `flutter test`: 86 unit, widget, and integration tests passed.
+4. `npm test` (Firestore Emulator): 98 security rules unit tests passed.
 5. `git diff --check`: Clean whitespace and diff verified.

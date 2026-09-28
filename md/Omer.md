@@ -409,3 +409,57 @@ This architectural enhancement completely eliminates all 3 legacy security bypas
    - All 75 Flutter unit and widget tests passed.
    - `flutter analyze`: 0 issues.
    - Android debug APK and iOS simulator app built successfully.
+
+---
+
+## Phase 15 — Group Join Request Security & Comprehensive Localization Audit
+
+### 1. Original Join Security Problem & Threat Model
+Previously, entering a valid active invite code allowed any client to immediately add themselves as a member in `groups/{groupId}.memberUids` and `groups/{groupId}/members/{uid}`.
+While this was cryptographically protected against guessing by 729M entropy codes, it treated possession of an invite code as an **authorization boundary for full immediate membership**.
+In a multi-user shared expenses application:
+- An invite link or code shared in a chat or email could be used by unwanted parties to instantly view group member rosters, financial transactions, and balances.
+- The group owner lacked approval authority over who ultimately enters the group ledger.
+
+### 2. Join Request Architecture & Lifecycle
+Under Phase 15, an invite code only grants authorization to **request joining** (`groups/{groupId}/joinRequests/{requestUid}`).
+**Lifecycle:**
+`pending -> approved` (Creator approves via atomic batch)
+`pending -> rejected` (Creator rejects request)
+`pending -> cancelled` (Requester cancels request)
+
+**Data Isolation:**
+- Pending requesters have **zero access** to group details, rosters, expenses, settlements, or `memberUids`.
+- Requesters can only read and cancel their own pending request document (`request.auth.uid == requestUid`).
+- Only the group creator (`isGroupCreator(groupId)`) can list or resolve join requests.
+- Direct self-join writes to `groups/{groupId}` or `members/{uid}` are completely removed from Firestore rules.
+
+### 3. Atomic Approval Transaction Invariants
+Approval is strictly restricted to `isGroupCreator(groupId)` and executed via an atomic write:
+1. `groups/{groupId}/joinRequests/{uid}`: `status: 'approved'`, `resolvedBy: creatorUid`, `resolvedAt: timestamp`.
+2. `groups/{groupId}/members/{uid}`: created with `role: 'member'`, validated `displayName`, and verified `exists(joinRequests/{uid})`.
+3. `groups/{groupId}`: `memberUids` updated with `+1` member (`hasAll(oldUids)`), `memberCount == memberUids.size()`.
+4. `users/{uid}/user_groups/{groupId}`: created linking the group to the user's dashboard.
+5. `users/{uid}/join_requests/{groupId}`: deleted or updated to maintain clean pending queues.
+
+### 4. Preservation of Phase 14 Invariants
+All Phase 14 financial and performance invariants remain 100% active:
+- Single-read expense validation via `groups/{groupId}.memberUids`.
+- Maximum 20 participants and 5 payers hard cap.
+- Zero-bypass integer minor arithmetic validation (`isValidSplitSum`, `arePayersValid`).
+- Creator leave protection and non-creator kick prevention.
+
+### 5. Comprehensive Localization Audit (EN, TR, ES, FR, IT)
+- **128 Total Keys**: Expanded from 101 keys with 27 new production keys covering join requests, badges, errors, and dialogs.
+- **100% Parity**: Verified by automated test `test/core/localization_test.dart` across all 5 languages (0 missing, 0 extra).
+- **Zero Hardcoded Strings**: Cleaned hardcoded strings in error views, settings, insights sheet, and expense item tiles.
+- **Natural Terminology**: Consistent terminology across all 5 locales for Group, Expense, Settlement, Join Request, and Pending states.
+
+### 6. Verification Results
+- **Firestore Security Rules**: 98 / 98 tests passing on Firestore Emulator (`rules.test.js`).
+- **Flutter Test Suite**: 86 / 86 tests passing.
+- **Static Analysis**: `flutter analyze` 0 issues.
+- **Code Formatting**: `dart format lib test` 100% compliant.
+- **Whitespace Check**: `git diff --check` passed with 0 warnings.
+- **Builds**: Android debug APK (`app-debug.apk`) & iOS simulator app (`Runner.app`) built cleanly.
+- **Production Deployment**: Rules deployed successfully to `denk-262c0`.
