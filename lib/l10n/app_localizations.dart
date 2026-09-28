@@ -476,6 +476,12 @@ abstract class AppLocalizations {
   /// **'You owe'**
   String get youOwe;
 
+  /// No description provided for @youPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'You paid'**
+  String get youPaid;
+
   /// No description provided for @allSettled.
   ///
   /// In en, this message translates to:
@@ -709,6 +715,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'members'**
   String get membersLabel;
+
+  /// No description provided for @requestToJoinButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Request to Join'**
+  String get requestToJoinButton;
+
+  /// No description provided for @joinRequestSentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Sent'**
+  String get joinRequestSentTitle;
+
+  /// No description provided for @joinRequestSentSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your request to join {groupName} has been submitted. You will be able to access the group once an owner approves it.'**
+  String joinRequestSentSubtitle(String groupName);
+
+  /// No description provided for @joinRequestPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Approval'**
+  String get joinRequestPending;
+
+  /// No description provided for @joinRequestApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get joinRequestApproved;
+
+  /// No description provided for @joinRequestRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get joinRequestRejected;
+
+  /// No description provided for @joinRequestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Requests'**
+  String get joinRequestsTitle;
+
+  /// No description provided for @approveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get approveButton;
+
+  /// No description provided for @rejectButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get rejectButton;
+
+  /// No description provided for @noPendingRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'No pending requests'**
+  String get noPendingRequests;
+
+  /// No description provided for @cancelRequestButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Request'**
+  String get cancelRequestButton;
+
+  /// No description provided for @joinRequestCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Join request cancelled'**
+  String get joinRequestCancelled;
+
+  /// No description provided for @pendingApprovalCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Approval'**
+  String get pendingApprovalCardTitle;
+
+  /// No description provided for @pendingApprovalCardSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for group owner approval.'**
+  String get pendingApprovalCardSubtitle;
+
+  /// No description provided for @invalidOrInactiveInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite code not found or inactive'**
+  String get invalidOrInactiveInvite;
+
+  /// No description provided for @alreadyMemberError.
+  ///
+  /// In en, this message translates to:
+  /// **'You are already a member of this group.'**
+  String get alreadyMemberError;
+
+  /// No description provided for @requestAlreadyPendingError.
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a pending request for this group.'**
+  String get requestAlreadyPendingError;
+
+  /// No description provided for @manageJoinRequestsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Join Requests'**
+  String get manageJoinRequestsTooltip;
+
+  /// No description provided for @pendingRequestsBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} pending'**
+  String pendingRequestsBadge(int count);
+
+  /// No description provided for @settledBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Settled'**
+  String get settledBadge;
+
+  /// No description provided for @noCategoryData.
+  ///
+  /// In en, this message translates to:
+  /// **'No category data available yet.'**
+  String get noCategoryData;
+
+  /// No description provided for @copyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copyAction;
+
+  /// No description provided for @uidCopiedSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'UID copied to clipboard'**
+  String get uidCopiedSnackbar;
+
+  /// No description provided for @privacyCalloutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy-First, Data-Minimized Architecture'**
+  String get privacyCalloutTitle;
+
+  /// No description provided for @privacyCalloutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No email, phone, or passwords collected. Only group members can view group balances.'**
+  String get privacyCalloutBody;
+
+  /// No description provided for @readAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get readAction;
 }
 
 class _AppLocalizationsDelegate

@@ -72,6 +72,7 @@
   "yourBalance": "Tu Balance",
   "youAreOwed": "Te deben",
   "youOwe": "Debes",
+  "youPaid": "Tú pagaste",
   "allSettled": "Cuentas saldadas",
 
   "noExpensesTitle": "Sin gastos aún",
@@ -116,5 +117,46 @@
   "themeDark": "Oscuro",
   "anonymousAccount": "Cuenta anónima de Firebase",
   "copyId": "Copiar ID",
-  "membersLabel": "miembros"
+  "membersLabel": "miembros",
+
+  "requestToJoinButton": "Solicitar unirse",
+  "joinRequestSentTitle": "Solicitud enviada",
+  "joinRequestSentSubtitle": "Se ha enviado tu solicitud para unirte a {groupName}. Podrás acceder al grupo una vez que el propietario la apruebe.",
+  "@joinRequestSentSubtitle": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "joinRequestPending": "Pendiente de aprobación",
+  "joinRequestApproved": "Aprobada",
+  "joinRequestRejected": "Rechazada",
+  "joinRequestsTitle": "Solicitudes de unión",
+  "approveButton": "Aprobar",
+  "rejectButton": "Rechazar",
+  "noPendingRequests": "No hay solicitudes pendientes",
+  "cancelRequestButton": "Cancelar solicitud",
+  "joinRequestCancelled": "Solicitud de unión cancelada",
+  "pendingApprovalCardTitle": "Pendiente de aprobación",
+  "pendingApprovalCardSubtitle": "Esperando la aprobación del propietario del grupo.",
+  "invalidOrInactiveInvite": "Código de invitación no encontrado o inactivo",
+  "alreadyMemberError": "Ya eres miembro de este grupo.",
+  "requestAlreadyPendingError": "Ya tienes una solicitud pendiente para este grupo.",
+  "manageJoinRequestsTooltip": "Gestionar solicitudes de unión",
+  "pendingRequestsBadge": "{count} pendientes",
+  "@pendingRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settledBadge": "Saldado",
+  "noCategoryData": "Aún no hay datos de categorías disponibles.",
+  "copyAction": "Copiar",
+  "uidCopiedSnackbar": "UID copiado al portapapeles",
+  "privacyCalloutTitle": "Arquitectura con privacidad primero y datos mínimos",
+  "privacyCalloutBody": "No se recopilan correos, teléfonos ni contraseñas. Solo los miembros del grupo pueden ver los saldos.",
+  "readAction": "Leer"
 }

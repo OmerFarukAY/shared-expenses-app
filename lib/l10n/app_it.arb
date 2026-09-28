@@ -72,6 +72,7 @@
   "yourBalance": "Il tuo Saldo",
   "youAreOwed": "Ti devono",
   "youOwe": "Devi",
+  "youPaid": "Hai pagato",
   "allSettled": "Tutti i conti sono pari",
 
   "noExpensesTitle": "Nessuna spesa ancora",
@@ -116,5 +117,46 @@
   "themeDark": "Scuro",
   "anonymousAccount": "Account Firebase anonimo",
   "copyId": "Copia ID",
-  "membersLabel": "membri"
+  "membersLabel": "membri",
+
+  "requestToJoinButton": "Richiedi di unirti",
+  "joinRequestSentTitle": "Richiesta inviata",
+  "joinRequestSentSubtitle": "La tua richiesta di partecipazione a {groupName} è stata inviata. Potrai accedere al gruppo non appena il proprietario l'avrà approvata.",
+  "@joinRequestSentSubtitle": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "joinRequestPending": "In attesa di approvazione",
+  "joinRequestApproved": "Approvata",
+  "joinRequestRejected": "Rifiutata",
+  "joinRequestsTitle": "Richieste di adesione",
+  "approveButton": "Approva",
+  "rejectButton": "Rifiuta",
+  "noPendingRequests": "Nessuna richiesta in attesa",
+  "cancelRequestButton": "Annulla richiesta",
+  "joinRequestCancelled": "Richiesta di adesione annullata",
+  "pendingApprovalCardTitle": "In attesa di approvazione",
+  "pendingApprovalCardSubtitle": "In attesa dell'approvazione del proprietario del gruppo.",
+  "invalidOrInactiveInvite": "Codice d'invito non trovato o inattivo",
+  "alreadyMemberError": "Fai già parte di questo gruppo.",
+  "requestAlreadyPendingError": "Hai già una richiesta in attesa per questo gruppo.",
+  "manageJoinRequestsTooltip": "Gestisci le richieste di adesione",
+  "pendingRequestsBadge": "{count} in attesa",
+  "@pendingRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settledBadge": "Pareggiato",
+  "noCategoryData": "Nessun dato di categoria ancora disponibile.",
+  "copyAction": "Copia",
+  "uidCopiedSnackbar": "UID copiato negli appunti",
+  "privacyCalloutTitle": "Architettura con priorità alla privacy e dati ridotti al minimo",
+  "privacyCalloutBody": "Nessuna email, telefono o password raccolti. Solo i membri del gruppo possono visualizzare i saldi.",
+  "readAction": "Leggi"
 }

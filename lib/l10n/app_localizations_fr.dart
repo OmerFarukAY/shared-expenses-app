@@ -198,6 +198,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get youOwe => 'Vous devez';
 
   @override
+  String get youPaid => 'Vous avez payé';
+
+  @override
   String get allSettled => 'Tout est équilibré';
 
   @override
@@ -317,4 +320,92 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get membersLabel => 'membres';
+
+  @override
+  String get requestToJoinButton => 'Demander à rejoindre';
+
+  @override
+  String get joinRequestSentTitle => 'Demande envoyée';
+
+  @override
+  String joinRequestSentSubtitle(String groupName) {
+    return 'Votre demande pour rejoindre $groupName a été envoyée. Vous pourrez accéder au groupe dès que le propriétaire l\'aura approuvée.';
+  }
+
+  @override
+  String get joinRequestPending => 'En attente d\'approbation';
+
+  @override
+  String get joinRequestApproved => 'Approuvée';
+
+  @override
+  String get joinRequestRejected => 'Rejetée';
+
+  @override
+  String get joinRequestsTitle => 'Demandes d\'adhésion';
+
+  @override
+  String get approveButton => 'Approuver';
+
+  @override
+  String get rejectButton => 'Rejeter';
+
+  @override
+  String get noPendingRequests => 'Aucune demande en attente';
+
+  @override
+  String get cancelRequestButton => 'Annuler la demande';
+
+  @override
+  String get joinRequestCancelled => 'Demande d\'adhésion annulée';
+
+  @override
+  String get pendingApprovalCardTitle => 'En attente d\'approbation';
+
+  @override
+  String get pendingApprovalCardSubtitle =>
+      'En attente de l\'approbation du propriétaire du groupe.';
+
+  @override
+  String get invalidOrInactiveInvite =>
+      'Code d\'invitation introuvable ou inactif';
+
+  @override
+  String get alreadyMemberError => 'Vous êtes déjà membre de ce groupe.';
+
+  @override
+  String get requestAlreadyPendingError =>
+      'Vous avez déjà une demande en attente pour ce groupe.';
+
+  @override
+  String get manageJoinRequestsTooltip => 'Gérer les demandes d\'adhésion';
+
+  @override
+  String pendingRequestsBadge(int count) {
+    return '$count en attente';
+  }
+
+  @override
+  String get settledBadge => 'Réglé';
+
+  @override
+  String get noCategoryData =>
+      'Aucune donnée de catégorie disponible pour le moment.';
+
+  @override
+  String get copyAction => 'Copier';
+
+  @override
+  String get uidCopiedSnackbar => 'UID copié dans le presse-papiers';
+
+  @override
+  String get privacyCalloutTitle =>
+      'Architecture axée sur la confidentialité et la minimisation des données';
+
+  @override
+  String get privacyCalloutBody =>
+      'Aucun e-mail, téléphone ou mot de passe collecté. Seuls les membres du groupe peuvent consulter les soldes.';
+
+  @override
+  String get readAction => 'Lire';
 }

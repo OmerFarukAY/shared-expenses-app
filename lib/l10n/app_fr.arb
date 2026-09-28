@@ -72,6 +72,7 @@
   "yourBalance": "Votre solde",
   "youAreOwed": "On vous doit",
   "youOwe": "Vous devez",
+  "youPaid": "Vous avez payé",
   "allSettled": "Tout est équilibré",
 
   "noExpensesTitle": "Aucune dépense pour l'instant",
@@ -116,5 +117,46 @@
   "themeDark": "Sombre",
   "anonymousAccount": "Compte anonyme Firebase",
   "copyId": "Copier l'identifiant",
-  "membersLabel": "membres"
+  "membersLabel": "membres",
+
+  "requestToJoinButton": "Demander à rejoindre",
+  "joinRequestSentTitle": "Demande envoyée",
+  "joinRequestSentSubtitle": "Votre demande pour rejoindre {groupName} a été envoyée. Vous pourrez accéder au groupe dès que le propriétaire l'aura approuvée.",
+  "@joinRequestSentSubtitle": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "joinRequestPending": "En attente d'approbation",
+  "joinRequestApproved": "Approuvée",
+  "joinRequestRejected": "Rejetée",
+  "joinRequestsTitle": "Demandes d'adhésion",
+  "approveButton": "Approuver",
+  "rejectButton": "Rejeter",
+  "noPendingRequests": "Aucune demande en attente",
+  "cancelRequestButton": "Annuler la demande",
+  "joinRequestCancelled": "Demande d'adhésion annulée",
+  "pendingApprovalCardTitle": "En attente d'approbation",
+  "pendingApprovalCardSubtitle": "En attente de l'approbation du propriétaire du groupe.",
+  "invalidOrInactiveInvite": "Code d'invitation introuvable ou inactif",
+  "alreadyMemberError": "Vous êtes déjà membre de ce groupe.",
+  "requestAlreadyPendingError": "Vous avez déjà une demande en attente pour ce groupe.",
+  "manageJoinRequestsTooltip": "Gérer les demandes d'adhésion",
+  "pendingRequestsBadge": "{count} en attente",
+  "@pendingRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settledBadge": "Réglé",
+  "noCategoryData": "Aucune donnée de catégorie disponible pour le moment.",
+  "copyAction": "Copier",
+  "uidCopiedSnackbar": "UID copié dans le presse-papiers",
+  "privacyCalloutTitle": "Architecture axée sur la confidentialité et la minimisation des données",
+  "privacyCalloutBody": "Aucun e-mail, téléphone ou mot de passe collecté. Seuls les membres du groupe peuvent consulter les soldes.",
+  "readAction": "Lire"
 }

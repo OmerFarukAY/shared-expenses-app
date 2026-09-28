@@ -197,6 +197,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get youOwe => 'Devi';
 
   @override
+  String get youPaid => 'Hai pagato';
+
+  @override
   String get allSettled => 'Tutti i conti sono pari';
 
   @override
@@ -315,4 +318,91 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get membersLabel => 'membri';
+
+  @override
+  String get requestToJoinButton => 'Richiedi di unirti';
+
+  @override
+  String get joinRequestSentTitle => 'Richiesta inviata';
+
+  @override
+  String joinRequestSentSubtitle(String groupName) {
+    return 'La tua richiesta di partecipazione a $groupName è stata inviata. Potrai accedere al gruppo non appena il proprietario l\'avrà approvata.';
+  }
+
+  @override
+  String get joinRequestPending => 'In attesa di approvazione';
+
+  @override
+  String get joinRequestApproved => 'Approvata';
+
+  @override
+  String get joinRequestRejected => 'Rifiutata';
+
+  @override
+  String get joinRequestsTitle => 'Richieste di adesione';
+
+  @override
+  String get approveButton => 'Approva';
+
+  @override
+  String get rejectButton => 'Rifiuta';
+
+  @override
+  String get noPendingRequests => 'Nessuna richiesta in attesa';
+
+  @override
+  String get cancelRequestButton => 'Annulla richiesta';
+
+  @override
+  String get joinRequestCancelled => 'Richiesta di adesione annullata';
+
+  @override
+  String get pendingApprovalCardTitle => 'In attesa di approvazione';
+
+  @override
+  String get pendingApprovalCardSubtitle =>
+      'In attesa dell\'approvazione del proprietario del gruppo.';
+
+  @override
+  String get invalidOrInactiveInvite =>
+      'Codice d\'invito non trovato o inattivo';
+
+  @override
+  String get alreadyMemberError => 'Fai già parte di questo gruppo.';
+
+  @override
+  String get requestAlreadyPendingError =>
+      'Hai già una richiesta in attesa per questo gruppo.';
+
+  @override
+  String get manageJoinRequestsTooltip => 'Gestisci le richieste di adesione';
+
+  @override
+  String pendingRequestsBadge(int count) {
+    return '$count in attesa';
+  }
+
+  @override
+  String get settledBadge => 'Pareggiato';
+
+  @override
+  String get noCategoryData => 'Nessun dato di categoria ancora disponibile.';
+
+  @override
+  String get copyAction => 'Copia';
+
+  @override
+  String get uidCopiedSnackbar => 'UID copiato negli appunti';
+
+  @override
+  String get privacyCalloutTitle =>
+      'Architettura con priorità alla privacy e dati ridotti al minimo';
+
+  @override
+  String get privacyCalloutBody =>
+      'Nessuna email, telefono o password raccolti. Solo i membri del gruppo possono visualizzare i saldi.';
+
+  @override
+  String get readAction => 'Leggi';
 }

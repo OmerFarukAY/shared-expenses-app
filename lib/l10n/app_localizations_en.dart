@@ -198,6 +198,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get youOwe => 'You owe';
 
   @override
+  String get youPaid => 'You paid';
+
+  @override
   String get allSettled => 'All settled up';
 
   @override
@@ -317,4 +320,89 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get membersLabel => 'members';
+
+  @override
+  String get requestToJoinButton => 'Request to Join';
+
+  @override
+  String get joinRequestSentTitle => 'Request Sent';
+
+  @override
+  String joinRequestSentSubtitle(String groupName) {
+    return 'Your request to join $groupName has been submitted. You will be able to access the group once an owner approves it.';
+  }
+
+  @override
+  String get joinRequestPending => 'Pending Approval';
+
+  @override
+  String get joinRequestApproved => 'Approved';
+
+  @override
+  String get joinRequestRejected => 'Rejected';
+
+  @override
+  String get joinRequestsTitle => 'Join Requests';
+
+  @override
+  String get approveButton => 'Approve';
+
+  @override
+  String get rejectButton => 'Reject';
+
+  @override
+  String get noPendingRequests => 'No pending requests';
+
+  @override
+  String get cancelRequestButton => 'Cancel Request';
+
+  @override
+  String get joinRequestCancelled => 'Join request cancelled';
+
+  @override
+  String get pendingApprovalCardTitle => 'Pending Approval';
+
+  @override
+  String get pendingApprovalCardSubtitle => 'Waiting for group owner approval.';
+
+  @override
+  String get invalidOrInactiveInvite => 'Invite code not found or inactive';
+
+  @override
+  String get alreadyMemberError => 'You are already a member of this group.';
+
+  @override
+  String get requestAlreadyPendingError =>
+      'You already have a pending request for this group.';
+
+  @override
+  String get manageJoinRequestsTooltip => 'Manage Join Requests';
+
+  @override
+  String pendingRequestsBadge(int count) {
+    return '$count pending';
+  }
+
+  @override
+  String get settledBadge => 'Settled';
+
+  @override
+  String get noCategoryData => 'No category data available yet.';
+
+  @override
+  String get copyAction => 'Copy';
+
+  @override
+  String get uidCopiedSnackbar => 'UID copied to clipboard';
+
+  @override
+  String get privacyCalloutTitle =>
+      'Privacy-First, Data-Minimized Architecture';
+
+  @override
+  String get privacyCalloutBody =>
+      'No email, phone, or passwords collected. Only group members can view group balances.';
+
+  @override
+  String get readAction => 'Read';
 }

@@ -7,6 +7,8 @@ import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
 import 'package:denk/features/expenses/domain/expense_model.dart';
 
+import 'package:denk/l10n/l10n.dart';
+
 class ExpenseItemTile extends StatelessWidget {
   final ExpenseModel expense;
   final List<GroupMember> members;
@@ -21,20 +23,22 @@ class ExpenseItemTile extends StatelessWidget {
     this.onTap,
   });
 
-  String _getPayerSummary() {
+  String _getPayerSummary(AppLocalizations? l10n) {
     if (expense.payers.length == 1) {
       final payerUid = expense.payers.keys.first;
       if (payerUid == currentUserId) {
-        return 'You paid';
+        return l10n?.youPaid ?? 'You paid';
       }
       final member = members.where((m) => m.uid == payerUid).firstOrNull;
-      return 'Paid by ${member?.displayName ?? 'Someone'}';
+      final paidByLabel = l10n?.paidBy ?? 'Paid by';
+      return '$paidByLabel ${member?.displayName ?? 'Someone'}';
     }
-    return 'Paid by ${expense.payers.length} people';
+    return '${l10n?.paidBy ?? "Paid by"} ${expense.payers.length}';
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final currency = Currency.fromCode(expense.currency);
 
@@ -44,11 +48,12 @@ class ExpenseItemTile extends StatelessWidget {
 
     final dateFormatted = DateFormat.MMMd().format(expense.date);
     final category = expense.category;
+    final payerSummary = _getPayerSummary(l10n);
     final semanticLabel = myNetMinor > 0
-        ? '${expense.title}, total ${currency.formatMinor(expense.totalMinor)}, ${_getPayerSummary()}, you are owed ${currency.formatMinor(myNetMinor)}'
+        ? '${expense.title}, total ${currency.formatMinor(expense.totalMinor)}, $payerSummary, you are owed ${currency.formatMinor(myNetMinor)}'
         : myNetMinor < 0
-        ? '${expense.title}, total ${currency.formatMinor(expense.totalMinor)}, ${_getPayerSummary()}, you owe ${currency.formatMinor(myNetMinor.abs())}'
-        : '${expense.title}, total ${currency.formatMinor(expense.totalMinor)}, ${_getPayerSummary()}';
+        ? '${expense.title}, total ${currency.formatMinor(expense.totalMinor)}, $payerSummary, you owe ${currency.formatMinor(myNetMinor.abs())}'
+        : '${expense.title}, total ${currency.formatMinor(expense.totalMinor)}, $payerSummary';
 
     return Semantics(
       button: true,
@@ -89,7 +94,7 @@ class ExpenseItemTile extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        _getPayerSummary(),
+                        payerSummary,
                         style: AppTypography.bodySmall.copyWith(
                           color: theme.colorScheme.onSurface.withValues(
                             alpha: 0.6,
@@ -144,7 +149,7 @@ class ExpenseItemTile extends StatelessWidget {
                   )
                 else if (paidByMe > 0)
                   Text(
-                    'settled',
+                    l10n?.settledBadge ?? 'Settled',
                     style: AppTypography.caption.copyWith(
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     ),

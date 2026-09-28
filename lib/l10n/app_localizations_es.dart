@@ -198,6 +198,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get youOwe => 'Debes';
 
   @override
+  String get youPaid => 'Tú pagaste';
+
+  @override
   String get allSettled => 'Cuentas saldadas';
 
   @override
@@ -317,4 +320,91 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get membersLabel => 'miembros';
+
+  @override
+  String get requestToJoinButton => 'Solicitar unirse';
+
+  @override
+  String get joinRequestSentTitle => 'Solicitud enviada';
+
+  @override
+  String joinRequestSentSubtitle(String groupName) {
+    return 'Se ha enviado tu solicitud para unirte a $groupName. Podrás acceder al grupo una vez que el propietario la apruebe.';
+  }
+
+  @override
+  String get joinRequestPending => 'Pendiente de aprobación';
+
+  @override
+  String get joinRequestApproved => 'Aprobada';
+
+  @override
+  String get joinRequestRejected => 'Rechazada';
+
+  @override
+  String get joinRequestsTitle => 'Solicitudes de unión';
+
+  @override
+  String get approveButton => 'Aprobar';
+
+  @override
+  String get rejectButton => 'Rechazar';
+
+  @override
+  String get noPendingRequests => 'No hay solicitudes pendientes';
+
+  @override
+  String get cancelRequestButton => 'Cancelar solicitud';
+
+  @override
+  String get joinRequestCancelled => 'Solicitud de unión cancelada';
+
+  @override
+  String get pendingApprovalCardTitle => 'Pendiente de aprobación';
+
+  @override
+  String get pendingApprovalCardSubtitle =>
+      'Esperando la aprobación del propietario del grupo.';
+
+  @override
+  String get invalidOrInactiveInvite =>
+      'Código de invitación no encontrado o inactivo';
+
+  @override
+  String get alreadyMemberError => 'Ya eres miembro de este grupo.';
+
+  @override
+  String get requestAlreadyPendingError =>
+      'Ya tienes una solicitud pendiente para este grupo.';
+
+  @override
+  String get manageJoinRequestsTooltip => 'Gestionar solicitudes de unión';
+
+  @override
+  String pendingRequestsBadge(int count) {
+    return '$count pendientes';
+  }
+
+  @override
+  String get settledBadge => 'Saldado';
+
+  @override
+  String get noCategoryData => 'Aún no hay datos de categorías disponibles.';
+
+  @override
+  String get copyAction => 'Copiar';
+
+  @override
+  String get uidCopiedSnackbar => 'UID copiado al portapapeles';
+
+  @override
+  String get privacyCalloutTitle =>
+      'Arquitectura con privacidad primero y datos mínimos';
+
+  @override
+  String get privacyCalloutBody =>
+      'No se recopilan correos, teléfonos ni contraseñas. Solo los miembros del grupo pueden ver los saldos.';
+
+  @override
+  String get readAction => 'Leer';
 }

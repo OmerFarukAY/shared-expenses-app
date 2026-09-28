@@ -134,7 +134,8 @@ class GroupInsightsSheet extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     child: Center(
                       child: Text(
-                        'No category data available yet.',
+                        l10n?.noCategoryData ??
+                            'No category data available yet.',
                         style: AppTypography.bodySmall,
                       ),
                     ),

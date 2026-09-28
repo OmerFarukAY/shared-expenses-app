@@ -202,12 +202,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
-            children: const [
+            children: [
               Text(
-                'Privacy-First, Data-Minimized Architecture',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                l10n?.privacyCalloutTitle ??
+                    'Privacy-First, Data-Minimized Architecture',
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 '• No email, phone number, or password required.\n'
                 '• No advertising identifiers or tracker SDKs.\n'
@@ -388,9 +389,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     ClipboardData(text: profile.uid),
                                   );
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('UID copied to clipboard'),
-                                      duration: Duration(seconds: 1),
+                                    SnackBar(
+                                      content: Text(
+                                        l10n?.uidCopiedSnackbar ??
+                                            'UID copied to clipboard',
+                                      ),
+                                      duration: const Duration(seconds: 1),
                                     ),
                                   );
                                 },
@@ -516,13 +520,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ),
                             TextButton(
                               onPressed: _showPrivacyInfoDialog,
-                              child: const Text('Read'),
+                              child: Text(l10n?.readAction ?? 'Read'),
                             ),
                           ],
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'No email, phone, or passwords collected. Only group members can view group balances.',
+                          l10n?.privacyCalloutBody ??
+                              'No email, phone, or passwords collected. Only group members can view group balances.',
                           style: AppTypography.bodySmall.copyWith(
                             color: theme.colorScheme.onSurface.withValues(
                               alpha: 0.6,

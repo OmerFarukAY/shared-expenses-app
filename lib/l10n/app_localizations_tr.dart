@@ -198,6 +198,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get youOwe => 'Borcunuz var';
 
   @override
+  String get youPaid => 'Siz ödediniz';
+
+  @override
   String get allSettled => 'Tüm hesaplar denk';
 
   @override
@@ -316,4 +319,90 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get membersLabel => 'üye';
+
+  @override
+  String get requestToJoinButton => 'Katılma İsteği Gönder';
+
+  @override
+  String get joinRequestSentTitle => 'İstek Gönderildi';
+
+  @override
+  String joinRequestSentSubtitle(String groupName) {
+    return '$groupName grubuna katılma isteğiniz iletildi. Grup sahibi onayladığında gruba erişebileceksiniz.';
+  }
+
+  @override
+  String get joinRequestPending => 'Onay Bekliyor';
+
+  @override
+  String get joinRequestApproved => 'Onaylandı';
+
+  @override
+  String get joinRequestRejected => 'Reddedildi';
+
+  @override
+  String get joinRequestsTitle => 'Katılım İstekleri';
+
+  @override
+  String get approveButton => 'Onayla';
+
+  @override
+  String get rejectButton => 'Reddet';
+
+  @override
+  String get noPendingRequests => 'Bekleyen katılım isteği yok';
+
+  @override
+  String get cancelRequestButton => 'İsteği İptal Et';
+
+  @override
+  String get joinRequestCancelled => 'Katılım isteği iptal edildi';
+
+  @override
+  String get pendingApprovalCardTitle => 'Onay Bekliyor';
+
+  @override
+  String get pendingApprovalCardSubtitle =>
+      'Grup sahibinin isteğinizi onaylaması bekleniyor.';
+
+  @override
+  String get invalidOrInactiveInvite =>
+      'Davet kodu bulunamadı veya süresi dolmuş';
+
+  @override
+  String get alreadyMemberError => 'Zaten bu grubun üyesisiniz.';
+
+  @override
+  String get requestAlreadyPendingError =>
+      'Bu grup için zaten bekleyen bir katılım isteğiniz var.';
+
+  @override
+  String get manageJoinRequestsTooltip => 'Katılım İsteklerini Yönet';
+
+  @override
+  String pendingRequestsBadge(int count) {
+    return '$count bekleyen';
+  }
+
+  @override
+  String get settledBadge => 'Ödeşildi';
+
+  @override
+  String get noCategoryData => 'Henüz kategori verisi bulunmuyor.';
+
+  @override
+  String get copyAction => 'Kopyala';
+
+  @override
+  String get uidCopiedSnackbar => 'UID panoya kopyalandı';
+
+  @override
+  String get privacyCalloutTitle => 'Gizlilik Öncelikli, Minimum Veri Mimarisi';
+
+  @override
+  String get privacyCalloutBody =>
+      'E-posta, telefon veya şifre toplanmaz. Grup bakiyelerini yalnızca grup üyeleri görebilir.';
+
+  @override
+  String get readAction => 'Oku';
 }

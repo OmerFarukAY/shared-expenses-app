@@ -72,6 +72,7 @@
   "yourBalance": "Bakiyeniz",
   "youAreOwed": "Alacağınız var",
   "youOwe": "Borcunuz var",
+  "youPaid": "Siz ödediniz",
   "allSettled": "Tüm hesaplar denk",
 
   "noExpensesTitle": "Henüz harcama yok",
@@ -116,5 +117,46 @@
   "themeDark": "Koyu",
   "anonymousAccount": "Anonim Firebase Hesabı",
   "copyId": "Kimliği Kopyala",
-  "membersLabel": "üye"
+  "membersLabel": "üye",
+
+  "requestToJoinButton": "Katılma İsteği Gönder",
+  "joinRequestSentTitle": "İstek Gönderildi",
+  "joinRequestSentSubtitle": "{groupName} grubuna katılma isteğiniz iletildi. Grup sahibi onayladığında gruba erişebileceksiniz.",
+  "@joinRequestSentSubtitle": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "joinRequestPending": "Onay Bekliyor",
+  "joinRequestApproved": "Onaylandı",
+  "joinRequestRejected": "Reddedildi",
+  "joinRequestsTitle": "Katılım İstekleri",
+  "approveButton": "Onayla",
+  "rejectButton": "Reddet",
+  "noPendingRequests": "Bekleyen katılım isteği yok",
+  "cancelRequestButton": "İsteği İptal Et",
+  "joinRequestCancelled": "Katılım isteği iptal edildi",
+  "pendingApprovalCardTitle": "Onay Bekliyor",
+  "pendingApprovalCardSubtitle": "Grup sahibinin isteğinizi onaylaması bekleniyor.",
+  "invalidOrInactiveInvite": "Davet kodu bulunamadı veya süresi dolmuş",
+  "alreadyMemberError": "Zaten bu grubun üyesisiniz.",
+  "requestAlreadyPendingError": "Bu grup için zaten bekleyen bir katılım isteğiniz var.",
+  "manageJoinRequestsTooltip": "Katılım İsteklerini Yönet",
+  "pendingRequestsBadge": "{count} bekleyen",
+  "@pendingRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settledBadge": "Ödeşildi",
+  "noCategoryData": "Henüz kategori verisi bulunmuyor.",
+  "copyAction": "Kopyala",
+  "uidCopiedSnackbar": "UID panoya kopyalandı",
+  "privacyCalloutTitle": "Gizlilik Öncelikli, Minimum Veri Mimarisi",
+  "privacyCalloutBody": "E-posta, telefon veya şifre toplanmaz. Grup bakiyelerini yalnızca grup üyeleri görebilir.",
+  "readAction": "Oku"
 }

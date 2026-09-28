@@ -72,6 +72,7 @@
   "yourBalance": "Your Balance",
   "youAreOwed": "You are owed",
   "youOwe": "You owe",
+  "youPaid": "You paid",
   "allSettled": "All settled up",
 
   "noExpensesTitle": "No expenses yet",
@@ -116,5 +117,46 @@
   "themeDark": "Dark",
   "anonymousAccount": "Anonymous Firebase Account",
   "copyId": "Copy ID",
-  "membersLabel": "members"
+  "membersLabel": "members",
+
+  "requestToJoinButton": "Request to Join",
+  "joinRequestSentTitle": "Request Sent",
+  "joinRequestSentSubtitle": "Your request to join {groupName} has been submitted. You will be able to access the group once an owner approves it.",
+  "@joinRequestSentSubtitle": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "joinRequestPending": "Pending Approval",
+  "joinRequestApproved": "Approved",
+  "joinRequestRejected": "Rejected",
+  "joinRequestsTitle": "Join Requests",
+  "approveButton": "Approve",
+  "rejectButton": "Reject",
+  "noPendingRequests": "No pending requests",
+  "cancelRequestButton": "Cancel Request",
+  "joinRequestCancelled": "Join request cancelled",
+  "pendingApprovalCardTitle": "Pending Approval",
+  "pendingApprovalCardSubtitle": "Waiting for group owner approval.",
+  "invalidOrInactiveInvite": "Invite code not found or inactive",
+  "alreadyMemberError": "You are already a member of this group.",
+  "requestAlreadyPendingError": "You already have a pending request for this group.",
+  "manageJoinRequestsTooltip": "Manage Join Requests",
+  "pendingRequestsBadge": "{count} pending",
+  "@pendingRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settledBadge": "Settled",
+  "noCategoryData": "No category data available yet.",
+  "copyAction": "Copy",
+  "uidCopiedSnackbar": "UID copied to clipboard",
+  "privacyCalloutTitle": "Privacy-First, Data-Minimized Architecture",
+  "privacyCalloutBody": "No email, phone, or passwords collected. Only group members can view group balances.",
+  "readAction": "Read"
 }
