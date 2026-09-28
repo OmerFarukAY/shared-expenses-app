@@ -313,7 +313,67 @@ Audited codebase and customer-facing documentation to ensure strict data minimiz
 - `flutter test`: Passed (all 74 tests passing).
 - `git diff --check`: Passed (clean whitespace).
 
+## Phase 11 — Complete Security Test Suite
 
+### Summary
+Unified and verified the complete 57-test security test suite running directly against the Firebase Firestore Local Emulator in `test/security/rules.test.js`.
 
+### Coverage Breakdown
+1. **Authentication (6 tests)**:
+   - Unauthenticated reads and writes rejected across `groups`, `invites`, `users`, and `expenses`.
+2. **Groups & Isolation (11 tests)**:
+   - Collection-wide enumeration rejected (`allow list: if false;`).
+   - Guessed `groupId` lookups by non-members rejected.
+   - Cross-group expense and settlement read/write rejected.
+3. **Invites & Entropy (3 tests)**:
+   - Global invite enumeration rejected. Direct lookup with known code allowed.
+4. **Membership & Anti-Escalation (10 tests)**:
+   - Guessed groupId self-join rejected. Missing, invalid, inactive, or wrong-group invite rejected.
+   - UID spoofing rejected.
+   - Role escalation to `owner` or `admin` on joining existing groups rejected.
+5. **Expense Financial Invariants (11 tests)**:
+   - Floating-point `totalMinor` rejected. Zero and negative amounts rejected.
+   - Currency format validation enforced (`^[A-Z]{3}$`).
+   - Mismatched payer sums and split sums rejected.
+   - Foreign non-member payer or split participant UIDs rejected.
+   - `createdBy` spoofing on creation and mutation on update rejected.
+6. **Settlement Integrity (9 tests)**:
+   - Foreign/arbitrary UIDs rejected.
+   - Self-settlement (`fromUid == toUid`) rejected.
+   - Invalid currency and amount rejected.
+   - Completed settlements declared strictly immutable (`allow update: if false;`).
+7. **Timestamp Integrity (7 tests)**:
+   - Future `createdAt`, `settledAt`, and event `date` rejected.
+   - Valid past timestamps allowed (preserving offline persistence sync).
+   - Modification of `createdAt` and `joinedAt` on update rejected.
+   - Monotonicity of `updatedAt` enforced.
 
+**Result: 57 / 57 tests passing.**
 
+---
+
+## Phase 12 — Production Security Documentation
+
+### Summary
+Authored comprehensive security architecture documentation in `docs/security.md`, and updated `docs/architecture.md`, `docs/privacy.md`, and `docs/implementation-progress.md` to reflect verified production controls.
+
+---
+
+## Phase 13 — Final Read-Only Security Audit
+
+### Summary
+Conducted a final, read-only security review across all 12 core vulnerability vectors without modifying codebase structure.
+
+### Audit Checklist & Verdict
+1. **Unauthenticated Access**: PROTECTED. All read/write rules require `request.auth != null`.
+2. **Group Enumeration**: PROTECTED. `allow list: if false;` prevents collection queries.
+3. **Invite Enumeration**: PROTECTED. `allow list: if false;` blocks token scanning.
+4. **Guessed GroupId Join**: PROTECTED. Requires proof-of-invite with matching active token.
+5. **Role Escalation**: PROTECTED. Member creation only permits `role: 'member'`. Roles immutable on update.
+6. **Cross-Group Access**: PROTECTED. Roster, expenses, and settlements scoped to verified group members.
+7. **Arbitrary Member UID**: PROTECTED. Payer and split participant UIDs verified against group roster.
+8. **Malformed Financial Records**: PROTECTED. Integer minor units strictly enforced, floats/zero/negatives rejected, currency regex enforced.
+9. **createdBy Spoofing**: PROTECTED. `createdBy == request.auth.uid` enforced; immutable on update.
+10. **Timestamp Manipulation**: PROTECTED. Future timestamps blocked; creation timestamps immutable; offline sync supported.
+11. **Secret Exposure**: CLEAN. Zero private keys, `.env`, or service account secrets in git history or repo.
+12. **Git History**: CLEAN. All native config files gitignored; 0 leaked credentials.

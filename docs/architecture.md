@@ -47,7 +47,7 @@ groups/{groupId}
   - name: string
   - description: string (optional)
   - defaultCurrency: string (ISO 4217)
-  - inviteCode: string (uppercase alphanumeric, e.g. "DNK-7X2K")
+  - inviteCode: string (uppercase alphanumeric, e.g. "DNK-XXXXXX", 729M entropy)
   - createdBy: string (uid)
   - createdAt: timestamp
   - updatedAt: timestamp
