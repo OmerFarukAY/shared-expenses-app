@@ -112,8 +112,7 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if isOwner(uid);
       allow create: if isOwner(uid) && isValidUser(request.resource.data);
-      allow update: if isOwner(uid) && isValidUser(request.resource.data) &&
-                       request.resource.data.createdAt == resource.data.createdAt;
+      allow update: if isOwner(uid) && isValidUser(request.resource.data);
       allow delete: if isOwner(uid);
 
       match /user_groups/{groupId} {
@@ -123,8 +122,9 @@ service cloud.firestore {
 
     // Groups
     match /groups/{groupId} {
-      // Group members can read group details
-      allow read: if isGroupMember(groupId) || (isAuthenticated() && request.auth.uid == resource.data.createdBy);
+      // Authenticated users can read group details (name, currency, memberCount)
+      // Confidential expense/settlement/member data is protected in subcollections
+      allow read: if isAuthenticated();
 
       // Authenticated users can create groups if they set themselves as creator
       allow create: if isAuthenticated() &&
@@ -137,18 +137,18 @@ service cloud.firestore {
                        request.resource.data.memberCount is int && request.resource.data.memberCount >= 1 &&
                        request.resource.data.active is bool;
 
-      // Members can update group name or memberCount
-      allow update: if isGroupMember(groupId) &&
+      // Members can update group details, or joining users can update memberCount
+      allow update: if isAuthenticated() &&
                        request.resource.data.id == resource.data.id &&
                        request.resource.data.createdBy == resource.data.createdBy &&
-                       request.resource.data.createdAt == resource.data.createdAt &&
-                       request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 60;
+                       request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 60 &&
+                       (isGroupMember(groupId) || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount', 'updatedAt']));
 
       allow delete: if isAuthenticated() && request.auth.uid == resource.data.createdBy;
 
       // Subcollection: members
       match /members/{memberUid} {
-        // Members of the group can view the roster
+        // Members of the group or the member themselves can view the roster
         allow read: if isGroupMember(groupId) || (isAuthenticated() && request.auth.uid == memberUid);
 
         // A user can add themselves as a member if creating or joining
@@ -156,19 +156,12 @@ service cloud.firestore {
                          request.resource.data.keys().hasAll(['uid', 'displayName', 'role', 'joinedAt']) &&
                          request.resource.data.uid == memberUid &&
                          request.resource.data.displayName is string && request.resource.data.displayName.size() >= 1 && request.resource.data.displayName.size() <= 50 &&
-                         (
-                           request.resource.data.role == 'member' ||
-                           (request.resource.data.role == 'owner' && (
-                             !exists(/databases/$(database)/documents/groups/$(groupId)) ||
-                             request.auth.uid == get(/databases/$(database)/documents/groups/$(groupId)).data.createdBy
-                           ))
-                         );
+                         (request.resource.data.role == 'member' || request.resource.data.role == 'owner');
 
         // Users can update their own display name within the group
         allow update: if isAuthenticated() && request.auth.uid == memberUid &&
                          request.resource.data.uid == memberUid &&
                          request.resource.data.role == resource.data.role &&
-                         request.resource.data.joinedAt == resource.data.joinedAt &&
                          request.resource.data.displayName is string && request.resource.data.displayName.size() >= 1 && request.resource.data.displayName.size() <= 50;
 
         // User can remove themselves or group creator can remove member
@@ -197,7 +190,6 @@ service cloud.firestore {
                          request.resource.data.title is string && request.resource.data.title.size() >= 1 && request.resource.data.title.size() <= 100 &&
                          request.resource.data.totalMinor is int && request.resource.data.totalMinor > 0 &&
                          request.resource.data.currency is string && request.resource.data.currency.size() == 3 &&
-                         request.resource.data.createdAt == resource.data.createdAt &&
                          request.resource.data.createdBy == resource.data.createdBy;
 
         allow delete: if isGroupMember(groupId);
@@ -236,8 +228,7 @@ service cloud.firestore {
 
       allow update: if isAuthenticated() &&
                        isGroupMember(resource.data.groupId) &&
-                       request.resource.data.groupId == resource.data.groupId &&
-                       request.resource.data.createdAt == resource.data.createdAt;
+                       request.resource.data.groupId == resource.data.groupId;
 
       allow delete: if isAuthenticated() && isGroupCreator(resource.data.groupId);
     }

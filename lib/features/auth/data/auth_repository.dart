@@ -76,6 +76,13 @@ class FirebaseAuthRepository implements AuthRepository {
         final profile = UserProfile.fromMap(doc.data()!, doc.id);
         await _cacheProfile(profile);
         return profile;
+      } else {
+        // If doc does not exist remotely yet, check local cache and sync to Firestore
+        final cached = await _readCachedProfile();
+        if (cached != null && cached.uid == uid) {
+          await saveUserProfile(cached);
+          return cached;
+        }
       }
     } catch (e) {
       debugPrint(
