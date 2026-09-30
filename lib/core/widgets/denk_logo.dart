@@ -3,8 +3,11 @@ import 'package:denk/core/theme/app_colors.dart';
 
 /// Clean geometric vector logo for Denk.
 ///
-/// Features two balanced horizontal beams in harmonious equilibrium,
-/// communicating equality, clarity, and fairness.
+/// Concept: "The Offset Balance"
+/// Features two horizontal axes, each containing a dot (representing a person)
+/// and a line (representing the shared expense). The 180-degree rotational
+/// symmetry communicates equality, balance, and the name "Denk" (Equal),
+/// while the separation of elements signifies splitting and sharing.
 class DenkLogo extends StatelessWidget {
   final double size;
   final Color? color;
@@ -62,37 +65,46 @@ class _DenkLogoPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // We scale the drawing to a 100x100 virtual coordinate system
+    // and then apply the actual size.
+    final scale = size.width / 100.0;
+    
     final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+      
+    final strokePaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = size.width * 0.16;
+      ..strokeWidth = 24 * scale;
 
-    // Top horizontal beam (representing equal share)
-    final y1 = size.height * 0.28;
-    canvas.drawLine(
-      Offset(size.width * 0.15, y1),
-      Offset(size.width * 0.85, y1),
-      paint,
-    );
-
-    // Bottom horizontal beam (representing balance / settlement)
-    final y2 = size.height * 0.72;
-    canvas.drawLine(
-      Offset(size.width * 0.15, y2),
-      Offset(size.width * 0.85, y2),
-      paint,
-    );
-
-    // Central equilibrium accent: vertical bridge
-    final bridgePaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
+    // Top Row (Y = 32)
+    // Dot at (22, 32)
     canvas.drawCircle(
-      Offset(size.width * 0.5, size.height * 0.5),
-      size.width * 0.1,
-      bridgePaint,
+      Offset(22 * scale, 32 * scale),
+      12 * scale,
+      paint,
+    );
+    // Line from (54, 32) to (78, 32)
+    canvas.drawLine(
+      Offset(54 * scale, 32 * scale),
+      Offset(78 * scale, 32 * scale),
+      strokePaint,
+    );
+
+    // Bottom Row (Y = 68)
+    // Line from (22, 68) to (46, 68)
+    canvas.drawLine(
+      Offset(22 * scale, 68 * scale),
+      Offset(46 * scale, 68 * scale),
+      strokePaint,
+    );
+    // Dot at (78, 68)
+    canvas.drawCircle(
+      Offset(78 * scale, 68 * scale),
+      12 * scale,
+      paint,
     );
   }
 

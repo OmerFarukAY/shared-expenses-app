@@ -89,13 +89,13 @@ class JoinRequestsSheet extends ConsumerWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: requests.length,
                 separatorBuilder: (context, index) =>
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                 itemBuilder: (context, index) {
                   final req = requests[index];
                   final dateFormatted = DateFormat.MMMd().format(req.createdAt);
 
                   return DenkCard(
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
                         CircleAvatar(

@@ -48,7 +48,7 @@ class DenkTextField extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
         ],
         TextField(
           controller: controller,

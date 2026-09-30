@@ -319,7 +319,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     l10n?.settingsProfile ?? 'Profile',
                     style: AppTypography.h3,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   DenkCard(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -339,7 +339,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 14),
+                            const SizedBox(width: 16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -420,7 +420,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     l10n?.settingsPreferences ?? 'Preferences',
                     style: AppTypography.h3,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   DenkCard(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -495,7 +495,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     l10n?.settingsPrivacy ?? 'Privacy & Data',
                     style: AppTypography.h3,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   DenkCard(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -508,7 +508,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               color: AppColors.positive,
                               size: 20,
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 l10n?.settingsPrivacyInfo ??

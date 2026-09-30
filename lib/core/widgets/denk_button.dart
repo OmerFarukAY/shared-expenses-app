@@ -3,7 +3,7 @@ import 'package:denk/core/theme/app_colors.dart';
 
 enum DenkButtonVariant { primary, secondary, destructive, text }
 
-class DenkButton extends StatelessWidget {
+class DenkButton extends StatefulWidget {
   final String label;
   final VoidCallback? onPressed;
   final DenkButtonVariant variant;
@@ -24,6 +24,13 @@ class DenkButton extends StatelessWidget {
   });
 
   @override
+  State<DenkButton> createState() => _DenkButtonState();
+}
+
+class _DenkButtonState extends State<DenkButton> {
+  bool _isPressed = false;
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -32,7 +39,7 @@ class DenkButton extends StatelessWidget {
     Color fgColor;
     BorderSide borderSide = BorderSide.none;
 
-    switch (variant) {
+    switch (widget.variant) {
       case DenkButtonVariant.primary:
         bgColor = isDark ? AppColors.primary500 : AppColors.primary700;
         fgColor = isDark ? const Color(0xFF042F2E) : Colors.white;
@@ -65,7 +72,7 @@ class DenkButton extends StatelessWidget {
         break;
     }
 
-    final Widget content = isLoading
+    final Widget content = widget.isLoading
         ? SizedBox(
             width: 20,
             height: 20,
@@ -78,12 +85,12 @@ class DenkButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (icon != null) ...[
-                Icon(icon, size: 18, color: fgColor),
+              if (widget.icon != null) ...[
+                Icon(widget.icon, size: 18, color: fgColor),
                 const SizedBox(width: 8),
               ],
               Text(
-                label,
+                widget.label,
                 style: TextStyle(
                   color: fgColor,
                   fontSize: 15,
@@ -94,26 +101,38 @@ class DenkButton extends StatelessWidget {
             ],
           );
 
-    return SizedBox(
-      width: width,
-      height: height,
-      child: Material(
-        color: onPressed == null ? bgColor.withValues(alpha: 0.5) : bgColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: borderSide,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Semantics(
-          button: true,
-          enabled: onPressed != null && !isLoading,
-          label: label,
-          excludeSemantics: true,
-          child: InkWell(
-            onTap: (isLoading || onPressed == null) ? null : onPressed,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Center(child: content),
+    final bool isDisabled = widget.isLoading || widget.onPressed == null;
+
+    return AnimatedScale(
+      scale: _isPressed ? 0.97 : 1.0,
+      duration: const Duration(milliseconds: 100),
+      curve: Curves.easeInOut,
+      child: SizedBox(
+        width: widget.width,
+        height: widget.height,
+        child: Material(
+          color: isDisabled ? bgColor.withValues(alpha: 0.5) : bgColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: borderSide,
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Semantics(
+            button: true,
+            enabled: !isDisabled,
+            label: widget.label,
+            excludeSemantics: true,
+            child: InkWell(
+              onHighlightChanged: (isHighlighted) {
+                if (!isDisabled) {
+                  setState(() => _isPressed = isHighlighted);
+                }
+              },
+              onTap: isDisabled ? null : widget.onPressed,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Center(child: content),
+              ),
             ),
           ),
         ),

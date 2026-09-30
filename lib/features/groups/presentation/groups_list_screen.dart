@@ -34,7 +34,7 @@ class GroupsListScreen extends ConsumerWidget {
         title: Row(
           children: [
             const DenkLogo(size: 28, showBackground: false),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Text(l10n?.appName ?? 'Denk', style: AppTypography.h2),
           ],
         ),
@@ -78,7 +78,7 @@ class GroupsListScreen extends ConsumerWidget {
                       actionLabel: l10n?.createGroup ?? 'Create Group',
                       onAction: () => CreateGroupSheet.show(context),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     DenkButton(
                       label: l10n?.joinGroup ?? 'Join with Code',
                       variant: DenkButtonVariant.secondary,
@@ -359,7 +359,7 @@ class _GroupCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
                       Text(
                         memberText,
                         style: AppTypography.bodySmall.copyWith(

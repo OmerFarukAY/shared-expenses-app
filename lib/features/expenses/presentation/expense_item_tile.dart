@@ -90,7 +90,7 @@ class ExpenseItemTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       Text(
@@ -128,7 +128,7 @@ class ExpenseItemTile extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 if (myNetMinor > 0)
                   Text(
                     '+${currency.formatMinor(myNetMinor)}',
