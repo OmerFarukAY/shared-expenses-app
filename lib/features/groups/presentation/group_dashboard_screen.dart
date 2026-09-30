@@ -535,17 +535,33 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                           unselectedLabelColor: theme.colorScheme.onSurface
                               .withValues(alpha: 0.6),
                           labelStyle: AppTypography.labelMedium,
+                          labelPadding: const EdgeInsets.symmetric(horizontal: 4),
                           tabs: [
                             Tab(
-                              text: expenses.isNotEmpty
-                                  ? '${l10n?.expensesTab ?? 'Expenses'} (${expenses.length})'
-                                  : (l10n?.expensesTab ?? 'Expenses'),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  expenses.isNotEmpty
+                                      ? '${l10n?.expensesTab ?? 'Expenses'} (${expenses.length})'
+                                      : (l10n?.expensesTab ?? 'Expenses'),
+                                ),
+                              ),
                             ),
-                            Tab(text: l10n?.balancesTab ?? 'Balances'),
                             Tab(
-                              text: simplifiedTransactions.isNotEmpty
-                                  ? '${l10n?.settleTab ?? 'Settle'} (${simplifiedTransactions.length})'
-                                  : (l10n?.settleTab ?? 'Settle'),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(l10n?.balancesTab ?? 'Balances'),
+                              ),
+                            ),
+                            Tab(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  simplifiedTransactions.isNotEmpty
+                                      ? '${l10n?.settleTab ?? 'Settle'} (${simplifiedTransactions.length})'
+                                      : (l10n?.settleTab ?? 'Settle'),
+                                ),
+                              ),
                             ),
                           ],
                         ),
