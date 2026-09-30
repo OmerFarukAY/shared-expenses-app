@@ -67,6 +67,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get chooseDisplayName => 'Choisissez votre nom affiché';
 
   @override
+  String get youLabel => 'Vous';
+
+  @override
   String get displayNameHint => 'Ex. Thomas, Camille, Julien';
 
   @override
@@ -287,6 +290,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get noMatchingExpenses => 'Aucune dépense correspondante';
+
+  @override
+  String get tryClearingSearchFilter =>
+      'Essayez d\'effacer vos options de recherche ou de filtre.';
 
   @override
   String get spendingInsights => 'Aperçu des dépenses';

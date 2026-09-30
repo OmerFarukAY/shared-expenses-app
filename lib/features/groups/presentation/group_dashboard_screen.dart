@@ -160,6 +160,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: false,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -698,6 +699,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                                         : cat.color,
                                                   ),
                                                   selected: isSelected,
+                                                  showCheckmark: false,
                                                   label: Text(
                                                     cat.localizedName(l10n),
                                                     style: AppTypography
@@ -725,7 +727,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                                   selected: isSelected,
                                                   label: Text(
                                                     m.uid == currentUserId
-                                                        ? 'You'
+                                                        ? (l10n?.youLabel ?? 'You')
                                                         : m.displayName,
                                                     style: AppTypography
                                                         .labelSmall,
@@ -760,6 +762,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                                           l10n?.noMatchingExpenses ??
                                                           'No matching expenses',
                                                       subtitle:
+                                                          l10n?.tryClearingSearchFilter ??
                                                           'Try clearing your search or filter options.',
                                                     ),
                                                     const SizedBox(height: 12),

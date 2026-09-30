@@ -67,6 +67,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get chooseDisplayName => 'Görünecek adınızı seçin';
 
   @override
+  String get youLabel => 'Sen';
+
+  @override
   String get displayNameHint => 'Örn. Ömer, Ahmet, Zeynep';
 
   @override
@@ -286,6 +289,10 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get noMatchingExpenses => 'Eşleşen harcama bulunamadı';
+
+  @override
+  String get tryClearingSearchFilter =>
+      'Arama veya filtreleme seçeneklerinizi temizlemeyi deneyin.';
 
   @override
   String get spendingInsights => 'Harcama Özeti';

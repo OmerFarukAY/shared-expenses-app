@@ -218,6 +218,12 @@ abstract class AppLocalizations {
   /// **'Choose your display name'**
   String get chooseDisplayName;
 
+  /// No description provided for @youLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get youLabel;
+
   /// No description provided for @displayNameHint.
   ///
   /// In en, this message translates to:
@@ -649,6 +655,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No matching expenses'**
   String get noMatchingExpenses;
+
+  /// No description provided for @tryClearingSearchFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Try clearing your search or filter options.'**
+  String get tryClearingSearchFilter;
 
   /// No description provided for @spendingInsights.
   ///
