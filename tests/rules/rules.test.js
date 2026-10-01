@@ -1,3 +1,4 @@
+const { serverTimestamp, deleteField } = require('firebase/firestore');
 const { readFileSync } = require('fs');
 const { resolve } = require('path');
 const { initializeTestEnvironment, assertFails, assertSucceeds } = require('@firebase/rules-unit-testing');
@@ -590,5 +591,213 @@ describe('Denk Firestore Rules', () => {
         ...baseData, splits: { 'a_user': '500', 'b_user': '500' }
       }));
     });
+  });
+
+  describe('Aşama 3: Group Members Departure, Kicking, and Deletion', () => {
+    
+    it('1) Üye ayrılma (self-leave): lastRemovedUid ve leftAt olmadan kabul EDİLMEZ', async () => {
+      await setupGroup('grp_leave1', 'user1');
+      await addMembers('grp_leave1', ['user2']);
+
+      const db = testEnv.authenticatedContext('user2').firestore();
+      const groupRef = db.collection('groups').doc('grp_leave1');
+      const memberRef = groupRef.collection('members').doc('user2');
+
+      let groupSnap; await testEnv.withSecurityRulesDisabled(async context => { groupSnap = await context.firestore().collection('groups').doc('grp_leave1').get(); });
+      let memberSnap; await testEnv.withSecurityRulesDisabled(async context => { memberSnap = await context.firestore().collection('groups').doc('grp_leave1').collection('members').doc('user2').get(); });
+
+      // Attempt leaving WITHOUT lastRemovedUid
+      const batch1 = db.batch();
+      batch1.update(groupRef, {
+        memberUids: ['user1'],
+        memberCount: 1,
+        updatedAt: groupSnap.data().updatedAt,
+      });
+      batch1.update(memberRef, {
+        leftAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      await assertFails(batch1.commit());
+
+      // Attempt leaving WITHOUT leftAt in members doc
+      const batch2 = db.batch();
+      batch2.update(groupRef, {
+        memberUids: ['user1'],
+        memberCount: 1,
+        lastRemovedUid: 'user2',
+        updatedAt: groupSnap.data().updatedAt,
+      });
+      await assertFails(batch2.commit());
+
+      // VALID LEAVE
+      const batch3 = db.batch();
+      batch3.update(groupRef, {
+        memberUids: ['user1'],
+        memberCount: 1,
+        lastRemovedUid: 'user2',
+        updatedAt: groupSnap.data().updatedAt,
+      });
+      batch3.update(memberRef, {
+        leftAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      await assertSucceeds(batch3.commit());
+    });
+
+    it('2) Kurucu üye atma (kick): lastRemovedUid ve leftAt eşleşmeli', async () => {
+      await setupGroup('grp_kick', 'user1');
+      await addMembers('grp_kick', ['user2', 'user3']);
+
+      const db = testEnv.authenticatedContext('user1').firestore();
+      const groupRef = db.collection('groups').doc('grp_kick');
+      const memberRef = groupRef.collection('members').doc('user2');
+
+      let groupSnap; await testEnv.withSecurityRulesDisabled(async context => { groupSnap = await context.firestore().collection('groups').doc('grp_kick').get(); });
+      let memberSnap; await testEnv.withSecurityRulesDisabled(async context => { memberSnap = await context.firestore().collection('groups').doc('grp_kick').collection('members').doc('user2').get(); });
+
+      // Hacker tries to kick (fails)
+      const hackerDb = testEnv.authenticatedContext('user3').firestore();
+      const hackerBatch = hackerDb.batch();
+      hackerBatch.update(hackerDb.collection('groups').doc('grp_kick'), {
+        memberUids: ['user1', 'user3'],
+        memberCount: 2,
+        lastRemovedUid: 'user2',
+        updatedAt: groupSnap.data().updatedAt,
+      });
+      hackerBatch.update(hackerDb.collection('groups').doc('grp_kick').collection('members').doc('user2'), {
+        leftAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      await assertFails(hackerBatch.commit());
+
+      // Owner kicks successfully
+      const batch = db.batch();
+      batch.update(groupRef, {
+        memberUids: ['user1', 'user3'],
+        memberCount: 2,
+        lastRemovedUid: 'user2',
+        updatedAt: groupSnap.data().updatedAt,
+      });
+      batch.update(memberRef, {
+        leftAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      await assertSucceeds(batch.commit());
+    });
+
+    it('3) Kurucu kendi kendini atamaz / ayrılamaz', async () => {
+      await setupGroup('grp_owner_leave', 'user1');
+      
+      const db = testEnv.authenticatedContext('user1').firestore();
+      const groupRef = db.collection('groups').doc('grp_owner_leave');
+      const memberRef = groupRef.collection('members').doc('user1');
+
+      let groupSnap; await testEnv.withSecurityRulesDisabled(async context => { groupSnap = await context.firestore().collection('groups').doc('grp_owner_leave').get(); });
+      let memberSnap; await testEnv.withSecurityRulesDisabled(async context => { memberSnap = await context.firestore().collection('groups').doc('grp_owner_leave').collection('members').doc('user1').get(); });
+
+      const batch = db.batch();
+      batch.update(groupRef, {
+        memberUids: [],
+        memberCount: 0,
+        lastRemovedUid: 'user1',
+        updatedAt: groupSnap.data().updatedAt,
+      });
+      batch.update(memberRef, {
+        leftAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      await assertFails(batch.commit());
+    });
+
+    it('4) Rejoin (Tekrar katılma): kurucu keyfi uid ekleyemez', async () => {
+      await setupGroup('grp_rejoin', 'user1');
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const adminDb = context.firestore();
+        await adminDb.collection('groups').doc('grp_rejoin').collection('members').doc('user2').set({
+          uid: 'user2',
+          displayName: 'Member user2',
+          role: 'member',
+          joinedAt: new Date(),
+          leftAt: new Date(),
+          updatedAt: new Date(),
+        });
+      });
+
+      const db = testEnv.authenticatedContext('user1').firestore();
+      const groupRef = db.collection('groups').doc('grp_rejoin');
+      const memberRef = groupRef.collection('members').doc('user2');
+
+      let groupSnap; await testEnv.withSecurityRulesDisabled(async context => { groupSnap = await context.firestore().collection('groups').doc('grp_rejoin').get(); });
+
+      // Attempt to rejoin WITHOUT a joinRequest
+      const batch1 = db.batch();
+      batch1.update(groupRef, {
+        memberUids: ['user1', 'user2'],
+        memberCount: 2,
+        lastAddedUid: 'user2',
+        updatedAt: groupSnap.data().updatedAt,
+      });
+      batch1.update(memberRef, {
+        leftAt: deleteField(),
+        updatedAt: serverTimestamp(),
+      });
+      await assertFails(batch1.commit());
+
+      // Create a join request
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const adminDb = context.firestore();
+        await adminDb.collection('groups').doc('grp_rejoin').collection('joinRequests').doc('user2').set({
+          uid: 'user2'
+        });
+      });
+
+      // Attempt to rejoin with other fields changed
+      const batch2 = db.batch();
+      batch2.update(groupRef, {
+        memberUids: ['user1', 'user2'],
+        memberCount: 2,
+        lastAddedUid: 'user2',
+        updatedAt: groupSnap.data().updatedAt,
+      });
+      batch2.update(memberRef, {
+        leftAt: deleteField(),
+        role: 'owner', // Changed role
+        updatedAt: serverTimestamp(),
+      });
+      await assertFails(batch2.commit());
+
+      // Successful rejoin
+      const batch3 = db.batch();
+      batch3.update(groupRef, {
+        memberUids: ['user1', 'user2'],
+        memberCount: 2,
+        lastAddedUid: 'user2',
+        updatedAt: groupSnap.data().updatedAt,
+      });
+      batch3.update(memberRef, {
+        leftAt: deleteField(),
+        updatedAt: serverTimestamp(),
+      });
+      await assertSucceeds(batch3.commit());
+    });
+
+    it('5) Toplu grup silme limit', async () => {
+      const sizes = [50, 200];
+      for (const size of sizes) {
+        await setupGroup(`grp_del_${size}`, 'user1');
+        const uids = Array.from({length: size}, (_, i) => `user_${i}`);
+        await addMembers(`grp_del_${size}`, uids);
+
+        const db = testEnv.authenticatedContext('user1').firestore();
+        const batch = db.batch();
+        for (const uid of uids) {
+          batch.delete(db.collection('groups').doc(`grp_del_${size}`).collection('members').doc(uid));
+        }
+        await assertSucceeds(batch.commit());
+        
+        await assertSucceeds(db.collection('groups').doc(`grp_del_${size}`).delete());
+      }
+    });
+
   });
 });

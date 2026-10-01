@@ -13,9 +13,10 @@ import 'package:denk/features/settings/presentation/settings_screen.dart';
 import 'package:denk/l10n/l10n.dart';
 
 class GroupsListScreen extends ConsumerWidget {
+  final bool isTab;
   final ValueChanged<GroupModel>? onGroupSelected;
 
-  const GroupsListScreen({super.key, this.onGroupSelected});
+  const GroupsListScreen({super.key, this.onGroupSelected, this.isTab = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -49,15 +50,16 @@ class GroupsListScreen extends ConsumerWidget {
             icon: const Icon(Icons.add_rounded, size: 24),
             onPressed: () => CreateGroupSheet.show(context),
           ),
-          IconButton(
-            tooltip: l10n?.settingsTitle ?? 'Settings',
-            icon: const Icon(Icons.settings_outlined, size: 20),
-            onPressed: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
-            },
-          ),
+          if (!isTab)
+            IconButton(
+              tooltip: l10n?.settingsTitle ?? 'Settings',
+              icon: const Icon(Icons.settings_outlined, size: 20),
+              onPressed: () {
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+              },
+            ),
           const SizedBox(width: 8),
         ],
       ),

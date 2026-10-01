@@ -5,6 +5,7 @@ import 'package:denk/core/theme/app_theme.dart';
 import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
 import 'package:denk/features/auth/presentation/onboarding_display_name_screen.dart';
+import 'package:denk/core/widgets/main_navigation_screen.dart';
 import 'package:denk/features/groups/presentation/groups_list_screen.dart';
 import 'package:denk/features/settings/presentation/settings_controller.dart';
 import 'package:denk/l10n/l10n.dart';
@@ -57,7 +58,7 @@ class DenkAuthGate extends ConsumerWidget {
         if (profile == null || profile.displayName.trim().isEmpty) {
           return const OnboardingDisplayNameScreen();
         }
-        return const GroupsListScreen();
+        return const MainNavigationScreen();
       },
       loading: () => const Scaffold(
         backgroundColor: Colors.white,

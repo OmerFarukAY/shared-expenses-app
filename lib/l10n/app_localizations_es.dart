@@ -487,4 +487,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get currency => 'Moneda';
+
+  @override
+  String get memberLeftSuffix => ' (salió)';
+
+  @override
+  String get removeMember => 'Eliminar miembro';
+
+  @override
+  String get leaveGroup => 'Dejar grupo';
+
+  @override
+  String get deleteGroup => 'Eliminar grupo';
+
+  @override
+  String get cannotRemoveMemberBalance =>
+      'El miembro no puede ser eliminado antes de que su saldo sea cero.';
+
+  @override
+  String get cannotLeaveGroupBalance =>
+      'No puedes dejar el grupo antes de que tu saldo sea cero.';
 }

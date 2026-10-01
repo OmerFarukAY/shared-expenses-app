@@ -135,4 +135,28 @@ abstract class GroupBalanceCalculator {
 
     return summaries;
   }
+
+  /// Checks if a member can leave the group by ensuring their net balance is exactly 0 in ALL currencies.
+  static bool canMemberLeave({
+    required String uid,
+    required List<ExpenseModel> expenses,
+    required List<GroupMember> members,
+    required String defaultCurrency,
+    List<SettlementRecord> settlements = const [],
+  }) {
+    final summaries = calculateAll(
+      expenses: expenses,
+      members: members,
+      defaultCurrency: defaultCurrency,
+      settlements: settlements,
+    );
+
+    for (final summary in summaries.values) {
+      final bal = summary.memberBalances[uid];
+      if (bal != null && bal.netBalanceMinor != 0) {
+        return false; // Cannot leave if net balance is not zero in any currency
+      }
+    }
+    return true;
+  }
 }

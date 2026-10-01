@@ -8,6 +8,7 @@ import 'package:denk/features/groups/domain/invite_code_generator.dart';
 import 'package:denk/features/groups/domain/join_request_model.dart';
 
 abstract class GroupRepository {
+  Future<void> deleteGroup(String groupId);
   Stream<List<GroupModel>> watchUserGroups(String uid);
   Future<GroupModel?> getGroup(String groupId);
   Future<GroupModel> createGroup({
@@ -43,6 +44,8 @@ abstract class GroupRepository {
   });
   Stream<List<GroupMember>> watchGroupMembers(String groupId);
   Future<void> leaveGroup({required String groupId, required String uid});
+  Future<void> removeMember({required String groupId, required String uid});
+
 }
 
 class FirestoreGroupRepository implements GroupRepository {
@@ -568,13 +571,17 @@ class FirestoreGroupRepository implements GroupRepository {
   }) async {
     try {
       final batch = _firestore.batch();
+      final now = Timestamp.fromDate(DateTime.now());
 
       final memberRef = _firestore
           .collection('groups')
           .doc(groupId)
           .collection('members')
           .doc(uid);
-      batch.delete(memberRef);
+      batch.update(memberRef, {
+        'leftAt': now,
+        'updatedAt': now,
+      });
 
       final userGroupRef = _firestore
           .collection('users')
@@ -587,12 +594,109 @@ class FirestoreGroupRepository implements GroupRepository {
       batch.update(groupRef, {
         'memberUids': FieldValue.arrayRemove([uid]),
         'memberCount': FieldValue.increment(-1),
-        'updatedAt': Timestamp.fromDate(DateTime.now()),
+        'lastRemovedUid': uid,
+        'updatedAt': now,
       });
 
       await batch.commit();
     } catch (e) {
       throw AppException.fromFirebase(e);
     }
+  }
+
+  @override
+  Future<void> removeMember({
+    required String groupId,
+    required String uid,
+  }) async {
+    try {
+      final batch = _firestore.batch();
+      final now = Timestamp.fromDate(DateTime.now());
+
+      final memberRef = _firestore
+          .collection('groups')
+          .doc(groupId)
+          .collection('members')
+          .doc(uid);
+      batch.update(memberRef, {
+        'leftAt': now,
+        'updatedAt': now,
+      });
+
+      final userGroupRef = _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('user_groups')
+          .doc(groupId);
+      batch.delete(userGroupRef);
+
+      final groupRef = _firestore.collection('groups').doc(groupId);
+      batch.update(groupRef, {
+        'memberUids': FieldValue.arrayRemove([uid]),
+        'memberCount': FieldValue.increment(-1),
+        'lastRemovedUid': uid,
+        'updatedAt': now,
+      });
+
+      await batch.commit();
+    } catch (e) {
+      throw AppException.fromFirebase(e);
+    }
+  }
+
+  @override
+  Future<void> deleteGroup(String groupId) async {
+    final groupRef = _firestore.collection('groups').doc(groupId);
+    
+    // We will collect all references to delete
+    final List<DocumentReference> refsToDelete = [];
+
+    // 1. Members
+    final membersSnap = await groupRef.collection('members').get();
+    for (var doc in membersSnap.docs) {
+      refsToDelete.add(doc.reference);
+    }
+
+    // 2. Expenses
+    final expensesSnap = await groupRef.collection('expenses').get();
+    for (var doc in expensesSnap.docs) {
+      refsToDelete.add(doc.reference);
+    }
+
+    // 3. Settlements
+    final settlementsSnap = await groupRef.collection('settlements').get();
+    for (var doc in settlementsSnap.docs) {
+      refsToDelete.add(doc.reference);
+    }
+
+    // 4. Join Requests
+    final requestsSnap = await groupRef.collection('joinRequests').get();
+    for (var doc in requestsSnap.docs) {
+      refsToDelete.add(doc.reference);
+    }
+    
+    // 5. User Groups (where groupId = groupId)
+    // Actually users/{uid}/user_groups/{groupId} - we cannot delete across all users easily without admin SDK.
+    // Wait, we can't delete users/{uid}/user_groups if we don't have access to ALL users!
+    // But we don't use user_groups subcollection, we use invites collection.
+
+    // Invites
+    final invitesSnap = await _firestore.collection('invites').where('groupId', isEqualTo: groupId).get();
+    for (var doc in invitesSnap.docs) {
+      refsToDelete.add(doc.reference);
+    }
+
+    // Process deletions in chunks of 500
+    for (var i = 0; i < refsToDelete.length; i += 499) {
+      final batch = _firestore.batch();
+      final chunk = refsToDelete.skip(i).take(499);
+      for (var ref in chunk) {
+        batch.delete(ref);
+      }
+      await batch.commit();
+    }
+
+    // Finally delete the group document itself
+    await groupRef.delete();
   }
 }

@@ -227,5 +227,11 @@
     }
   },
   "languageSystem": "Idioma del sistema",
-  "currency": "Moneda"
+  "currency": "Moneda",
+  "memberLeftSuffix": " (salió)",
+  "removeMember": "Eliminar miembro",
+  "leaveGroup": "Dejar grupo",
+  "deleteGroup": "Eliminar grupo",
+  "cannotRemoveMemberBalance": "El miembro no puede ser eliminado antes de que su saldo sea cero.",
+  "cannotLeaveGroupBalance": "No puedes dejar el grupo antes de que tu saldo sea cero."
 }

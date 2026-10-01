@@ -224,9 +224,10 @@ service cloud.firestore {
              isValidSplitSum(splits, totalMinor);
     }
 
-    function isValidExpense(data, groupId) {
+    function isValidExpense(data, oldData, groupId) {
       let group = get(/databases/$(database)/documents/groups/$(groupId));
       let memberUids = 'memberUids' in group.data ? group.data.memberUids : [group.data.createdBy];
+      let validUids = oldData == null ? memberUids : memberUids.concat(oldData.participants).concat(oldData.payers.keys());
       return data.keys().hasAll(['id', 'groupId', 'title', 'category', 'currency', 'totalMinor', 'date', 'splitMethod', 'payers', 'participants', 'splits', 'createdBy', 'createdAt', 'updatedAt']) &&
              data.id is string &&
              data.groupId == groupId &&
@@ -235,9 +236,10 @@ service cloud.firestore {
              isValidCurrency(data.currency) &&
              isValidCreationTimestamp(data.createdAt) &&
              isValidHistoricalDate(data.date) &&
-             request.auth.uid in memberUids &&
-             arePayersValid(data.payers, data.totalMinor, memberUids) &&
-             areSplitsValid(data.splits, data.participants, data.totalMinor, memberUids);
+             // A user could leave, so the original createdBy might not be in memberUids anymore.
+             // But the creator was valid when it was created. We check auth.uid in memberUids for CREATE and UPDATE permissions above.
+             arePayersValid(data.payers, data.totalMinor, validUids) &&
+             areSplitsValid(data.splits, data.participants, data.totalMinor, validUids);
     }
 
     // ===============================================================
@@ -282,31 +284,42 @@ service cloud.firestore {
                          ||
                          // Case 2: Group creator approves a pending join request (+1 member)
                          (request.auth.uid == resource.data.createdBy &&
-                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt']) &&
+                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt', 'lastAddedUid']) &&
                           request.resource.data.memberUids is list &&
                           request.resource.data.memberUids.size() == resource.data.memberUids.size() + 1 &&
+                          request.resource.data.lastAddedUid is string &&
+                          request.resource.data.lastAddedUid in request.resource.data.memberUids &&
+                          !(request.resource.data.lastAddedUid in resource.data.memberUids) &&
                           request.resource.data.memberUids.hasAll(resource.data.memberUids) &&
                           request.resource.data.memberUids.hasAll([resource.data.createdBy]) &&
-                          request.resource.data.memberCount == request.resource.data.memberUids.size())
+                          request.resource.data.memberCount == request.resource.data.memberUids.size() &&
+                          getAfter(/databases/$(database)/documents/groups/$(groupId)/members/$(request.resource.data.lastAddedUid)).data.role == 'member')
                          ||
                          // Case 3: Member self-leaves group (removes self only, creator cannot leave)
-                         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt']) &&
+                         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt', 'lastRemovedUid']) &&
                           request.resource.data.memberUids is list &&
                           request.resource.data.memberUids.size() == resource.data.memberUids.size() - 1 &&
+                          request.resource.data.lastRemovedUid == request.auth.uid &&
                           resource.data.memberUids.hasAll(request.resource.data.memberUids) &&
                           !(request.auth.uid in request.resource.data.memberUids) &&
                           request.auth.uid != resource.data.createdBy &&
                           request.resource.data.memberUids.hasAll([resource.data.createdBy]) &&
-                          request.resource.data.memberCount == request.resource.data.memberUids.size())
+                          request.resource.data.memberCount == request.resource.data.memberUids.size() &&
+                          getAfter(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)).data.leftAt != null)
                          ||
                          // Case 4: Group creator removes a member (creator cannot remove self)
                          (request.auth.uid == resource.data.createdBy &&
-                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt']) &&
+                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt', 'lastRemovedUid']) &&
                           request.resource.data.memberUids is list &&
                           request.resource.data.memberUids.size() == resource.data.memberUids.size() - 1 &&
+                          request.resource.data.lastRemovedUid is string &&
+                          request.resource.data.lastRemovedUid != resource.data.createdBy &&
                           resource.data.memberUids.hasAll(request.resource.data.memberUids) &&
+                          !(request.resource.data.lastRemovedUid in request.resource.data.memberUids) &&
+                          request.resource.data.lastRemovedUid in resource.data.memberUids &&
                           request.resource.data.memberUids.hasAll([resource.data.createdBy]) &&
-                          request.resource.data.memberCount == request.resource.data.memberUids.size())
+                          request.resource.data.memberCount == request.resource.data.memberUids.size() &&
+                          getAfter(/databases/$(database)/documents/groups/$(groupId)/members/$(request.resource.data.lastRemovedUid)).data.leftAt != null)
                        );
 
       allow delete: if isAuthenticated() && request.auth.uid == resource.data.createdBy;
@@ -397,15 +410,36 @@ service cloud.firestore {
                             exists(/databases/$(database)/documents/groups/$(groupId)/joinRequests/$(memberUid)))
                          );
 
-        // Users can update their own display name within the group
-        allow update: if isAuthenticated() && request.auth.uid == memberUid &&
+        allow update: if isAuthenticated() && 
                          request.resource.data.uid == memberUid &&
                          request.resource.data.role == resource.data.role &&
                          request.resource.data.joinedAt == resource.data.joinedAt &&
-                         request.resource.data.displayName is string && request.resource.data.displayName.size() >= 1 && request.resource.data.displayName.size() <= 50;
+                         (
+                           // 1. İsim Güncelleme (Sadece kendisi)
+                           (request.auth.uid == memberUid && 
+                            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'updatedAt']))
+                           ||
+                           // 2. Ayrılma / Atılma (leftAt eklenmesi)
+                           (
+                             (request.auth.uid == memberUid || isGroupCreator(groupId)) &&
+                             memberUid != get(/databases/$(database)/documents/groups/$(groupId)).data.createdBy &&
+                             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['leftAt', 'updatedAt']) &&
+                             request.resource.data.leftAt == request.time &&
+                             !getAfter(/databases/$(database)/documents/groups/$(groupId)).data.memberUids.hasAny([memberUid])
+                           )
+                           ||
+                           // 3. Tekrar katılma (leftAt alanının silinmesi)
+                           (
+                             isGroupCreator(groupId) &&
+                             !('leftAt' in request.resource.data) && ('leftAt' in resource.data) &&
+                             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['leftAt', 'updatedAt']) &&
+                             getAfter(/databases/$(database)/documents/groups/$(groupId)).data.memberUids.hasAny([memberUid]) &&
+                             exists(/databases/$(database)/documents/groups/$(groupId)/joinRequests/$(memberUid))
+                           )
+                         );
 
-        // User can remove themselves or group creator can remove member
-        allow delete: if isAuthenticated() && (request.auth.uid == memberUid || isGroupCreator(groupId));
+        // ONLY allowed when deleting the group (Batch 500)
+        allow delete: if isAuthenticated() && isGroupCreator(groupId);
       }
 
       // Subcollection: expenses
@@ -417,7 +451,7 @@ service cloud.firestore {
         allow create: if isGroupMember(groupId) &&
                          request.resource.data.id == expenseId &&
                          request.resource.data.createdBy == request.auth.uid &&
-                         isValidExpense(request.resource.data, groupId) &&
+                         isValidExpense(request.resource.data, null, groupId) &&
                          isValidCreationTimestamp(request.resource.data.updatedAt);
 
         // ONLY group members can update expenses in their group
@@ -427,7 +461,7 @@ service cloud.firestore {
                          request.resource.data.createdBy == resource.data.createdBy &&
                          request.resource.data.createdAt == resource.data.createdAt &&
                          isValidUpdateTimestamp(request.resource.data.updatedAt, resource.data.updatedAt) &&
-                         isValidExpense(request.resource.data, groupId);
+                         isValidExpense(request.resource.data, resource.data, groupId);
 
         // ONLY group members can delete expenses in their group
         allow delete: if isGroupMember(groupId);

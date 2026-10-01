@@ -485,4 +485,24 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get currency => 'Para Birimi';
+
+  @override
+  String get memberLeftSuffix => ' (ayrıldı)';
+
+  @override
+  String get removeMember => 'Üyeyi Kaldır';
+
+  @override
+  String get leaveGroup => 'Gruptan Ayrıl';
+
+  @override
+  String get deleteGroup => 'Grubu Sil';
+
+  @override
+  String get cannotRemoveMemberBalance =>
+      'Bakiye sıfırlanmadan üye çıkarılamaz.';
+
+  @override
+  String get cannotLeaveGroupBalance =>
+      'Bakiye sıfırlanmadan gruptan ayrılamazsınız.';
 }

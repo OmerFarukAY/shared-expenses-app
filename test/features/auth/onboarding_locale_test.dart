@@ -6,7 +6,6 @@ import 'package:denk/core/constants/currencies.dart';
 import 'package:denk/features/auth/presentation/onboarding_display_name_screen.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
 import 'package:denk/features/auth/domain/user_profile.dart';
-import 'dart:async';
 
 class FakeUserProfileController extends UserProfileController {
   @override

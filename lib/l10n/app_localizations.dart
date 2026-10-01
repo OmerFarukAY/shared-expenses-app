@@ -997,6 +997,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Currency'**
   String get currency;
+
+  /// No description provided for @memberLeftSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **' (left)'**
+  String get memberLeftSuffix;
+
+  /// No description provided for @removeMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Member'**
+  String get removeMember;
+
+  /// No description provided for @leaveGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Group'**
+  String get leaveGroup;
+
+  /// No description provided for @deleteGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Group'**
+  String get deleteGroup;
+
+  /// No description provided for @cannotRemoveMemberBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Member cannot be removed before their balance is zero.'**
+  String get cannotRemoveMemberBalance;
+
+  /// No description provided for @cannotLeaveGroupBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot leave the group before your balance is zero.'**
+  String get cannotLeaveGroupBalance;
 }
 
 class _AppLocalizationsDelegate

@@ -227,5 +227,11 @@
     }
   },
   "languageSystem": "Sistem Dili",
-  "currency": "Para Birimi"
+  "currency": "Para Birimi",
+  "memberLeftSuffix": " (ayrıldı)",
+  "removeMember": "Üyeyi Kaldır",
+  "leaveGroup": "Gruptan Ayrıl",
+  "deleteGroup": "Grubu Sil",
+  "cannotRemoveMemberBalance": "Bakiye sıfırlanmadan üye çıkarılamaz.",
+  "cannotLeaveGroupBalance": "Bakiye sıfırlanmadan gruptan ayrılamazsınız."
 }

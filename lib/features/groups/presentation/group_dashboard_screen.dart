@@ -320,7 +320,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                           summary.memberBalances[m.uid]?.netBalanceMinor ?? 0,
                   };
                   final memberNames = <String, String>{
-                    for (final m in members) m.uid: m.displayName,
+                    for (final m in members) m.uid: m.hasLeft ? '${m.displayName} ${AppLocalizations.of(context)!.memberLeftSuffix}' : m.displayName,
                   };
                   final simplifiedTransactions = SettlementEngine.simplifyDebts(
                     netBalances: netBalances,
@@ -788,7 +788,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                                   label: Text(
                                                     m.uid == currentUserId
                                                         ? (l10n?.youLabel ?? 'You')
-                                                        : m.displayName,
+                                                        : (m.hasLeft ? (m.hasLeft ? m.displayName + AppLocalizations.of(context)!.memberLeftSuffix : m.displayName) + AppLocalizations.of(context)!.memberLeftSuffix : (m.hasLeft ? m.displayName + AppLocalizations.of(context)!.memberLeftSuffix : m.displayName)),
                                                     style: AppTypography
                                                         .labelSmall,
                                                   ),
@@ -888,11 +888,17 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                               ),
                               itemCount: members.length,
                               itemBuilder: (context, index) {
+
                                 final member = members[index];
                                 final bal = summary.memberBalances[member.uid];
                                 final net = bal?.netBalanceMinor ?? 0;
                                 final paid = bal?.totalPaidMinor ?? 0;
                                 final owed = bal?.totalOwedMinor ?? 0;
+
+                                final isMe = member.uid == currentUserId;
+                                final amIOwner = members.firstWhere((m) => m.uid == currentUserId, orElse: () => members.first).isOwner;
+                                final isMemberOwner = member.isOwner;
+
 
                                 return DenkCard(
                                   padding: const EdgeInsets.symmetric(
@@ -927,8 +933,8 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                           children: [
                                             Text(
                                               member.uid == currentUserId
-                                                  ? '${member.displayName} (You)'
-                                                  : member.displayName,
+                                                  ? '${member.displayName} (You)${member.hasLeft ? ' ${AppLocalizations.of(context)!.memberLeftSuffix}' : ''}'
+                                                  : '${member.displayName}${member.hasLeft ? ' ${AppLocalizations.of(context)!.memberLeftSuffix}' : ''}',
                                               style: AppTypography.bodyMedium
                                                   .copyWith(
                                                     fontWeight: FontWeight.w600,
@@ -950,11 +956,50 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                       ),
                                       DenkBalancePill(
                                         balanceMinor: net,
+
                                         currency: currency,
                                       ),
+                                      if (!member.hasLeft && (amIOwner || isMe))
+                                        PopupMenuButton<String>(
+                                          icon: const Icon(Icons.more_vert),
+                                          onSelected: (value) async {
+                                            final repo = ref.read(groupRepositoryProvider);
+                                            try {
+                                              if (value == 'remove') {
+                                                if (!GroupBalanceCalculator.canMemberLeave(uid: member.uid, expenses: expenses, members: members, defaultCurrency: widget.group.defaultCurrency, settlements: settlements)) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.cannotRemoveMemberBalance)));
+                                                  return;
+                                                }
+                                                await repo.removeMember(groupId: widget.group.id, uid: member.uid);
+                                              } else if (value == 'leave') {
+                                                if (!GroupBalanceCalculator.canMemberLeave(uid: member.uid, expenses: expenses, members: members, defaultCurrency: widget.group.defaultCurrency, settlements: settlements)) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.cannotLeaveGroupBalance)));
+                                                  return;
+                                                }
+                                                await repo.leaveGroup(groupId: widget.group.id, uid: member.uid);
+                                                if (context.mounted) Navigator.of(context).pop();
+                                              } else if (value == 'delete_group') {
+                                                await repo.deleteGroup(widget.group.id);
+                                                if (context.mounted) Navigator.of(context).pop();
+                                              }
+                                            } catch(e) {
+                                              if (!context.mounted) return;
+                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                                            }
+                                          },
+                                          itemBuilder: (context) => [
+                                            if (amIOwner && !isMe)
+                                              PopupMenuItem(value: 'remove', child: Text(AppLocalizations.of(context)!.removeMember)),
+                                            if (isMe && !isMemberOwner)
+                                              PopupMenuItem(value: 'leave', child: Text(AppLocalizations.of(context)!.leaveGroup)),
+                                            if (isMe && isMemberOwner)
+                                              PopupMenuItem(value: 'delete_group', child: Text(AppLocalizations.of(context)!.deleteGroup, style: const TextStyle(color: Colors.red))),
+                                          ],
+                                        ),
                                     ],
                                   ),
                                 );
+
                               },
                             ),
 

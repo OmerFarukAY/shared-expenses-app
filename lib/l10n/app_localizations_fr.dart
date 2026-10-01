@@ -488,4 +488,24 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get currency => 'Devise';
+
+  @override
+  String get memberLeftSuffix => ' (parti)';
+
+  @override
+  String get removeMember => 'Supprimer le membre';
+
+  @override
+  String get leaveGroup => 'Quitter le groupe';
+
+  @override
+  String get deleteGroup => 'Supprimer le groupe';
+
+  @override
+  String get cannotRemoveMemberBalance =>
+      'Le membre ne peut pas être supprimé avant que son solde ne soit nul.';
+
+  @override
+  String get cannotLeaveGroupBalance =>
+      'Vous ne pouvez pas quitter le groupe avant que votre solde ne soit nul.';
 }

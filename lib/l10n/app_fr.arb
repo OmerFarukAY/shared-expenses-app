@@ -227,5 +227,11 @@
     }
   },
   "languageSystem": "Langue du système",
-  "currency": "Devise"
+  "currency": "Devise",
+  "memberLeftSuffix": " (parti)",
+  "removeMember": "Supprimer le membre",
+  "leaveGroup": "Quitter le groupe",
+  "deleteGroup": "Supprimer le groupe",
+  "cannotRemoveMemberBalance": "Le membre ne peut pas être supprimé avant que son solde ne soit nul.",
+  "cannotLeaveGroupBalance": "Vous ne pouvez pas quitter le groupe avant que votre solde ne soit nul."
 }

@@ -9,7 +9,8 @@ import 'package:denk/features/settings/presentation/settings_controller.dart';
 import 'package:denk/l10n/l10n.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
-  const SettingsScreen({super.key});
+  final bool isTab;
+  const SettingsScreen({super.key, this.isTab = false});
 
   @override
   ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
@@ -310,6 +311,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: !widget.isTab,
         title: Text(l10n?.settingsTitle ?? 'Settings', style: AppTypography.h2),
       ),
       body: _isDeleting

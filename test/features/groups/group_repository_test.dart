@@ -156,11 +156,13 @@ void main() {
       await repository.leaveGroup(groupId: group.id, uid: friend.uid);
 
       final members = await repository.watchGroupMembers(group.id).first;
-      expect(members.length, 1);
-      expect(members.any((m) => m.uid == friend.uid), isFalse);
+      expect(members.length, 2);
+      final leftMember = members.firstWhere((m) => m.uid == friend.uid);
+      expect(leftMember.hasLeft, isTrue);
 
       final updatedGroup = await repository.getGroup(group.id);
       expect(updatedGroup!.memberCount, 1);
+      expect(updatedGroup.memberUids.contains(friend.uid), isFalse);
     });
 
     test(

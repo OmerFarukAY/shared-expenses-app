@@ -9,6 +9,7 @@ class GroupMember {
   final String displayName;
   final MemberRole role;
   final DateTime joinedAt;
+  final DateTime? leftAt;
   final String? inviteCode;
 
   const GroupMember({
@@ -16,10 +17,12 @@ class GroupMember {
     required this.displayName,
     this.role = MemberRole.member,
     required this.joinedAt,
+    this.leftAt,
     this.inviteCode,
   });
 
   bool get isOwner => role == MemberRole.owner;
+  bool get hasLeft => leftAt != null;
 
   Map<String, dynamic> toMap() {
     return {
@@ -27,6 +30,7 @@ class GroupMember {
       'displayName': displayName,
       'role': role == MemberRole.owner ? 'owner' : 'member',
       'joinedAt': Timestamp.fromDate(joinedAt),
+      if (leftAt != null) 'leftAt': Timestamp.fromDate(leftAt!),
       if (inviteCode != null && inviteCode!.isNotEmpty)
         'inviteCode': inviteCode,
     };
@@ -46,6 +50,7 @@ class GroupMember {
           ? MemberRole.owner
           : MemberRole.member,
       joinedAt: parseDate(map['joinedAt']),
+      leftAt: map['leftAt'] != null ? parseDate(map['leftAt']) : null,
       inviteCode: map['inviteCode'] as String?,
     );
   }

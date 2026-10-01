@@ -73,11 +73,23 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   String? _errorMessage;
   bool _isSubmitting = false;
 
+  late List<GroupMember> _activeMembers;
+
   @override
   void initState() {
     super.initState();
     final user = ref.read(userProfileControllerProvider).value;
     final edit = widget.initialExpense;
+
+    if (edit != null) {
+      _activeMembers = widget.members.where((m) => 
+        !m.hasLeft || 
+        edit.participants.contains(m.uid) || 
+        edit.payers.containsKey(m.uid)
+      ).toList();
+    } else {
+      _activeMembers = widget.members.where((m) => !m.hasLeft).toList();
+    }
 
     _currency = Currency.fromCode(
       edit?.currency ?? widget.group.defaultCurrency,
@@ -97,7 +109,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       // Initialize Payers
       if (edit.payers.length > 1) {
         _isMultiplePayers = true;
-        for (final m in widget.members) {
+        for (final m in _activeMembers) {
           final amt = edit.payers[m.uid] ?? 0;
           _payerControllers[m.uid] = TextEditingController(
             text: amt > 0
@@ -116,7 +128,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       _selectedParticipants.addAll(edit.participants);
 
       // Initialize Custom / Pct
-      for (final m in widget.members) {
+      for (final m in _activeMembers) {
         final splitAmt = edit.splits[m.uid] ?? 0;
         _customSplitControllers[m.uid] = TextEditingController(
           text: splitAmt > 0
@@ -128,10 +140,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       // Default: single payer is current user
       _singlePayerUid =
           user?.uid ??
-          (widget.members.isNotEmpty ? widget.members.first.uid : null);
+          (_activeMembers.isNotEmpty ? _activeMembers.first.uid : null);
 
       // Default: all group members participate
-      for (final m in widget.members) {
+      for (final m in _activeMembers) {
         _selectedParticipants.add(m.uid);
         _payerControllers[m.uid] = TextEditingController();
         _customSplitControllers[m.uid] = TextEditingController();
@@ -193,7 +205,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       payers[_singlePayerUid!] = totalMinor;
     } else {
       int sumPayers = 0;
-      for (final m in widget.members) {
+      for (final m in _activeMembers) {
         final text = _payerControllers[m.uid]?.text ?? '';
         final amt = _currency.parseToMinor(text) ?? 0;
         if (amt > 0) {
@@ -357,7 +369,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     final total = _parsedTotalMinor;
     final formattedTotal = _currency.formatMinor(total);
     if (!_isMultiplePayers && _singlePayerUid != null) {
-      final payerName = widget.members.firstWhere((m) => m.uid == _singlePayerUid, orElse: () => widget.members.first).displayName;
+      final payerName = _activeMembers.firstWhere((m) => m.uid == _singlePayerUid, orElse: () => _activeMembers.first).displayName;
       return l10n?.expenseLiveSummary(payerName, formattedTotal, count) ?? '$payerName paid $formattedTotal · Split among $count people';
     } else {
       return l10n?.expenseLiveSummaryMultiple(formattedTotal, count) ?? 'Multiple paid $formattedTotal · Split among $count people';
@@ -371,7 +383,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     if (_isMultiplePayers) {
       int sum = 0;
       int count = 0;
-      for (final m in widget.members) {
+      for (final m in _activeMembers) {
         final amt = _currency.parseToMinor(_payerControllers[m.uid]?.text ?? '') ?? 0;
         if (amt > 0) {
           sum += amt;
@@ -442,6 +454,13 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     return _getLiveErrorText(l10n) != null || _parsedTotalMinor <= 0 || _selectedParticipants.isEmpty || _isSubmitting;
   }
   
+
+  String _getDisplayName(GroupMember m, BuildContext context) {
+    return m.hasLeft
+        ? m.displayName + AppLocalizations.of(context)!.memberLeftSuffix
+        : m.displayName;
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -681,10 +700,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: widget.members.map((m) {
+                  children: _activeMembers.map((m) {
                     final isSelected = m.uid == _singlePayerUid;
                     return ChoiceChip(
-                      label: Text(m.displayName),
+                      label: Text(_getDisplayName(m, context)),
                       selected: isSelected,
                       onSelected: (_) =>
                           setState(() => _singlePayerUid = m.uid),
@@ -731,7 +750,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 DenkCard(
                   padding: const EdgeInsets.all(16),
                   child: Column(
-                    children: widget.members.map((m) {
+                    children: _activeMembers.map((m) {
                       final controller = _payerControllers[m.uid]!;
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4),
@@ -739,7 +758,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                m.displayName,
+                                _getDisplayName(m, context),
                                 style: AppTypography.bodyMedium.copyWith(
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -846,17 +865,17 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                     TextButton(
                       onPressed: () {
                         setState(() {
-                          if (_selectedParticipants.length == widget.members.length) {
+                          if (_selectedParticipants.length == _activeMembers.length) {
                             _selectedParticipants.clear();
                           } else {
-                            for (final m in widget.members) {
+                            for (final m in _activeMembers) {
                               _selectedParticipants.add(m.uid);
                             }
                           }
                         });
                       },
                       child: Text(
-                        _selectedParticipants.length == widget.members.length
+                        _selectedParticipants.length == _activeMembers.length
                             ? 'Deselect All'
                             : 'Select All',
                         style: AppTypography.labelMedium.copyWith(
@@ -869,10 +888,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: widget.members.map((m) {
+                  children: _activeMembers.map((m) {
                     final isIncluded = _selectedParticipants.contains(m.uid);
                     return FilterChip(
-                      label: Text(m.displayName),
+                      label: Text(_getDisplayName(m, context)),
                       selected: isIncluded,
                       onSelected: (selected) {
                         setState(() {
@@ -917,7 +936,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                   DenkCard(
                     padding: const EdgeInsets.all(16),
                     child: Column(
-                      children: widget.members
+                      children: _activeMembers
                           .where((m) => _selectedParticipants.contains(m.uid))
                           .map((m) {
                             final controller = _customSplitControllers[m.uid]!;
@@ -927,7 +946,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      m.displayName,
+                                      _getDisplayName(m, context),
                                       style: AppTypography.bodyMedium,
                                     ),
                                   ),
@@ -964,7 +983,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                   DenkCard(
                     padding: const EdgeInsets.all(16),
                     child: Column(
-                      children: widget.members
+                      children: _activeMembers
                           .where((m) => _selectedParticipants.contains(m.uid))
                           .map((m) {
                             final controller = _pctControllers[m.uid]!;
@@ -974,7 +993,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      m.displayName,
+                                      _getDisplayName(m, context),
                                       style: AppTypography.bodyMedium,
                                     ),
                                   ),
