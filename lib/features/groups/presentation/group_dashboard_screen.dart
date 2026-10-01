@@ -903,16 +903,92 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.cannotRemoveMemberBalance)));
                                                   return;
                                                 }
+                                                final confirmed = await showDialog<bool>(
+                                                  context: context,
+                                                  builder: (ctx) => AlertDialog(
+                                                    title: Text(AppLocalizations.of(context)?.removeMember ?? 'Remove Member'),
+                                                    content: Text(
+                                                      Localizations.localeOf(context).languageCode == 'tr'
+                                                          ? '${member.displayName} adlı üyeyi gruptan çıkarmak istediğinizden emin misiniz?'
+                                                          : 'Are you sure you want to remove ${member.displayName} from the group?',
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () => Navigator.of(ctx).pop(false),
+                                                        child: Text(AppLocalizations.of(context)?.commonCancel ?? 'Cancel'),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () => Navigator.of(ctx).pop(true),
+                                                        child: Text(
+                                                          AppLocalizations.of(context)?.removeMember ?? 'Remove',
+                                                          style: const TextStyle(color: Colors.red),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                                if (confirmed != true) return;
                                                 await repo.removeMember(groupId: widget.group.id, uid: member.uid);
                                               } else if (value == 'leave') {
                                                 if (!GroupBalanceCalculator.canMemberLeave(uid: member.uid, expenses: expenses, members: members, defaultCurrency: widget.group.defaultCurrency, settlements: settlements)) {
                                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.cannotLeaveGroupBalance)));
                                                   return;
                                                 }
+                                                final confirmed = await showDialog<bool>(
+                                                  context: context,
+                                                  builder: (ctx) => AlertDialog(
+                                                    title: Text(AppLocalizations.of(context)?.leaveGroup ?? 'Leave Group'),
+                                                    content: Text(
+                                                      Localizations.localeOf(context).languageCode == 'tr'
+                                                          ? 'Gruptan ayrılmak istediğinizden emin misiniz?'
+                                                          : 'Are you sure you want to leave this group?',
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () => Navigator.of(ctx).pop(false),
+                                                        child: Text(AppLocalizations.of(context)?.commonCancel ?? 'Cancel'),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () => Navigator.of(ctx).pop(true),
+                                                        child: Text(
+                                                          AppLocalizations.of(context)?.leaveGroup ?? 'Leave',
+                                                          style: const TextStyle(color: Colors.red),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                                if (confirmed != true) return;
                                                 await repo.leaveGroup(groupId: widget.group.id, uid: member.uid);
                                                 if (context.mounted) Navigator.of(context).pop();
                                               } else if (value == 'delete_group') {
+                                                final confirmed = await showDialog<bool>(
+                                                  context: context,
+                                                  builder: (ctx) => AlertDialog(
+                                                    title: Text(AppLocalizations.of(context)?.deleteGroup ?? 'Delete Group'),
+                                                    content: Text(
+                                                      Localizations.localeOf(context).languageCode == 'tr'
+                                                          ? 'Bu grubu tamamen silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.'
+                                                          : 'Are you sure you want to delete this group? This action cannot be undone.',
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () => Navigator.of(ctx).pop(false),
+                                                        child: Text(AppLocalizations.of(context)?.commonCancel ?? 'Cancel'),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () => Navigator.of(ctx).pop(true),
+                                                        child: Text(
+                                                          AppLocalizations.of(context)?.commonDelete ?? 'Delete',
+                                                          style: const TextStyle(color: Colors.red),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                                if (confirmed != true) return;
                                                 await repo.deleteGroup(widget.group.id);
+                                                ref.read(selectedGroupIdProvider.notifier).state = null;
                                                 if (context.mounted) Navigator.of(context).pop();
                                               }
                                             } catch(e) {

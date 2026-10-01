@@ -379,5 +379,90 @@ void main() {
           .get();
       expect(reqDoc.exists, isFalse);
     });
+
+    test('removeMember sets leftAt, deletes user_group link, and updates group', () async {
+      final group = await repository.createGroup(
+        name: 'Remove Test Group',
+        defaultCurrency: 'TRY',
+        creator: creator,
+      );
+
+      final req = await repository.createJoinRequest(
+        inviteCode: group.inviteCode,
+        user: friend,
+      );
+      await repository.approveJoinRequest(
+        groupId: group.id,
+        request: req,
+        approvedBy: creator.uid,
+      );
+
+      // Verify friend joined
+      var updatedGroup = await repository.getGroup(group.id);
+      expect(updatedGroup!.memberCount, 2);
+      expect(updatedGroup.memberUids.contains(friend.uid), isTrue);
+
+      // Creator removes friend
+      await repository.removeMember(groupId: group.id, uid: friend.uid);
+
+      // Member doc should have leftAt
+      final memberDoc = await fakeFirestore
+          .collection('groups')
+          .doc(group.id)
+          .collection('members')
+          .doc(friend.uid)
+          .get();
+      expect(memberDoc.data()?['leftAt'], isNotNull);
+
+      // user_group doc must be deleted
+      final userGroupDoc = await fakeFirestore
+          .collection('users')
+          .doc(friend.uid)
+          .collection('user_groups')
+          .doc(group.id)
+          .get();
+      expect(userGroupDoc.exists, isFalse);
+
+      // Group doc must have memberCount 1 and friend removed from memberUids
+      updatedGroup = await repository.getGroup(group.id);
+      expect(updatedGroup!.memberCount, 1);
+      expect(updatedGroup.memberUids.contains(friend.uid), isFalse);
+    });
+
+    test('deleteGroup deletes group, members, user_groups, invites, and subcollections', () async {
+      final group = await repository.createGroup(
+        name: 'Delete Test Group',
+        defaultCurrency: 'TRY',
+        creator: creator,
+      );
+
+      // Add expense doc
+      await fakeFirestore
+          .collection('groups')
+          .doc(group.id)
+          .collection('expenses')
+          .doc('exp_1')
+          .set({'id': 'exp_1'});
+
+      // Delete group
+      await repository.deleteGroup(group.id);
+
+      // Verify group doc is deleted
+      final groupDoc = await fakeFirestore.collection('groups').doc(group.id).get();
+      expect(groupDoc.exists, isFalse);
+
+      // Verify creator user_group is deleted
+      final userGroupDoc = await fakeFirestore
+          .collection('users')
+          .doc(creator.uid)
+          .collection('user_groups')
+          .doc(group.id)
+          .get();
+      expect(userGroupDoc.exists, isFalse);
+
+      // Verify invite is deleted
+      final inviteDoc = await fakeFirestore.collection('invites').doc(group.inviteCode).get();
+      expect(inviteDoc.exists, isFalse);
+    });
   });
 }

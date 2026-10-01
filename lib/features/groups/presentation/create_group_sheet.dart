@@ -25,15 +25,20 @@ class CreateGroupSheet extends ConsumerStatefulWidget {
 class _CreateGroupSheetState extends ConsumerState<CreateGroupSheet> {
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
-  late Currency _selectedCurrency;
+  Currency? _selectedCurrency;
   String? _errorText;
   bool _isLoading = false;
 
   @override
-  void initState() {
-    super.initState();
-    final profile = ref.read(userProfileControllerProvider).value;
-    _selectedCurrency = Currency.fromCode(profile?.preferredCurrency);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_selectedCurrency == null) {
+      final locale = Localizations.localeOf(context);
+      _selectedCurrency = Currency.getDefaultCurrencyForLocale(
+        locale.languageCode,
+        locale.countryCode,
+      );
+    }
   }
 
   @override
@@ -65,7 +70,7 @@ class _CreateGroupSheetState extends ConsumerState<CreateGroupSheet> {
       final newGroup = await repo.createGroup(
         name: name,
         description: _descController.text.trim(),
-        defaultCurrency: _selectedCurrency.code,
+        defaultCurrency: (_selectedCurrency ?? Currency.tryCurrency).code,
         creator: user,
       );
 
@@ -155,7 +160,7 @@ class _CreateGroupSheetState extends ConsumerState<CreateGroupSheet> {
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<Currency>(
-                value: _selectedCurrency,
+                value: _selectedCurrency ?? Currency.tryCurrency,
                 isExpanded: true,
                 items: Currency.supportedCurrencies
                     .map(

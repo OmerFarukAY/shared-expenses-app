@@ -110,7 +110,7 @@ service cloud.firestore {
     }
 
     function isValidUpdateTimestamp(newTs, oldTs) {
-      return newTs is timestamp && newTs >= oldTs && newTs <= request.time + duration.value(5, 'm');
+      return newTs is timestamp && newTs <= request.time + duration.value(5, 'm') && oldTs is timestamp;
     }
 
     // User document validation
@@ -227,7 +227,7 @@ service cloud.firestore {
     function isValidExpense(data, oldData, groupId) {
       let group = get(/databases/$(database)/documents/groups/$(groupId));
       let memberUids = 'memberUids' in group.data ? group.data.memberUids : [group.data.createdBy];
-      let validUids = oldData == null ? memberUids : memberUids.concat(oldData.participants).concat(oldData.payers.keys());
+      let validUids = (!('participants' in oldData) || !('payers' in oldData)) ? memberUids : memberUids.concat(oldData.participants).concat(oldData.payers.keys());
       return data.keys().hasAll(['id', 'groupId', 'title', 'category', 'currency', 'totalMinor', 'date', 'splitMethod', 'payers', 'participants', 'splits', 'createdBy', 'createdAt', 'updatedAt']) &&
              data.id is string &&
              data.groupId == groupId &&
@@ -424,7 +424,7 @@ service cloud.firestore {
                              (request.auth.uid == memberUid || isGroupCreator(groupId)) &&
                              memberUid != get(/databases/$(database)/documents/groups/$(groupId)).data.createdBy &&
                              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['leftAt', 'updatedAt']) &&
-                             request.resource.data.leftAt == request.time &&
+                             isValidCreationTimestamp(request.resource.data.leftAt) &&
                              !getAfter(/databases/$(database)/documents/groups/$(groupId)).data.memberUids.hasAny([memberUid])
                            )
                            ||
@@ -451,7 +451,7 @@ service cloud.firestore {
         allow create: if isGroupMember(groupId) &&
                          request.resource.data.id == expenseId &&
                          request.resource.data.createdBy == request.auth.uid &&
-                         isValidExpense(request.resource.data, null, groupId) &&
+                         isValidExpense(request.resource.data, {}, groupId) &&
                          isValidCreationTimestamp(request.resource.data.updatedAt);
 
         // ONLY group members can update expenses in their group
@@ -463,8 +463,8 @@ service cloud.firestore {
                          isValidUpdateTimestamp(request.resource.data.updatedAt, resource.data.updatedAt) &&
                          isValidExpense(request.resource.data, resource.data, groupId);
 
-        // ONLY group members can delete expenses in their group
-        allow delete: if isGroupMember(groupId);
+        // ONLY group members or creator can delete expenses in their group
+        allow delete: if isGroupMember(groupId) || (isAuthenticated() && isGroupCreator(groupId));
       }
 
       // Subcollection: settlements
@@ -490,8 +490,8 @@ service cloud.firestore {
         // Completed financial settlements are strictly immutable
         allow update: if false;
 
-        // Group members can delete/revert settlements
-        allow delete: if isGroupMember(groupId);
+        // Group members or creator can delete/revert settlements
+        allow delete: if isGroupMember(groupId) || (isAuthenticated() && isGroupCreator(groupId));
       }
     }
 
@@ -502,7 +502,7 @@ service cloud.firestore {
       // Direct lookup ONLY for authenticated users with the specific code
       allow get: if isAuthenticated();
 
-      // Collection listing / enumeration strictly forbidden
+      // Collection listing / enumeration strictly forbidden to prevent code scraping
       allow list: if false;
 
       // Only group members or creator can publish an invite
@@ -518,7 +518,7 @@ service cloud.firestore {
                        request.resource.data.groupId == resource.data.groupId &&
                        request.resource.data.createdAt == resource.data.createdAt;
 
-      allow delete: if isAuthenticated() && isGroupCreator(resource.data.groupId);
+      allow delete: if isAuthenticated() && (request.auth.uid == resource.data.createdBy || isGroupCreator(resource.data.groupId));
     }
   }
 }

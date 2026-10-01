@@ -646,57 +646,84 @@ class FirestoreGroupRepository implements GroupRepository {
 
   @override
   Future<void> deleteGroup(String groupId) async {
-    final groupRef = _firestore.collection('groups').doc(groupId);
-    
-    // We will collect all references to delete
-    final List<DocumentReference> refsToDelete = [];
+    try {
+      final groupRef = _firestore.collection('groups').doc(groupId);
+      final groupDoc = await groupRef.get();
+      if (!groupDoc.exists) return;
 
-    // 1. Members
-    final membersSnap = await groupRef.collection('members').get();
-    for (var doc in membersSnap.docs) {
-      refsToDelete.add(doc.reference);
-    }
+      // We will collect all references to delete
+      final List<DocumentReference> refsToDelete = [];
 
-    // 2. Expenses
-    final expensesSnap = await groupRef.collection('expenses').get();
-    for (var doc in expensesSnap.docs) {
-      refsToDelete.add(doc.reference);
-    }
-
-    // 3. Settlements
-    final settlementsSnap = await groupRef.collection('settlements').get();
-    for (var doc in settlementsSnap.docs) {
-      refsToDelete.add(doc.reference);
-    }
-
-    // 4. Join Requests
-    final requestsSnap = await groupRef.collection('joinRequests').get();
-    for (var doc in requestsSnap.docs) {
-      refsToDelete.add(doc.reference);
-    }
-    
-    // 5. User Groups (where groupId = groupId)
-    // Actually users/{uid}/user_groups/{groupId} - we cannot delete across all users easily without admin SDK.
-    // Wait, we can't delete users/{uid}/user_groups if we don't have access to ALL users!
-    // But we don't use user_groups subcollection, we use invites collection.
-
-    // Invites
-    final invitesSnap = await _firestore.collection('invites').where('groupId', isEqualTo: groupId).get();
-    for (var doc in invitesSnap.docs) {
-      refsToDelete.add(doc.reference);
-    }
-
-    // Process deletions in chunks of 500
-    for (var i = 0; i < refsToDelete.length; i += 499) {
-      final batch = _firestore.batch();
-      final chunk = refsToDelete.skip(i).take(499);
-      for (var ref in chunk) {
-        batch.delete(ref);
+      // 1. Members and their user_groups records
+      final membersSnap = await groupRef.collection('members').get();
+      for (var doc in membersSnap.docs) {
+        refsToDelete.add(doc.reference);
+        refsToDelete.add(
+          _firestore
+              .collection('users')
+              .doc(doc.id)
+              .collection('user_groups')
+              .doc(groupId),
+        );
       }
-      await batch.commit();
-    }
 
-    // Finally delete the group document itself
-    await groupRef.delete();
+      // Also ensure creator's user_groups is cleaned up
+      final createdBy = groupDoc.data()?['createdBy'] as String?;
+      if (createdBy != null) {
+        refsToDelete.add(
+          _firestore
+              .collection('users')
+              .doc(createdBy)
+              .collection('user_groups')
+              .doc(groupId),
+        );
+      }
+
+      // 2. Expenses
+      final expensesSnap = await groupRef.collection('expenses').get();
+      for (var doc in expensesSnap.docs) {
+        refsToDelete.add(doc.reference);
+      }
+
+      // 3. Settlements
+      final settlementsSnap = await groupRef.collection('settlements').get();
+      for (var doc in settlementsSnap.docs) {
+        refsToDelete.add(doc.reference);
+      }
+
+      // 4. Join Requests
+      final requestsSnap = await groupRef.collection('joinRequests').get();
+      for (var doc in requestsSnap.docs) {
+        refsToDelete.add(doc.reference);
+      }
+
+      // 5. Invites
+      final inviteCode = groupDoc.data()?['inviteCode'] as String?;
+      if (inviteCode != null && inviteCode.isNotEmpty) {
+        refsToDelete.add(_firestore.collection('invites').doc(inviteCode));
+      }
+
+      // Deduplicate document references by path
+      final Map<String, DocumentReference> uniqueRefs = {};
+      for (var ref in refsToDelete) {
+        uniqueRefs[ref.path] = ref;
+      }
+
+      // Process deletions in chunks of 450 (below Firestore batch limit)
+      final allUniqueRefs = uniqueRefs.values.toList();
+      for (var i = 0; i < allUniqueRefs.length; i += 450) {
+        final batch = _firestore.batch();
+        final chunk = allUniqueRefs.skip(i).take(450);
+        for (var ref in chunk) {
+          batch.delete(ref);
+        }
+        await batch.commit();
+      }
+
+      // Finally delete the group document itself
+      await groupRef.delete();
+    } catch (e) {
+      throw AppException.fromFirebase(e);
+    }
   }
 }
