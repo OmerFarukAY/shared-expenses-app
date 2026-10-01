@@ -22,28 +22,56 @@ class DenkLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = color ?? Theme.of(context).colorScheme.primary;
-
-    final logoMark = CustomPaint(
-      size: Size(size * 0.6, size * 0.6),
-      painter: _DenkLogoPainter(color: effectiveColor),
-    );
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (!showBackground) {
-      return SizedBox(
+      if (isDark) {
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(size * 0.28),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(size * 0.28),
+            child: Image.asset(
+              'assets/branding/logo_beyaz_arkaplan.png',
+              width: size,
+              fit: BoxFit.contain,
+            ),
+          ),
+        );
+      }
+      return Image.asset(
+        'assets/branding/logo_no_bg.png',
         width: size,
-        height: size,
-        child: Center(child: logoMark),
+        fit: BoxFit.contain,
       );
     }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark
-        ? AppColors.primary900.withValues(alpha: 0.3)
-        : AppColors.primary50;
-    final borderColor = isDark
-        ? AppColors.primary700.withValues(alpha: 0.4)
-        : AppColors.primary100;
+    if (isDark) {
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(size * 0.28),
+          border: Border.all(color: AppColors.primary700.withValues(alpha: 0.4), width: 1.5),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(size * 0.28),
+          child: Image.asset(
+            'assets/branding/logo_beyaz_arkaplan.png',
+            width: size,
+            fit: BoxFit.contain,
+          ),
+        ),
+      );
+    }
+
+    final bgColor = AppColors.primary50;
+    final borderColor = AppColors.primary100;
 
     return Container(
       width: size,
@@ -53,62 +81,13 @@ class DenkLogo extends StatelessWidget {
         borderRadius: BorderRadius.circular(size * 0.28),
         border: Border.all(color: borderColor, width: 1.5),
       ),
-      child: Center(child: logoMark),
+      child: Center(
+        child: Image.asset(
+          'assets/branding/logo_no_bg.png',
+          width: size * 0.6,
+          fit: BoxFit.contain,
+        ),
+      ),
     );
   }
-}
-
-class _DenkLogoPainter extends CustomPainter {
-  final Color color;
-
-  _DenkLogoPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // We scale the drawing to a 100x100 virtual coordinate system
-    // and then apply the actual size.
-    final scale = size.width / 100.0;
-    
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-      
-    final strokePaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 24 * scale;
-
-    // Top Row (Y = 32)
-    // Dot at (22, 32)
-    canvas.drawCircle(
-      Offset(22 * scale, 32 * scale),
-      12 * scale,
-      paint,
-    );
-    // Line from (54, 32) to (78, 32)
-    canvas.drawLine(
-      Offset(54 * scale, 32 * scale),
-      Offset(78 * scale, 32 * scale),
-      strokePaint,
-    );
-
-    // Bottom Row (Y = 68)
-    // Line from (22, 68) to (46, 68)
-    canvas.drawLine(
-      Offset(22 * scale, 68 * scale),
-      Offset(46 * scale, 68 * scale),
-      strokePaint,
-    );
-    // Dot at (78, 68)
-    canvas.drawCircle(
-      Offset(78 * scale, 68 * scale),
-      12 * scale,
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _DenkLogoPainter oldDelegate) =>
-      oldDelegate.color != color;
 }
