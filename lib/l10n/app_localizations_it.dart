@@ -505,4 +505,24 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get cannotLeaveGroupBalance =>
       'Non puoi lasciare il gruppo prima che il tuo saldo sia zero.';
+
+  @override
+  String get privacyBullet1 =>
+      'Nessuna email, numero di telefono o password richiesta.';
+
+  @override
+  String get privacyBullet2 =>
+      'Nessun identificatore pubblicitario o SDK di tracciamento.';
+
+  @override
+  String get privacyBullet3 =>
+      'Nessun permesso per rubrica contatti o posizione GPS.';
+
+  @override
+  String get privacyBullet4 =>
+      'L\'autenticazione utilizza credenziali Firebase anonime.';
+
+  @override
+  String get privacyBullet5 =>
+      'Solo i membri del gruppo con cui condividi il codice di invito possono visualizzare le spese.';
 }

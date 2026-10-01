@@ -233,5 +233,10 @@
   "leaveGroup": "Leave Group",
   "deleteGroup": "Delete Group",
   "cannotRemoveMemberBalance": "Member cannot be removed before their balance is zero.",
-  "cannotLeaveGroupBalance": "You cannot leave the group before your balance is zero."
+  "cannotLeaveGroupBalance": "You cannot leave the group before your balance is zero.",
+  "privacyBullet1": "No email, phone number, or password required.",
+  "privacyBullet2": "No advertising identifiers or tracker SDKs.",
+  "privacyBullet3": "No device contact book or GPS location permissions.",
+  "privacyBullet4": "Authentication uses anonymous Firebase credentials.",
+  "privacyBullet5": "Only group members you share your invite code with can view your group expenses."
 }

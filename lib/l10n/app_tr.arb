@@ -233,5 +233,10 @@
   "leaveGroup": "Gruptan Ayrıl",
   "deleteGroup": "Grubu Sil",
   "cannotRemoveMemberBalance": "Bakiye sıfırlanmadan üye çıkarılamaz.",
-  "cannotLeaveGroupBalance": "Bakiye sıfırlanmadan gruptan ayrılamazsınız."
+  "cannotLeaveGroupBalance": "Bakiye sıfırlanmadan gruptan ayrılamazsınız.",
+  "privacyBullet1": "E-posta, telefon numarası veya şifre gerekmez.",
+  "privacyBullet2": "Reklam kimliği veya takipçi SDK'ları bulunmaz.",
+  "privacyBullet3": "Rehber veya GPS konum izinleri istenmez.",
+  "privacyBullet4": "Kimlik doğrulama anonim Firebase hesaplarıyla yapılır.",
+  "privacyBullet5": "Grup harcamalarını yalnızca davet kodunu paylaştığınız grup üyeleri görebilir."
 }

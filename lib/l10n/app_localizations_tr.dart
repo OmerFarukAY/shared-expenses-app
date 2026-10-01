@@ -505,4 +505,22 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get cannotLeaveGroupBalance =>
       'Bakiye sıfırlanmadan gruptan ayrılamazsınız.';
+
+  @override
+  String get privacyBullet1 => 'E-posta, telefon numarası veya şifre gerekmez.';
+
+  @override
+  String get privacyBullet2 =>
+      'Reklam kimliği veya takipçi SDK\'ları bulunmaz.';
+
+  @override
+  String get privacyBullet3 => 'Rehber veya GPS konum izinleri istenmez.';
+
+  @override
+  String get privacyBullet4 =>
+      'Kimlik doğrulama anonim Firebase hesaplarıyla yapılır.';
+
+  @override
+  String get privacyBullet5 =>
+      'Grup harcamalarını yalnızca davet kodunu paylaştığınız grup üyeleri görebilir.';
 }

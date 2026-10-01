@@ -233,5 +233,10 @@
   "leaveGroup": "Quitter le groupe",
   "deleteGroup": "Supprimer le groupe",
   "cannotRemoveMemberBalance": "Le membre ne peut pas être supprimé avant que son solde ne soit nul.",
-  "cannotLeaveGroupBalance": "Vous ne pouvez pas quitter le groupe avant que votre solde ne soit nul."
+  "cannotLeaveGroupBalance": "Vous ne pouvez pas quitter le groupe avant que votre solde ne soit nul.",
+  "privacyBullet1": "Aucun e-mail, numéro de téléphone ou mot de passe requis.",
+  "privacyBullet2": "Aucun identifiant publicitaire ou SDK de suivi.",
+  "privacyBullet3": "Aucune autorisation d'accès aux contacts ou à la localisation GPS.",
+  "privacyBullet4": "L'authentification utilise des identifiants Firebase anonymes.",
+  "privacyBullet5": "Seuls les membres du groupe avec lesquels vous partagez votre code d'invitation peuvent voir les dépenses."
 }

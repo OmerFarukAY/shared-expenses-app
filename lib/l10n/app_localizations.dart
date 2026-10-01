@@ -1033,6 +1033,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You cannot leave the group before your balance is zero.'**
   String get cannotLeaveGroupBalance;
+
+  /// No description provided for @privacyBullet1.
+  ///
+  /// In en, this message translates to:
+  /// **'No email, phone number, or password required.'**
+  String get privacyBullet1;
+
+  /// No description provided for @privacyBullet2.
+  ///
+  /// In en, this message translates to:
+  /// **'No advertising identifiers or tracker SDKs.'**
+  String get privacyBullet2;
+
+  /// No description provided for @privacyBullet3.
+  ///
+  /// In en, this message translates to:
+  /// **'No device contact book or GPS location permissions.'**
+  String get privacyBullet3;
+
+  /// No description provided for @privacyBullet4.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication uses anonymous Firebase credentials.'**
+  String get privacyBullet4;
+
+  /// No description provided for @privacyBullet5.
+  ///
+  /// In en, this message translates to:
+  /// **'Only group members you share your invite code with can view your group expenses.'**
+  String get privacyBullet5;
 }
 
 class _AppLocalizationsDelegate

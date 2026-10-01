@@ -233,5 +233,10 @@
   "leaveGroup": "Lascia il gruppo",
   "deleteGroup": "Elimina gruppo",
   "cannotRemoveMemberBalance": "Il membro non può essere rimosso prima che il suo saldo sia zero.",
-  "cannotLeaveGroupBalance": "Non puoi lasciare il gruppo prima che il tuo saldo sia zero."
+  "cannotLeaveGroupBalance": "Non puoi lasciare il gruppo prima che il tuo saldo sia zero.",
+  "privacyBullet1": "Nessuna email, numero di telefono o password richiesta.",
+  "privacyBullet2": "Nessun identificatore pubblicitario o SDK di tracciamento.",
+  "privacyBullet3": "Nessun permesso per rubrica contatti o posizione GPS.",
+  "privacyBullet4": "L'autenticazione utilizza credenziali Firebase anonime.",
+  "privacyBullet5": "Solo i membri del gruppo con cui condividi il codice di invito possono visualizzare le spese."
 }

@@ -214,11 +214,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                '• No email, phone number, or password required.\n'
-                '• No advertising identifiers or tracker SDKs.\n'
-                '• No device contact book or GPS location permissions.\n'
-                '• Authentication uses anonymous Firebase credentials.\n'
-                '• Only group members you share your invite code with can view your group expenses.',
+                '• ${l10n?.privacyBullet1 ?? "No email, phone number, or password required."}\n'
+                '• ${l10n?.privacyBullet2 ?? "No advertising identifiers or tracker SDKs."}\n'
+                '• ${l10n?.privacyBullet3 ?? "No device contact book or GPS location permissions."}\n'
+                '• ${l10n?.privacyBullet4 ?? "Authentication uses anonymous Firebase credentials."}\n'
+                '• ${l10n?.privacyBullet5 ?? "Only group members you share your invite code with can view your group expenses."}',
                 style: AppTypography.bodySmall,
               ),
             ],
