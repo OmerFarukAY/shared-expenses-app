@@ -59,6 +59,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
   // Single vs Multiple Payers
   bool _isMultiplePayers = false;
+  bool _isSplitExpanded = false;
   String? _singlePayerUid;
   final Map<String, TextEditingController> _payerControllers = {};
 
@@ -161,6 +162,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   }
 
   void _submit() async {
+    final l10n = AppLocalizations.of(context);
     final totalMinor = _parsedTotalMinor;
 
     if (totalMinor <= 0) {
@@ -197,7 +199,14 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         if (amt > 0) {
           payers[m.uid] = amt;
           sumPayers += amt;
+        } else if (amt < 0) {
+           setState(() => _errorMessage = 'Amounts must be positive.');
+           return;
         }
+      }
+      if (payers.length > 5) {
+        setState(() => _errorMessage = 'Too many payers (max 5).');
+        return;
       }
       if (sumPayers != totalMinor) {
         final formattedTotal = _currency.formatMinor(totalMinor);
@@ -223,8 +232,13 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         for (final uid in _selectedParticipants) {
           final text = _customSplitControllers[uid]?.text ?? '';
           final amt = _currency.parseToMinor(text) ?? 0;
-          splits[uid] = amt;
-          sumCustom += amt;
+          if (amt > 0) {
+             splits[uid] = amt;
+             sumCustom += amt;
+          } else if (amt < 0) {
+             setState(() => _errorMessage = 'Amounts must be positive.');
+             return;
+          }
         }
         if (sumCustom != totalMinor) {
           final formattedTotal = _currency.formatMinor(totalMinor);
@@ -239,7 +253,13 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         final Map<String, double> pcts = {};
         for (final uid in _selectedParticipants) {
           final text = _pctControllers[uid]?.text.trim() ?? '0';
-          pcts[uid] = double.tryParse(text) ?? 0.0;
+          final pct = double.tryParse(text) ?? 0.0;
+          if (pct > 0) {
+             pcts[uid] = pct;
+          } else if (pct < 0) {
+             setState(() => _errorMessage = 'Amounts must be positive.');
+             return;
+          }
         }
         splits = ExpenseSplitEngine.calculatePercentageSplits(
           totalMinor: totalMinor,
@@ -250,6 +270,21 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       setState(() => _errorMessage = e.toString());
       return;
     }
+    
+    // Filter splits > 0 and update participants to only those who actually pay
+    final int originalParticipantCount = _selectedParticipants.length;
+    splits.removeWhere((key, value) => value <= 0);
+    final finalParticipants = splits.keys.toList();
+    if (finalParticipants.isEmpty) {
+        setState(() => _errorMessage = 'At least one participant must have a share > 0.');
+        return;
+    }
+    if (finalParticipants.length > 20) {
+        setState(() => _errorMessage = 'Too many participants (max 20).');
+        return;
+    }
+
+    final int removedCount = originalParticipantCount - finalParticipants.length;
 
     final user = ref.read(userProfileControllerProvider).value;
     if (user == null) return;
@@ -271,7 +306,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       date: _date,
       splitMethod: _splitMethod,
       payers: payers,
-      participants: _selectedParticipants.toList(),
+      participants: finalParticipants,
       splits: splits,
       createdBy: widget.initialExpense?.createdBy ?? user.uid,
       createdAt: widget.initialExpense?.createdAt ?? now,
@@ -287,6 +322,11 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         await ref.read(expenseControllerProvider.notifier).addExpense(expense);
       }
       if (mounted) {
+        if (removedCount > 0) {
+           ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n?.expenseZeroShareRemoved(removedCount) ?? '$removedCount participant(s) with 0 share removed.')),
+           );
+        }
         Navigator.of(context).pop();
       }
     } catch (e) {
@@ -300,8 +340,111 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     }
   }
 
+
+  String _getSplitSummaryText(AppLocalizations? l10n) {
+    final count = _selectedParticipants.length;
+    if (_splitMethod == SplitMethod.equal) {
+      return l10n?.expenseSplitSummaryEqually(count) ?? 'Equally · $count people ›';
+    } else if (_splitMethod == SplitMethod.custom) {
+      return l10n?.expenseSplitSummaryCustom(count) ?? 'Custom · $count people ›';
+    } else {
+      return l10n?.expenseSplitSummaryPercentage(count) ?? 'Percentage · $count people ›';
+    }
+  }
+
+  String _getLiveSummaryText(AppLocalizations? l10n) {
+    final count = _selectedParticipants.length;
+    final total = _parsedTotalMinor;
+    final formattedTotal = _currency.formatMinor(total);
+    if (!_isMultiplePayers && _singlePayerUid != null) {
+      final payerName = widget.members.firstWhere((m) => m.uid == _singlePayerUid, orElse: () => widget.members.first).displayName;
+      return l10n?.expenseLiveSummary(payerName, formattedTotal, count) ?? '$payerName paid $formattedTotal · Split among $count people';
+    } else {
+      return l10n?.expenseLiveSummaryMultiple(formattedTotal, count) ?? 'Multiple paid $formattedTotal · Split among $count people';
+    }
+  }
+
+  String? _getLiveErrorText(AppLocalizations? l10n) {
+    final total = _parsedTotalMinor;
+    if (total <= 0) return null;
+
+    if (_isMultiplePayers) {
+      int sum = 0;
+      int count = 0;
+      for (final m in widget.members) {
+        final amt = _currency.parseToMinor(_payerControllers[m.uid]?.text ?? '') ?? 0;
+        if (amt > 0) {
+          sum += amt;
+          count++;
+        } else if (amt < 0) {
+          return l10n?.errorNegativeAmount ?? 'Amounts must be positive';
+        }
+      }
+      if (count > 5) {
+        return l10n?.errorTooManyPayers ?? 'Too many payers (max 5)';
+      }
+      if (sum != total) {
+        final diff = total - sum;
+        final formattedDiff = _currency.formatMinor(diff.abs());
+        return diff > 0 
+           ? (l10n?.expenseLiveSummaryRemaining(formattedDiff) ?? '$formattedDiff remaining')
+           : (l10n?.expenseLiveSummaryOver(formattedDiff) ?? '$formattedDiff over');
+      }
+    }
+
+    if (_splitMethod == SplitMethod.custom) {
+      int sum = 0;
+      int count = 0;
+      for (final uid in _selectedParticipants) {
+        final amt = _currency.parseToMinor(_customSplitControllers[uid]?.text ?? '') ?? 0;
+        if (amt > 0) {
+          sum += amt;
+          count++;
+        } else if (amt < 0) {
+          return l10n?.errorNegativeAmount ?? 'Amounts must be positive';
+        }
+      }
+      if (count > 20) {
+        return l10n?.errorTooManyParticipants ?? 'Too many participants (max 20)';
+      }
+      if (sum != total) {
+        final diff = total - sum;
+        final formattedDiff = _currency.formatMinor(diff.abs());
+        return diff > 0 
+           ? (l10n?.expenseLiveSummaryRemaining(formattedDiff) ?? '$formattedDiff remaining')
+           : (l10n?.expenseLiveSummaryOver(formattedDiff) ?? '$formattedDiff over');
+      }
+    }
+    
+    if (_splitMethod == SplitMethod.percentage) {
+      int count = 0;
+      for (final uid in _selectedParticipants) {
+        final pct = double.tryParse(_pctControllers[uid]?.text ?? '') ?? 0;
+        if (pct > 0) {
+          count++;
+        } else if (pct < 0) {
+          return l10n?.errorNegativeAmount ?? 'Amounts must be positive';
+        }
+      }
+      if (count > 20) {
+         return l10n?.errorTooManyParticipants ?? 'Too many participants (max 20)';
+      }
+    } else if (_splitMethod == SplitMethod.equal) {
+       if (_selectedParticipants.length > 20) {
+          return l10n?.errorTooManyParticipants ?? 'Too many participants (max 20)';
+       }
+    }
+
+    return null;
+  }
+
+  bool _isSaveDisabled(AppLocalizations? l10n) {
+    return _getLiveErrorText(l10n) != null || _parsedTotalMinor <= 0 || _selectedParticipants.isEmpty || _isSubmitting;
+  }
+  
   @override
   Widget build(BuildContext context) {
+
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -510,25 +653,9 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
               const SizedBox(height: 24),
 
               // 3. WHO PAID?
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    l10n?.expensePaidBy ?? 'Who paid?',
-                    style: AppTypography.h3,
-                  ),
-                  TextButton(
-                    onPressed: () =>
-                        setState(() => _isMultiplePayers = !_isMultiplePayers),
-                    child: Text(
-                      _isMultiplePayers ? 'Single Payer' : 'Multiple Payers',
-                      style: AppTypography.labelMedium.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
+              Text(
+                l10n?.expensePaidBy ?? 'Who paid?',
+                style: AppTypography.h3,
               ),
               const SizedBox(height: 8),
               if (!_isMultiplePayers) ...[
@@ -545,7 +672,43 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                     );
                   }).toList(),
                 ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: () => setState(() => _isMultiplePayers = true),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      l10n?.expensePaidByMultipleAdvanced ?? 'Multiple people paid...',
+                      style: AppTypography.labelMedium.copyWith(
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ),
               ] else ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n?.expensePaidByMultiple ?? 'Multiple people paid',
+                      style: AppTypography.h3,
+                    ),
+                    TextButton(
+                      onPressed: () => setState(() => _isMultiplePayers = false),
+                      child: Text(
+                        l10n?.expenseSwitchToSinglePayer ?? 'Switch to Single Payer',
+                        style: AppTypography.labelMedium.copyWith(
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 DenkCard(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -593,191 +756,278 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
               ],
               const SizedBox(height: 24),
 
-              // 4. WHO PARTICIPATED?
+              // 4. SPLIT
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    l10n?.expenseSplitWith ?? 'Who participated?',
+                    l10n?.expenseSplit ?? 'Split',
                     style: AppTypography.h3,
                   ),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        if (_selectedParticipants.length ==
-                            widget.members.length) {
-                          _selectedParticipants.clear();
-                        } else {
-                          for (final m in widget.members) {
-                            _selectedParticipants.add(m.uid);
-                          }
-                        }
-                      });
-                    },
-                    child: Text(
-                      _selectedParticipants.length == widget.members.length
-                          ? 'Deselect All'
-                          : 'Select All',
-                      style: AppTypography.labelMedium.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w600,
+                  if (!_isSplitExpanded)
+                    TextButton(
+                      onPressed: () => setState(() => _isSplitExpanded = true),
+                      child: Text(
+                        l10n?.expenseSplitCustomize ?? 'Customize',
+                        style: AppTypography.labelMedium.copyWith(
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
+                    ),
+                  if (_isSplitExpanded)
+                    TextButton(
+                      onPressed: () => setState(() => _isSplitExpanded = false),
+                      child: Text(
+                        l10n?.commonDone ?? 'Done',
+                        style: AppTypography.labelMedium.copyWith(
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              if (!_isSplitExpanded) ...[
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: () => setState(() => _isSplitExpanded = true),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.darkSurfaceSubtle : AppColors.lightSurfaceSubtle,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: theme.colorScheme.outline.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.pie_chart_outline, color: theme.colorScheme.primary),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _getSplitSummaryText(l10n),
+                            style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right, color: Colors.grey),
+                      ],
+                    ),
+                  ),
+                ),
+              ] else ...[
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n?.expenseSplitWith ?? 'Who participated?',
+                      style: AppTypography.h3,
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          if (_selectedParticipants.length == widget.members.length) {
+                            _selectedParticipants.clear();
+                          } else {
+                            for (final m in widget.members) {
+                              _selectedParticipants.add(m.uid);
+                            }
+                          }
+                        });
+                      },
+                      child: Text(
+                        _selectedParticipants.length == widget.members.length
+                            ? 'Deselect All'
+                            : 'Select All',
+                        style: AppTypography.labelMedium.copyWith(
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: widget.members.map((m) {
+                    final isIncluded = _selectedParticipants.contains(m.uid);
+                    return FilterChip(
+                      label: Text(m.displayName),
+                      selected: isIncluded,
+                      onSelected: (selected) {
+                        setState(() {
+                          if (selected) {
+                            _selectedParticipants.add(m.uid);
+                          } else {
+                            _selectedParticipants.remove(m.uid);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  l10n?.expenseSplitMethod ?? 'Split Method',
+                  style: AppTypography.h3,
+                ),
+                const SizedBox(height: 10),
+                SegmentedButton<SplitMethod>(
+                  segments: [
+                    ButtonSegment(
+                      value: SplitMethod.equal,
+                      label: Text(l10n?.splitEqual ?? 'Equally'),
+                    ),
+                    ButtonSegment(
+                      value: SplitMethod.custom,
+                      label: Text(l10n?.splitCustom ?? 'Exact'),
+                    ),
+                    ButtonSegment(
+                      value: SplitMethod.percentage,
+                      label: Text(l10n?.splitPercentage ?? '%'),
+                    ),
+                  ],
+                  selected: {_splitMethod},
+                  onSelectionChanged: (set) {
+                    setState(() => _splitMethod = set.first);
+                  },
+                ),
+                const SizedBox(height: 16),
+                if (_splitMethod == SplitMethod.custom) ...[
+                  DenkCard(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: widget.members
+                          .where((m) => _selectedParticipants.contains(m.uid))
+                          .map((m) {
+                            final controller = _customSplitControllers[m.uid]!;
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      m.displayName,
+                                      style: AppTypography.bodyMedium,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 120,
+                                    child: TextField(
+                                      controller: controller,
+                                      keyboardType:
+                                          const TextInputType.numberWithOptions(
+                                            decimal: true,
+                                          ),
+                                      textAlign: TextAlign.right,
+                                      style: AppTypography.monetary(fontSize: 15),
+                                      decoration: InputDecoration(
+                                        prefixText: _currency.symbol,
+                                        isDense: true,
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 8,
+                                            ),
+                                      ),
+                                      onChanged: (_) => setState(() {}),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          })
+                          .toList(),
+                    ),
+                  ),
+                ] else if (_splitMethod == SplitMethod.percentage) ...[
+                  DenkCard(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: widget.members
+                          .where((m) => _selectedParticipants.contains(m.uid))
+                          .map((m) {
+                            final controller = _pctControllers[m.uid]!;
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      m.displayName,
+                                      style: AppTypography.bodyMedium,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 100,
+                                    child: TextField(
+                                      controller: controller,
+                                      keyboardType:
+                                          const TextInputType.numberWithOptions(
+                                            decimal: true,
+                                          ),
+                                      textAlign: TextAlign.right,
+                                      style: AppTypography.monetary(fontSize: 15),
+                                      decoration: const InputDecoration(
+                                        suffixText: '%',
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 8,
+                                        ),
+                                      ),
+                                      onChanged: (_) => setState(() {}),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          })
+                          .toList(),
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: widget.members.map((m) {
-                  final isIncluded = _selectedParticipants.contains(m.uid);
-                  return FilterChip(
-                    label: Text(m.displayName),
-                    selected: isIncluded,
-                    onSelected: (selected) {
-                      setState(() {
-                        if (selected) {
-                          _selectedParticipants.add(m.uid);
-                        } else {
-                          _selectedParticipants.remove(m.uid);
-                        }
-                      });
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 24),
-
-              // 5. SPLIT METHOD
-              Text(
-                l10n?.expenseSplitMethod ?? 'Split Method',
-                style: AppTypography.h3,
-              ),
-              const SizedBox(height: 10),
-              SegmentedButton<SplitMethod>(
-                segments: [
-                  ButtonSegment(
-                    value: SplitMethod.equal,
-                    label: Text(l10n?.splitEqual ?? 'Equally'),
-                  ),
-                  ButtonSegment(
-                    value: SplitMethod.custom,
-                    label: Text(l10n?.splitCustom ?? 'Exact'),
-                  ),
-                  ButtonSegment(
-                    value: SplitMethod.percentage,
-                    label: Text(l10n?.splitPercentage ?? '%'),
-                  ),
-                ],
-                selected: {_splitMethod},
-                onSelectionChanged: (set) {
-                  setState(() => _splitMethod = set.first);
-                },
+              ],
+              const SizedBox(height: 32),
+              // LIVE SUMMARY
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: _getLiveErrorText(l10n) != null ? AppColors.negativeLight : (isDark ? AppColors.darkSurfaceSubtle : AppColors.lightSurfaceSubtle),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      _getLiveSummaryText(l10n),
+                      textAlign: TextAlign.center,
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: _getLiveErrorText(l10n) != null ? AppColors.negative : theme.colorScheme.onSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (_getLiveErrorText(l10n) != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        _getLiveErrorText(l10n)!,
+                        textAlign: TextAlign.center,
+                        style: AppTypography.labelMedium.copyWith(
+                          color: AppColors.negative,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
-
-              // CUSTOM / PERCENTAGE ALLOCATION INPUTS
-              if (_splitMethod == SplitMethod.custom) ...[
-                DenkCard(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: widget.members
-                        .where((m) => _selectedParticipants.contains(m.uid))
-                        .map((m) {
-                          final controller = _customSplitControllers[m.uid]!;
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    m.displayName,
-                                    style: AppTypography.bodyMedium,
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 120,
-                                  child: TextField(
-                                    controller: controller,
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                          decimal: true,
-                                        ),
-                                    textAlign: TextAlign.right,
-                                    style: AppTypography.monetary(fontSize: 15),
-                                    decoration: InputDecoration(
-                                      prefixText: _currency.symbol,
-                                      isDense: true,
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 8,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        })
-                        .toList(),
-                  ),
-                ),
-              ] else if (_splitMethod == SplitMethod.percentage) ...[
-                DenkCard(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: widget.members
-                        .where((m) => _selectedParticipants.contains(m.uid))
-                        .map((m) {
-                          final controller = _pctControllers[m.uid]!;
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    m.displayName,
-                                    style: AppTypography.bodyMedium,
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 100,
-                                  child: TextField(
-                                    controller: controller,
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                          decimal: true,
-                                        ),
-                                    textAlign: TextAlign.right,
-                                    style: AppTypography.monetary(fontSize: 15),
-                                    decoration: const InputDecoration(
-                                      suffixText: '%',
-                                      isDense: true,
-                                      contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 8,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        })
-                        .toList(),
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 32),
               DenkButton(
                 label: widget.initialExpense != null
                     ? (l10n?.commonSave ?? 'Save Changes')
                     : (l10n?.addExpense ?? 'Add Expense'),
                 isLoading: _isSubmitting,
-                onPressed: _submit,
+                onPressed: _isSaveDisabled(l10n) ? null : _submit,
               ),
             ],
           ),

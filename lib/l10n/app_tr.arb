@@ -2,7 +2,6 @@
   "@@locale": "tr",
   "appName": "Denk",
   "appTagline": "Paylaşılan harcamalar, kolay denkleşme",
-
   "commonCancel": "İptal",
   "commonSave": "Kaydet",
   "commonDelete": "Sil",
@@ -14,11 +13,9 @@
   "commonConfirm": "Onayla",
   "commonError": "Bir hata oluştu",
   "commonLoading": "Yükleniyor...",
-
   "navGroups": "Gruplar",
   "navActivity": "Aktivite",
   "navSettings": "Ayarlar",
-
   "welcomeTitle": "Denk'e Hoş Geldiniz",
   "welcomeSubtitle": "Şifre ve kişisel bilgi vermeden; arkadaşlarınız, ev arkadaşlarınız veya ailenizle ortak harcamalarınızı kolayca takip edin.",
   "chooseDisplayName": "Görünecek adınızı seçin",
@@ -26,7 +23,6 @@
   "displayNameHint": "Örn. Ömer, Ahmet, Zeynep",
   "displayNameValidation": "Lütfen 2 ile 50 karakter arasında bir ad girin",
   "getStarted": "Başlayın",
-
   "createGroup": "Grup Oluştur",
   "joinGroup": "Gruba Katıl",
   "groupNameLabel": "Grup Adı",
@@ -37,14 +33,11 @@
   "joinButton": "Katıl",
   "copyInviteCode": "Davet Kodunu Kopyala",
   "inviteCodeCopied": "Davet kodu panoya kopyalandı",
-
   "noGroupsTitle": "Henüz grup yok",
   "noGroupsSubtitle": "Ortak harcama girmeye başlamak için bir grup oluşturun veya davet koduyla katılın.",
-
   "expensesTab": "Harcamalar",
   "balancesTab": "Bakiyeler",
   "settleTab": "Hesap Kapat",
-
   "addExpense": "Harcama Ekle",
   "expenseAmount": "Tutar",
   "expenseTitle": "Harcama ne içindi?",
@@ -54,11 +47,9 @@
   "expensePaidBy": "Kim ödedi?",
   "expenseSplitWith": "Kimler katıldı?",
   "expenseSplitMethod": "Bölüşüm Şekli",
-
   "splitEqual": "Eşit Olarak",
   "splitCustom": "Tam Tutarlarla",
   "splitPercentage": "Yüzdelik Oranla",
-
   "categoryFood": "Yeme & İçme",
   "categoryGroceries": "Market",
   "categoryTransport": "Ulaşım",
@@ -68,23 +59,19 @@
   "categoryBills": "Faturalar",
   "categoryShopping": "Alışveriş",
   "categoryOther": "Diğer",
-
   "totalSpending": "Toplam Harcama",
   "yourBalance": "Bakiyeniz",
   "youAreOwed": "Alacağınız var",
   "youOwe": "Borcunuz var",
   "youPaid": "Siz ödediniz",
   "allSettled": "Tüm hesaplar denk",
-
   "noExpensesTitle": "Henüz harcama yok",
   "noExpensesSubtitle": "İlk harcamanızı eklemek için aşağıdaki düğmeye dokunun.",
-
   "settlementTitle": "Ödeme Planı",
   "markAsSettled": "Ödendi Olarak İşaretle",
   "settlementCompleted": "Ödeme başarıyla kaydedildi",
   "settlementHistory": "Geçmiş Ödemeler",
   "noSettlementsNeeded": "Herkes denkleşti! Bekleyen ödeme yok.",
-
   "settingsTitle": "Ayarlar",
   "settingsProfile": "Profil",
   "settingsLanguage": "Dil",
@@ -95,14 +82,12 @@
   "settingsDeleteWarning": "Bu işlem bu cihazdaki anonim kimliğinizi siler. Tekrar davet edilene kadar gruplarınıza erişemezsiniz.",
   "settingsAbout": "Denk Hakkında",
   "settingsVersion": "Sürüm",
-
   "expenseDetailTitle": "Harcama Detayı",
   "deleteExpenseConfirmTitle": "Harcamayı Sil",
   "deleteExpenseConfirmMessage": "Bu harcamayı silmek istediğinizden emin misiniz? Grup bakiyeleri yeniden hesaplanacaktır.",
   "paidBy": "Ödeyen",
   "splitBetween": "Bölüşenler",
   "expenseNotes": "Notlar",
-
   "searchHint": "Harcamalarda ara...",
   "filterAll": "Tümü",
   "clearFilters": "Filtreleri Temizle",
@@ -111,7 +96,6 @@
   "spendingInsights": "Harcama Özeti",
   "spendingByCategory": "Kategoriye Göre Harcamalar",
   "memberContributions": "Üye Katkıları",
-
   "settingsPreferences": "Tercihler",
   "themeTitle": "Tema",
   "themeSystem": "Sistem Varsayılanı",
@@ -120,7 +104,6 @@
   "anonymousAccount": "Anonim Firebase Hesabı",
   "copyId": "Kimliği Kopyala",
   "membersLabel": "üye",
-
   "requestToJoinButton": "Katılma İsteği Gönder",
   "joinRequestSentTitle": "İstek Gönderildi",
   "joinRequestSentSubtitle": "{groupName} grubuna katılma isteğiniz iletildi. Grup sahibi onayladığında gruba erişebileceksiniz.",
@@ -160,5 +143,87 @@
   "uidCopiedSnackbar": "UID panoya kopyalandı",
   "privacyCalloutTitle": "Gizlilik Öncelikli, Minimum Veri Mimarisi",
   "privacyCalloutBody": "E-posta, telefon veya şifre toplanmaz. Grup bakiyelerini yalnızca grup üyeleri görebilir.",
-  "readAction": "Oku"
+  "readAction": "Oku",
+  "expensePaidByMultiple": "Birden fazla kişi ödedi",
+  "expensePaidByMultipleAdvanced": "Birden fazla kişi ödedi...",
+  "expenseSwitchToMultiplePayers": "Çoklu Ödeyene Geç",
+  "expenseSwitchToSinglePayer": "Tek Ödeyene Geç",
+  "expenseSplit": "Bölüşüm",
+  "expenseSplitCustomize": "Özelleştir",
+  "expenseSplitSummaryEqually": "Herkese eşit · {count} kişi ›",
+  "@expenseSplitSummaryEqually": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expenseSplitSummaryCustom": "Özel tutar · {count} kişi ›",
+  "@expenseSplitSummaryCustom": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expenseSplitSummaryPercentage": "Yüzdelik oranla · {count} kişi ›",
+  "@expenseSplitSummaryPercentage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expenseLiveSummary": "{payer} {amount} ödedi · {count} kişiye bölündü",
+  "@expenseLiveSummary": {
+    "placeholders": {
+      "payer": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expenseLiveSummaryMultiple": "Çoklu ödeyen {amount} · {count} kişiye bölündü",
+  "@expenseLiveSummaryMultiple": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expenseLiveSummaryRemaining": "{amount} eksik paylaştırıldı",
+  "@expenseLiveSummaryRemaining": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "expenseLiveSummaryOver": "{amount} fazla paylaştırıldı",
+  "@expenseLiveSummaryOver": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "errorTooManyPayers": "Çok fazla ödeyen (en fazla 5)",
+  "errorTooManyParticipants": "Çok fazla katılımcı (en fazla 20)",
+  "errorNegativeAmount": "Tutarlar sıfırdan büyük olmalıdır",
+  "expenseZeroShareRemoved": "Payı 0 olan {count} kişi bölüşümden çıkarıldı.",
+  "@expenseZeroShareRemoved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

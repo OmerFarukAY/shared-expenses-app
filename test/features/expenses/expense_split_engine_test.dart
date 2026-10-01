@@ -6,6 +6,18 @@ import 'package:denk/features/expenses/domain/expense_split_engine.dart';
 
 void main() {
   group('ExpenseSplitEngine (Financial Correctness & Integer Invariants)', () {
+    test('100 TL / 3 kişi eşit bölüşüm toplamı tam totalMinor ve hiçbir pay 0 veya negatif değil', () {
+      final splits = ExpenseSplitEngine.calculateEqualSplits(
+        totalMinor: 10000,
+        participantUids: ['u1', 'u2', 'u3'],
+      );
+      expect(splits['u1'], 3334);
+      expect(splits['u2'], 3333);
+      expect(splits['u3'], 3333);
+      expect(splits.values.every((v) => v > 0), isTrue);
+      expect(splits.values.fold(0, (a, b) => a + b), 10000);
+    });
+
     test('Equal split with clean division', () {
       final splits = ExpenseSplitEngine.calculateEqualSplits(
         totalMinor: 300,

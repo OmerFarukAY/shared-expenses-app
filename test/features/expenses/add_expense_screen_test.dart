@@ -109,6 +109,10 @@ void main() {
       ); // AppBar title and bottom button
       expect(find.text('What was it for?'), findsOneWidget);
       expect(find.text('Who paid?'), findsOneWidget);
+
+      await tester.tap(find.text('Customize'));
+      await tester.pumpAndSettle();
+
       expect(find.text('Who participated?'), findsOneWidget);
 
       // Tap Save without entering amount

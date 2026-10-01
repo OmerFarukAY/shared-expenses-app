@@ -883,6 +883,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Read'**
   String get readAction;
+
+  /// No description provided for @expensePaidByMultiple.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiple people paid'**
+  String get expensePaidByMultiple;
+
+  /// No description provided for @expensePaidByMultipleAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiple people paid...'**
+  String get expensePaidByMultipleAdvanced;
+
+  /// No description provided for @expenseSwitchToMultiplePayers.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to Multiple Payers'**
+  String get expenseSwitchToMultiplePayers;
+
+  /// No description provided for @expenseSwitchToSinglePayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to Single Payer'**
+  String get expenseSwitchToSinglePayer;
+
+  /// No description provided for @expenseSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Split'**
+  String get expenseSplit;
+
+  /// No description provided for @expenseSplitCustomize.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize'**
+  String get expenseSplitCustomize;
+
+  /// No description provided for @expenseSplitSummaryEqually.
+  ///
+  /// In en, this message translates to:
+  /// **'Equally · {count} people ›'**
+  String expenseSplitSummaryEqually(int count);
+
+  /// No description provided for @expenseSplitSummaryCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom · {count} people ›'**
+  String expenseSplitSummaryCustom(int count);
+
+  /// No description provided for @expenseSplitSummaryPercentage.
+  ///
+  /// In en, this message translates to:
+  /// **'Percentage · {count} people ›'**
+  String expenseSplitSummaryPercentage(int count);
+
+  /// No description provided for @expenseLiveSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{payer} paid {amount} · Split among {count} people'**
+  String expenseLiveSummary(String payer, String amount, int count);
+
+  /// No description provided for @expenseLiveSummaryMultiple.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiple paid {amount} · Split among {count} people'**
+  String expenseLiveSummaryMultiple(String amount, int count);
+
+  /// No description provided for @expenseLiveSummaryRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} remaining'**
+  String expenseLiveSummaryRemaining(String amount);
+
+  /// No description provided for @expenseLiveSummaryOver.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} over'**
+  String expenseLiveSummaryOver(String amount);
+
+  /// No description provided for @errorTooManyPayers.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many payers (max 5)'**
+  String get errorTooManyPayers;
+
+  /// No description provided for @errorTooManyParticipants.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many participants (max 20)'**
+  String get errorTooManyParticipants;
+
+  /// No description provided for @errorNegativeAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amounts must be greater than zero'**
+  String get errorNegativeAmount;
+
+  /// No description provided for @expenseZeroShareRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} participant(s) with 0 share removed.'**
+  String expenseZeroShareRemoved(int count);
 }
 
 class _AppLocalizationsDelegate

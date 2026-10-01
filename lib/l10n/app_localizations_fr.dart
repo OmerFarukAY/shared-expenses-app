@@ -415,4 +415,71 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get readAction => 'Lire';
+
+  @override
+  String get expensePaidByMultiple => 'Multiple people paid';
+
+  @override
+  String get expensePaidByMultipleAdvanced => 'Multiple people paid...';
+
+  @override
+  String get expenseSwitchToMultiplePayers => 'Switch to Multiple Payers';
+
+  @override
+  String get expenseSwitchToSinglePayer => 'Switch to Single Payer';
+
+  @override
+  String get expenseSplit => 'Split';
+
+  @override
+  String get expenseSplitCustomize => 'Customize';
+
+  @override
+  String expenseSplitSummaryEqually(int count) {
+    return 'Equally · $count people ›';
+  }
+
+  @override
+  String expenseSplitSummaryCustom(int count) {
+    return 'Custom · $count people ›';
+  }
+
+  @override
+  String expenseSplitSummaryPercentage(int count) {
+    return 'Percentage · $count people ›';
+  }
+
+  @override
+  String expenseLiveSummary(String payer, String amount, int count) {
+    return '$payer paid $amount · Split among $count people';
+  }
+
+  @override
+  String expenseLiveSummaryMultiple(String amount, int count) {
+    return 'Multiple paid $amount · Split among $count people';
+  }
+
+  @override
+  String expenseLiveSummaryRemaining(String amount) {
+    return '$amount remaining';
+  }
+
+  @override
+  String expenseLiveSummaryOver(String amount) {
+    return '$amount over';
+  }
+
+  @override
+  String get errorTooManyPayers => 'Too many payers (max 5)';
+
+  @override
+  String get errorTooManyParticipants => 'Too many participants (max 20)';
+
+  @override
+  String get errorNegativeAmount => 'Amounts must be greater than zero';
+
+  @override
+  String expenseZeroShareRemoved(int count) {
+    return '$count participant(s) with 0 share removed.';
+  }
 }

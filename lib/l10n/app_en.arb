@@ -2,7 +2,6 @@
   "@@locale": "en",
   "appName": "Denk",
   "appTagline": "Shared expenses, settled simply",
-  
   "commonCancel": "Cancel",
   "commonSave": "Save",
   "commonDelete": "Delete",
@@ -14,11 +13,9 @@
   "commonConfirm": "Confirm",
   "commonError": "Something went wrong",
   "commonLoading": "Loading...",
-  
   "navGroups": "Groups",
   "navActivity": "Activity",
   "navSettings": "Settings",
-
   "welcomeTitle": "Welcome to Denk",
   "welcomeSubtitle": "Keep track of shared expenses with friends, roommates, and family without passwords or personal data.",
   "chooseDisplayName": "Choose your display name",
@@ -26,7 +23,6 @@
   "displayNameHint": "e.g. Alex, Sam, Ömer",
   "displayNameValidation": "Please enter a name between 2 and 50 characters",
   "getStarted": "Get Started",
-
   "createGroup": "Create Group",
   "joinGroup": "Join Group",
   "groupNameLabel": "Group Name",
@@ -37,14 +33,11 @@
   "joinButton": "Join",
   "copyInviteCode": "Copy Invite Code",
   "inviteCodeCopied": "Invite code copied to clipboard",
-
   "noGroupsTitle": "No groups yet",
   "noGroupsSubtitle": "Create a group or enter an invite code to start sharing expenses.",
-  
   "expensesTab": "Expenses",
   "balancesTab": "Balances",
   "settleTab": "Settle Up",
-
   "addExpense": "Add Expense",
   "expenseAmount": "Amount",
   "expenseTitle": "What was it for?",
@@ -54,11 +47,9 @@
   "expensePaidBy": "Who paid?",
   "expenseSplitWith": "Who participated?",
   "expenseSplitMethod": "Split Method",
-
   "splitEqual": "Equally",
   "splitCustom": "Exact Amounts",
   "splitPercentage": "By Percentage",
-
   "categoryFood": "Food & Dining",
   "categoryGroceries": "Groceries",
   "categoryTransport": "Transport",
@@ -68,23 +59,19 @@
   "categoryBills": "Bills & Utilities",
   "categoryShopping": "Shopping",
   "categoryOther": "Other",
-
   "totalSpending": "Total Spending",
   "yourBalance": "Your Balance",
   "youAreOwed": "You are owed",
   "youOwe": "You owe",
   "youPaid": "You paid",
   "allSettled": "All settled up",
-
   "noExpensesTitle": "No expenses yet",
   "noExpensesSubtitle": "Tap the button below to add your first expense.",
-
   "settlementTitle": "Settlement Plan",
   "markAsSettled": "Mark as Settled",
   "settlementCompleted": "Settlement recorded successfully",
   "settlementHistory": "Settlement History",
   "noSettlementsNeeded": "Everyone is settled up! No payments needed.",
-
   "settingsTitle": "Settings",
   "settingsProfile": "Profile",
   "settingsLanguage": "Language",
@@ -95,14 +82,12 @@
   "settingsDeleteWarning": "This will remove your local anonymous identity on this device. You will lose access to groups unless invited back.",
   "settingsAbout": "About Denk",
   "settingsVersion": "Version",
-
   "expenseDetailTitle": "Expense Details",
   "deleteExpenseConfirmTitle": "Delete Expense",
   "deleteExpenseConfirmMessage": "Are you sure you want to delete this expense? This will recalculate all group balances.",
   "paidBy": "Paid by",
   "splitBetween": "Split between",
   "expenseNotes": "Notes",
-
   "searchHint": "Search expenses...",
   "filterAll": "All",
   "clearFilters": "Clear Filters",
@@ -111,7 +96,6 @@
   "spendingInsights": "Spending Overview",
   "spendingByCategory": "Spending by Category",
   "memberContributions": "Member Contributions",
-
   "settingsPreferences": "Preferences",
   "themeTitle": "Theme",
   "themeSystem": "System Default",
@@ -120,7 +104,6 @@
   "anonymousAccount": "Anonymous Firebase Account",
   "copyId": "Copy ID",
   "membersLabel": "members",
-
   "requestToJoinButton": "Request to Join",
   "joinRequestSentTitle": "Request Sent",
   "joinRequestSentSubtitle": "Your request to join {groupName} has been submitted. You will be able to access the group once an owner approves it.",
@@ -160,5 +143,87 @@
   "uidCopiedSnackbar": "UID copied to clipboard",
   "privacyCalloutTitle": "Privacy-First, Data-Minimized Architecture",
   "privacyCalloutBody": "No email, phone, or passwords collected. Only group members can view group balances.",
-  "readAction": "Read"
+  "readAction": "Read",
+  "expensePaidByMultiple": "Multiple people paid",
+  "expensePaidByMultipleAdvanced": "Multiple people paid...",
+  "expenseSwitchToMultiplePayers": "Switch to Multiple Payers",
+  "expenseSwitchToSinglePayer": "Switch to Single Payer",
+  "expenseSplit": "Split",
+  "expenseSplitCustomize": "Customize",
+  "expenseSplitSummaryEqually": "Equally · {count} people ›",
+  "@expenseSplitSummaryEqually": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expenseSplitSummaryCustom": "Custom · {count} people ›",
+  "@expenseSplitSummaryCustom": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expenseSplitSummaryPercentage": "Percentage · {count} people ›",
+  "@expenseSplitSummaryPercentage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expenseLiveSummary": "{payer} paid {amount} · Split among {count} people",
+  "@expenseLiveSummary": {
+    "placeholders": {
+      "payer": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expenseLiveSummaryMultiple": "Multiple paid {amount} · Split among {count} people",
+  "@expenseLiveSummaryMultiple": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expenseLiveSummaryRemaining": "{amount} remaining",
+  "@expenseLiveSummaryRemaining": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "expenseLiveSummaryOver": "{amount} over",
+  "@expenseLiveSummaryOver": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "errorTooManyPayers": "Too many payers (max 5)",
+  "errorTooManyParticipants": "Too many participants (max 20)",
+  "errorNegativeAmount": "Amounts must be greater than zero",
+  "expenseZeroShareRemoved": "{count} participant(s) with 0 share removed.",
+  "@expenseZeroShareRemoved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

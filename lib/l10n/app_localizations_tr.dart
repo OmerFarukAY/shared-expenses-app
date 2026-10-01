@@ -412,4 +412,71 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get readAction => 'Oku';
+
+  @override
+  String get expensePaidByMultiple => 'Birden fazla kişi ödedi';
+
+  @override
+  String get expensePaidByMultipleAdvanced => 'Birden fazla kişi ödedi...';
+
+  @override
+  String get expenseSwitchToMultiplePayers => 'Çoklu Ödeyene Geç';
+
+  @override
+  String get expenseSwitchToSinglePayer => 'Tek Ödeyene Geç';
+
+  @override
+  String get expenseSplit => 'Bölüşüm';
+
+  @override
+  String get expenseSplitCustomize => 'Özelleştir';
+
+  @override
+  String expenseSplitSummaryEqually(int count) {
+    return 'Herkese eşit · $count kişi ›';
+  }
+
+  @override
+  String expenseSplitSummaryCustom(int count) {
+    return 'Özel tutar · $count kişi ›';
+  }
+
+  @override
+  String expenseSplitSummaryPercentage(int count) {
+    return 'Yüzdelik oranla · $count kişi ›';
+  }
+
+  @override
+  String expenseLiveSummary(String payer, String amount, int count) {
+    return '$payer $amount ödedi · $count kişiye bölündü';
+  }
+
+  @override
+  String expenseLiveSummaryMultiple(String amount, int count) {
+    return 'Çoklu ödeyen $amount · $count kişiye bölündü';
+  }
+
+  @override
+  String expenseLiveSummaryRemaining(String amount) {
+    return '$amount eksik paylaştırıldı';
+  }
+
+  @override
+  String expenseLiveSummaryOver(String amount) {
+    return '$amount fazla paylaştırıldı';
+  }
+
+  @override
+  String get errorTooManyPayers => 'Çok fazla ödeyen (en fazla 5)';
+
+  @override
+  String get errorTooManyParticipants => 'Çok fazla katılımcı (en fazla 20)';
+
+  @override
+  String get errorNegativeAmount => 'Tutarlar sıfırdan büyük olmalıdır';
+
+  @override
+  String expenseZeroShareRemoved(int count) {
+    return 'Payı 0 olan $count kişi bölüşümden çıkarıldı.';
+  }
 }
