@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
+import 'package:denk/core/constants/currencies.dart';
 import 'package:denk/core/theme/app_colors.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
+import 'package:native_liquid_glass/native_liquid_glass.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
 import 'package:denk/features/groups/presentation/group_controller.dart';
@@ -406,147 +408,78 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                               : isDebtor
                               ? '${l10n?.youOwe ?? 'You owe'}: ${currency.formatMinor(myNetMinor.abs())}'
                               : (l10n?.allSettled ?? 'All settled up'),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: isCreditor
-                                  ? (isDark
-                                        ? AppColors.positiveDark.withValues(
-                                            alpha: 0.5,
-                                          )
-                                        : AppColors.positiveLight)
-                                  : isDebtor
-                                  ? (isDark
-                                        ? AppColors.negativeDark.withValues(
-                                            alpha: 0.5,
-                                          )
-                                        : AppColors.negativeLight)
-                                  : (isDark
-                                        ? AppColors.darkSurface
-                                        : AppColors.lightSurface),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: isCreditor
-                                    ? AppColors.positive.withValues(alpha: 0.25)
-                                    : isDebtor
-                                    ? AppColors.negative.withValues(alpha: 0.25)
-                                    : (isDark
-                                          ? AppColors.darkBorder
-                                          : AppColors.lightBorder),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        if (isCreditor)
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              right: 6,
-                                            ),
-                                            child: Icon(
-                                              Icons.arrow_upward_rounded,
-                                              size: 16,
-                                              color: isDark
-                                                  ? AppColors.positiveBright
-                                                  : AppColors.positive,
-                                            ),
-                                          )
-                                        else if (isDebtor)
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              right: 6,
-                                            ),
-                                            child: Icon(
-                                              Icons.arrow_downward_rounded,
-                                              size: 16,
-                                              color: isDark
-                                                  ? AppColors.negativeBright
-                                                  : AppColors.negative,
-                                            ),
-                                          )
-                                        else
-                                          const Padding(
-                                            padding: EdgeInsets.only(right: 6),
-                                            child: Icon(
-                                              Icons
-                                                  .check_circle_outline_rounded,
-                                              size: 16,
-                                              color: AppColors.settled,
-                                            ),
-                                          ),
-                                        Text(
-                                          isCreditor
-                                              ? (l10n?.youAreOwed ??
-                                                    'You are owed')
-                                              : isDebtor
-                                              ? (l10n?.youOwe ?? 'You owe')
-                                              : (l10n?.allSettled ??
-                                                    'All settled up'),
-                                          style: AppTypography.labelSmall
-                                              .copyWith(
-                                                fontWeight: FontWeight.w600,
-                                                color: isCreditor
-                                                    ? (isDark
-                                                          ? AppColors
-                                                                .positiveBright
-                                                          : AppColors.positive)
-                                                    : isDebtor
-                                                    ? (isDark
-                                                          ? AppColors
-                                                                .negativeBright
-                                                          : AppColors.negative)
-                                                    : theme
-                                                          .colorScheme
-                                                          .onSurface
-                                                          .withValues(
-                                                            alpha: 0.6,
-                                                          ),
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      '${l10n?.totalSpending ?? 'Total Spending'}: ${currency.formatMinor(summary.totalGroupSpendingMinor)}',
-                                      style: AppTypography.labelSmall.copyWith(
-                                        color: theme.colorScheme.onSurface
-                                            .withValues(alpha: 0.5),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  isCreditor
-                                      ? '+${currency.formatMinor(myNetMinor)}'
-                                      : isDebtor
-                                      ? '-${currency.formatMinor(myNetMinor.abs())}'
-                                      : currency.formatMinor(0),
-                                  style: AppTypography.monetary(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w700,
-                                    color: isCreditor
+                          child: NativeLiquidGlassUtils.supportsLiquidGlass
+                              ? LiquidGlassContainer(
+                                  config: LiquidGlassConfig(
+                                    shape: LiquidGlassEffectShape.rect,
+                                    cornerRadius: 16,
+                                    tint: isCreditor
                                         ? (isDark
-                                              ? AppColors.positiveBright
-                                              : AppColors.positive)
+                                            ? AppColors.positiveDark.withValues(alpha: 0.3)
+                                            : AppColors.positive.withValues(alpha: 0.15))
                                         : isDebtor
                                         ? (isDark
-                                              ? AppColors.negativeBright
-                                              : AppColors.negative)
-                                        : theme.colorScheme.onSurface,
+                                            ? AppColors.negativeDark.withValues(alpha: 0.3)
+                                            : AppColors.negative.withValues(alpha: 0.15))
+                                        : null,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(20),
+                                    child: _buildBalanceCardContent(
+                                      isCreditor: isCreditor,
+                                      isDebtor: isDebtor,
+                                      isDark: isDark,
+                                      l10n: l10n,
+                                      theme: theme,
+                                      currency: currency,
+                                      myNetMinor: myNetMinor,
+                                      summary: summary,
+                                    ),
+                                  ),
+                                )
+                              : AnimatedContainer(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: isCreditor
+                                        ? (isDark
+                                            ? AppColors.positiveDark.withValues(
+                                                alpha: 0.5,
+                                              )
+                                            : AppColors.positiveLight)
+                                        : isDebtor
+                                        ? (isDark
+                                            ? AppColors.negativeDark.withValues(
+                                                alpha: 0.5,
+                                              )
+                                            : AppColors.negativeLight)
+                                        : (isDark
+                                            ? AppColors.darkSurface
+                                            : AppColors.lightSurface),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: isCreditor
+                                          ? AppColors.positive.withValues(alpha: 0.25)
+                                          : isDebtor
+                                          ? AppColors.negative.withValues(alpha: 0.25)
+                                          : (isDark
+                                              ? AppColors.darkBorder
+                                              : AppColors.lightBorder),
+                                    ),
+                                  ),
+                                  child: _buildBalanceCardContent(
+                                    isCreditor: isCreditor,
+                                    isDebtor: isDebtor,
+                                    isDark: isDark,
+                                    l10n: l10n,
+                                    theme: theme,
+                                    currency: currency,
+                                    myNetMinor: myNetMinor,
+                                    summary: summary,
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
                         ),
                       ),
 
@@ -1235,20 +1168,128 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        tooltip: l10n?.addExpense ?? 'Add Expense',
-        onPressed: () {
-          membersAsync.whenData((members) {
-            AddExpenseScreen.show(
-              context: context,
-              group: widget.group,
-              members: members,
-            );
-          });
-        },
-        icon: const Icon(Icons.add_rounded),
-        label: Text(l10n?.addExpense ?? 'Add Expense'),
-      ),
+      floatingActionButton: NativeLiquidGlassUtils.supportsLiquidGlass
+          ? LiquidGlassButton(
+              label: l10n?.addExpense ?? 'Add Expense',
+              icon: const NativeLiquidGlassIcon.sfSymbol('plus'),
+              style: LiquidGlassButtonStyle.prominentGlass,
+              tint: theme.colorScheme.primary,
+              height: 52,
+              onPressed: () {
+                membersAsync.whenData((members) {
+                  AddExpenseScreen.show(
+                    context: context,
+                    group: widget.group,
+                    members: members,
+                  );
+                });
+              },
+            )
+          : FloatingActionButton.extended(
+              tooltip: l10n?.addExpense ?? 'Add Expense',
+              onPressed: () {
+                membersAsync.whenData((members) {
+                  AddExpenseScreen.show(
+                    context: context,
+                    group: widget.group,
+                    members: members,
+                  );
+                });
+              },
+              icon: const Icon(Icons.add_rounded),
+              label: Text(l10n?.addExpense ?? 'Add Expense'),
+            ),
+    );
+  }
+
+  Widget _buildBalanceCardContent({
+    required bool isCreditor,
+    required bool isDebtor,
+    required bool isDark,
+    required AppLocalizations? l10n,
+    required ThemeData theme,
+    required Currency currency,
+    required int myNetMinor,
+    required GroupFinancialSummary summary,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                if (isCreditor)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Icon(
+                      Icons.arrow_upward_rounded,
+                      size: 16,
+                      color: isDark ? AppColors.positiveBright : AppColors.positive,
+                    ),
+                  )
+                else if (isDebtor)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Icon(
+                      Icons.arrow_downward_rounded,
+                      size: 16,
+                      color: isDark ? AppColors.negativeBright : AppColors.negative,
+                    ),
+                  )
+                else
+                  const Padding(
+                    padding: EdgeInsets.only(right: 6),
+                    child: Icon(
+                      Icons.check_circle_outline_rounded,
+                      size: 16,
+                      color: AppColors.settled,
+                    ),
+                  ),
+                Text(
+                  isCreditor
+                      ? (l10n?.youAreOwed ?? 'You are owed')
+                      : isDebtor
+                      ? (l10n?.youOwe ?? 'You owe')
+                      : (l10n?.allSettled ?? 'All settled up'),
+                  style: AppTypography.labelSmall.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: isCreditor
+                        ? (isDark ? AppColors.positiveBright : AppColors.positive)
+                        : isDebtor
+                        ? (isDark ? AppColors.negativeBright : AppColors.negative)
+                        : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
+            ),
+            Text(
+              '${l10n?.totalSpending ?? 'Total Spending'}: ${currency.formatMinor(summary.totalGroupSpendingMinor)}',
+              style: AppTypography.labelSmall.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          isCreditor
+              ? '+${currency.formatMinor(myNetMinor)}'
+              : isDebtor
+              ? '-${currency.formatMinor(myNetMinor.abs())}'
+              : currency.formatMinor(0),
+          style: AppTypography.monetary(
+            fontSize: 32,
+            fontWeight: FontWeight.w700,
+            color: isCreditor
+                ? (isDark ? AppColors.positiveBright : AppColors.positive)
+                : isDebtor
+                ? (isDark ? AppColors.negativeBright : AppColors.negative)
+                : theme.colorScheme.onSurface,
+          ),
+        ),
+      ],
     );
   }
 }

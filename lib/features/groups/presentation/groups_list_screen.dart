@@ -55,9 +55,9 @@ class GroupsListScreen extends ConsumerWidget {
               tooltip: l10n?.settingsTitle ?? 'Settings',
               icon: const Icon(Icons.settings_outlined, size: 20),
               onPressed: () {
-                Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                );
               },
             ),
           const SizedBox(width: 8),

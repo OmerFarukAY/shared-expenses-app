@@ -19,7 +19,9 @@ class _FakeUserProfileController extends UserProfileController {
 }
 
 void main() {
-  testWidgets('MainNavigationScreen switches tabs smoothly without error', (tester) async {
+  testWidgets('MainNavigationScreen switches tabs smoothly without error', (
+    tester,
+  ) async {
     final now = DateTime.now();
     final profile = UserProfile(
       uid: 'user_1',
@@ -31,9 +33,15 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          userProfileControllerProvider.overrideWith(() => _FakeUserProfileController(profile)),
-          userGroupsStreamProvider.overrideWith((ref) => Stream.value(<GroupModel>[])),
-          userJoinRequestsStreamProvider.overrideWith((ref) => Stream.value([])),
+          userProfileControllerProvider.overrideWith(
+            () => _FakeUserProfileController(profile),
+          ),
+          userGroupsStreamProvider.overrideWith(
+            (ref) => Stream.value(<GroupModel>[]),
+          ),
+          userJoinRequestsStreamProvider.overrideWith(
+            (ref) => Stream.value([]),
+          ),
         ],
         child: MaterialApp(
           localizationsDelegates: const [
