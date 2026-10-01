@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:denk/firebase_options.dart';
 import 'package:denk/app.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
@@ -12,15 +11,9 @@ void main() async {
   FlutterNativeSplash.preserve(widgetsBinding: binding);
 
   try {
-    if (kIsWeb) {
-      // Web requires explicit options — native platforms read from bundled
-      // config files (GoogleService-Info.plist / google-services.json).
-      await Firebase.initializeApp(options: DefaultFirebaseOptions.web);
-    } else {
-      // iOS reads GoogleService-Info.plist; Android reads google-services.json.
-      // Both are gitignored and bundled locally — never committed to source.
-      await Firebase.initializeApp();
-    }
+    // iOS reads GoogleService-Info.plist; Android reads google-services.json.
+    // Both are gitignored and bundled locally — never committed to source.
+    await Firebase.initializeApp();
 
     // Initialize Firebase App Check.
     // In debug mode, uses DebugProvider so developers and iOS Simulators / Android emulators

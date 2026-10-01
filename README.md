@@ -70,15 +70,33 @@ flutter gen-l10n
 
 ### 3. Firebase Configuration
 
-Place your Firebase configuration files:
-- Android: `android/app/google-services.json`
-- iOS: `ios/Runner/GoogleService-Info.plist`
+You need to connect this app to your own Firebase project.
+
+1. Create a new project in the [Firebase Console](https://console.firebase.google.com/).
+2. Enable **Authentication** and activate the **Anonymous** sign-in provider.
+3. Enable **Cloud Firestore** and choose a location.
+4. (Optional but recommended) Enable **App Check** and register your apps.
+
+Add your configuration files:
+- **Android:** Download `google-services.json` from the Firebase Console and place it at `android/app/google-services.json`.
+- **iOS:** Download `GoogleService-Info.plist` from the Firebase Console and place it at `ios/Runner/GoogleService-Info.plist`.
+*(Note: These files contain your project-specific configurations and are ignored by git to protect your keys).*
 
 Deploy the security rules and compound indexes:
 
 ```bash
-npx -y firebase-tools@latest deploy --only firestore:rules,firestore:indexes
+# Ensure you have firebase-tools installed globally or use npx
+firebase login
+firebase use --add  # Select your newly created project
+firebase deploy --only firestore:rules,firestore:indexes
 ```
+
+#### App Check Token (Debug Mode)
+To run the app locally on simulators/emulators without App Check blocking your requests, you must use a debug token:
+1. Run the app in debug mode (`flutter run`).
+2. Check the debug console logs for a generated App Check debug token.
+3. Add this token to the App Check section in the Firebase Console (under the specific app's settings).
+*(Important: Never commit your debug tokens to the repository.)*
 
 ### 4. Run Development Build
 
