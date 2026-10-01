@@ -8,6 +8,7 @@ import 'package:denk/features/auth/presentation/onboarding_display_name_screen.d
 import 'package:denk/features/groups/presentation/groups_list_screen.dart';
 import 'package:denk/features/settings/presentation/settings_controller.dart';
 import 'package:denk/l10n/l10n.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 /// Root application widget for Denk.
 class DenkApp extends ConsumerWidget {
@@ -52,15 +53,20 @@ class DenkAuthGate extends ConsumerWidget {
 
     return profileAsync.when(
       data: (profile) {
+        FlutterNativeSplash.remove();
         if (profile == null || profile.displayName.trim().isEmpty) {
           return const OnboardingDisplayNameScreen();
         }
         return const GroupsListScreen();
       },
       loading: () => const Scaffold(
-        body: Center(child: DenkLoadingView(message: 'Initializing...')),
+        backgroundColor: Colors.white,
+        body: Center(child: DenkLoadingView()),
       ),
-      error: (err, _) => const OnboardingDisplayNameScreen(),
+      error: (err, _) {
+        FlutterNativeSplash.remove();
+        return const OnboardingDisplayNameScreen();
+      },
     );
   }
 }

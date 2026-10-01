@@ -5,9 +5,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:denk/firebase_options.dart';
 import 'package:denk/app.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: binding);
 
   try {
     if (kIsWeb) {
@@ -35,6 +37,7 @@ void main() async {
     );
   } catch (e) {
     debugPrint('Firebase initialization notice: $e');
+    FlutterNativeSplash.remove();
   }
 
   runApp(const ProviderScope(child: DenkApp()));

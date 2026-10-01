@@ -44,6 +44,7 @@ dependencies:
   uuid: ^4.6.0
   shared_preferences: ^2.5.5
   firebase_app_check: ^0.4.8
+  flutter_native_splash: ^2.4.8
 
 dev_dependencies:
   flutter_test:
@@ -57,12 +58,6 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   fake_cloud_firestore: ^4.3.0
   flutter_launcher_icons: ^0.14.4
-  flutter_native_splash: ^2.4.8
-
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter packages.
 flutter:
   generate: true
 
