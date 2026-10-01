@@ -1159,6 +1159,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to link account. Please try again.'**
   String get accountLinkErrorGeneric;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently delete your account. Groups you own with other members require ownership transfer first. This cannot be undone.'**
+  String get deleteAccountSubtitle;
+
+  /// No description provided for @deleteAccountConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently Delete Account?'**
+  String get deleteAccountConfirmTitle;
+
+  /// No description provided for @deleteAccountConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be undone. Your expense history will be preserved but your name will be anonymized. Groups where you are the sole owner will be deleted.'**
+  String get deleteAccountConfirmBody;
+
+  /// No description provided for @deleteAccountSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been deleted.'**
+  String get deleteAccountSuccess;
+
+  /// No description provided for @deleteAccountOwnershipRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Ownership Transfer Required'**
+  String get deleteAccountOwnershipRequired;
+
+  /// No description provided for @deleteAccountOwnershipRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You own the following group(s) with other members. Please transfer ownership before deleting your account.'**
+  String get deleteAccountOwnershipRequiredBody;
+
+  /// No description provided for @transferOwnershipButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Ownership'**
+  String get transferOwnershipButton;
+
+  /// No description provided for @transferOwnershipTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Group Ownership'**
+  String get transferOwnershipTitle;
+
+  /// No description provided for @transferOwnershipBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a member to become the new owner. You will remain a member of the group.'**
+  String get transferOwnershipBody;
+
+  /// No description provided for @transferOwnershipSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Ownership transferred successfully.'**
+  String get transferOwnershipSuccess;
+
+  /// No description provided for @deleteAccountReauthRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in again to confirm account deletion.'**
+  String get deleteAccountReauthRequired;
+
+  /// No description provided for @deleteAccountProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting account...'**
+  String get deleteAccountProcessing;
 }
 
 class _AppLocalizationsDelegate

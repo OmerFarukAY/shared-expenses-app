@@ -575,4 +575,48 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get accountLinkErrorGeneric =>
       'Failed to link account. Please try again.';
+
+  @override
+  String get deleteAccountTitle => 'Delete Account';
+
+  @override
+  String get deleteAccountSubtitle =>
+      'Permanently delete your account. Groups you own with other members require ownership transfer first. This cannot be undone.';
+
+  @override
+  String get deleteAccountConfirmTitle => 'Permanently Delete Account?';
+
+  @override
+  String get deleteAccountConfirmBody =>
+      'This action cannot be undone. Your expense history will be preserved but your name will be anonymized. Groups where you are the sole owner will be deleted.';
+
+  @override
+  String get deleteAccountSuccess => 'Your account has been deleted.';
+
+  @override
+  String get deleteAccountOwnershipRequired => 'Ownership Transfer Required';
+
+  @override
+  String get deleteAccountOwnershipRequiredBody =>
+      'You own the following group(s) with other members. Please transfer ownership before deleting your account.';
+
+  @override
+  String get transferOwnershipButton => 'Transfer Ownership';
+
+  @override
+  String get transferOwnershipTitle => 'Transfer Group Ownership';
+
+  @override
+  String get transferOwnershipBody =>
+      'Select a member to become the new owner. You will remain a member of the group.';
+
+  @override
+  String get transferOwnershipSuccess => 'Ownership transferred successfully.';
+
+  @override
+  String get deleteAccountReauthRequired =>
+      'Please sign in again to confirm account deletion.';
+
+  @override
+  String get deleteAccountProcessing => 'Deleting account...';
 }

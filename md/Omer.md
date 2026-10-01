@@ -600,26 +600,41 @@ flowchart TD
 
 ---
 
-### Phase 17 — Account Deletion, Ownership Lifecycle & Data Anonymization (Phase 1 Priority 2 - Blocker)
+### Phase 17 — Account Deletion, Ownership Lifecycle & Data Anonymization (Phase 1 Priority 2 - Blocker) — TAMAMLANDI
 * **Goal**: Ensure 100% compliance with Apple Guideline 5.1.1(v) and Google Play User Data Policy without leaving orphaned groups or corrupting ledger balances.
-* **Scope & Tasks**:
-  1. **Rules Hardening (`firestore.rules`)**:
-     - Add `transferOwnership` case to `groups/{groupId}` update rules: creator can assign `createdBy` to an existing active member in `resource.data.memberUids`.
-     - Update `/members/{uid}` rules to permit elevating target member to `role: 'owner'`.
-  2. **Deterministic Deletion Flow (`AuthRepository.deleteAccount`)**:
-     - Query all user groups via `users/{uid}/user_groups`.
-     - For each group where user is creator (`createdBy == uid`):
-       - If `memberCount <= 1`: delete group, subcollections (`expenses`, `settlements`, `members`, `joinRequests`), and invite document via chunked batch.
-       - If `memberCount > 1`: deterministically transfer ownership to the earliest remaining active member (`role: 'owner'`, `createdBy: nextUid`).
-     - For groups where user is a regular member:
-       - Anonymize member document in `groups/{groupId}/members/{uid}` (`displayName: "Deleted User"`, `leftAt: now`).
-       - Remove UID from `groups/{groupId}.memberUids` and decrement `memberCount`.
-     - Delete `users/{uid}` and subcollections (`user_groups`, `join_requests`).
-     - Catch `requires-recent-login` and prompt re-authentication if credentials have expired.
-     - Delete Firebase Auth user.
-  3. **Verification**:
-     - Rules tests in `test/security/rules.test.js` validating ownership transfer authorization.
-     - Unit tests verifying clean cleanup for sole-creator vs. multi-member scenarios.
+* **Status**: TAMAMLANDI
+* **Key Implementation Details**:
+  1. **Schema & UID Dependency Map**:
+     - `users/{uid}`: Document and all subcollections (`user_groups`, `join_requests`) wiped via chunked batches.
+     - `groups/{groupId}.createdBy`: If sole owner, group is deleted completely. If multi-member, **explicit ownership transfer is required** before account deletion can proceed.
+     - `groups/{groupId}.memberUids`: Removed via `arrayRemove([uid])`, and `memberCount` decremented atomically.
+     - `groups/{groupId}/members/{uid}`: Anonymized (`displayName: "Deleted User"`, `leftAt: now`).
+     - `groups/{groupId}/expenses`: All expense records, splits, payers, and amounts are **strictly preserved** to ensure balance calculations and accounting integrity remain uncorrupted for other members.
+     - `groups/{groupId}/settlements`: Immutable records retained per server security rules (`allow update: if false;`).
+  2. **Explicit Ownership Transfer & Lifecycle**:
+     - Implemented `transferOwnership` in `GroupRepository` updating `createdBy` on the group and flipping member roles (`role: 'owner'` for target, `role: 'member'` for initiator) in an atomic batch.
+     - Deletion flow analyzes ownership via `AccountDeletionService.analyzeOwnershipBlocks(uid)`. If any owned groups have active members, an interactive modal guides the user to assign ownership before deletion can proceed.
+  3. **Multi-Step Deletion Service (`AccountDeletionService`)**:
+     - Coordinates safe ordering: Sole-owned groups deleted -> Non-owned memberships left & anonymized -> User document and subcollections deleted -> Firebase Auth account deleted last.
+     - Handles `AuthReauthRequiredException` when Firebase Auth demands recent login.
+  4. **Firestore Rules Hardening**:
+     - Added Case 5 in `groups/{groupId}` update rules permitting `createdBy` transfer to an active member while enforcing atomic elevation of the target to owner.
+     - Added Case 4 in `members/{memberUid}` update rules permitting owner elevation during ownership transfer.
+     - Permitted member `displayName` to be updated to `'Deleted User'` during leave.
+  5. **Settings UI Multi-Step Flow**:
+     - Replaced simple confirmation with two-stage modal + ownership blocker detection + member selection dialog.
+     - Integrated loading indicator and explicit re-authentication prompts.
+  6. **5-Language Localization Parity**: Added 14 new keys across EN, TR, ES, FR, and IT with 100% test-verified parity.
+  7. **Comprehensive Test Suite**:
+     - Added 12 new unit and widget tests in `test/features/auth/account_deletion_test.dart`.
+     - Suite expanded to 118 tests.
+
+* **Verification Gates**:
+  - `flutter analyze`: Passed (0 issues found).
+  - `flutter test`: Passed (all 118 tests passing).
+  - `localization_test.dart`: Passed (100% key parity across EN, TR, ES, FR, IT).
+  - `security_rules_test.dart`: Passed.
+  - `git diff --check`: Passed (clean whitespace).
 
 ---
 

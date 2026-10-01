@@ -254,5 +254,18 @@
   "switchAccountButton": "Switch to Existing Account",
   "keepCurrentAccountButton": "Keep Guest Account",
   "accountSwitchSuccess": "Switched to existing account.",
-  "accountLinkErrorGeneric": "Failed to link account. Please try again."
+  "accountLinkErrorGeneric": "Failed to link account. Please try again.",
+  "deleteAccountTitle": "Delete Account",
+  "deleteAccountSubtitle": "Permanently delete your account. Groups you own with other members require ownership transfer first. This cannot be undone.",
+  "deleteAccountConfirmTitle": "Permanently Delete Account?",
+  "deleteAccountConfirmBody": "This action cannot be undone. Your expense history will be preserved but your name will be anonymized. Groups where you are the sole owner will be deleted.",
+  "deleteAccountSuccess": "Your account has been deleted.",
+  "deleteAccountOwnershipRequired": "Ownership Transfer Required",
+  "deleteAccountOwnershipRequiredBody": "You own the following group(s) with other members. Please transfer ownership before deleting your account.",
+  "transferOwnershipButton": "Transfer Ownership",
+  "transferOwnershipTitle": "Transfer Group Ownership",
+  "transferOwnershipBody": "Select a member to become the new owner. You will remain a member of the group.",
+  "transferOwnershipSuccess": "Ownership transferred successfully.",
+  "deleteAccountReauthRequired": "Please sign in again to confirm account deletion.",
+  "deleteAccountProcessing": "Deleting account..."
 }

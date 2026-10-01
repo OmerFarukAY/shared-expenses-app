@@ -254,5 +254,18 @@
   "switchAccountButton": "Cambiar a cuenta existente",
   "keepCurrentAccountButton": "Mantener cuenta de invitado",
   "accountSwitchSuccess": "Se cambió a la cuenta existente.",
-  "accountLinkErrorGeneric": "Error al vincular la cuenta. Por favor, inténtalo de nuevo."
+  "accountLinkErrorGeneric": "Error al vincular la cuenta. Por favor, inténtalo de nuevo.",
+  "deleteAccountTitle": "Eliminar Cuenta",
+  "deleteAccountSubtitle": "Elimina permanentemente tu cuenta. Los grupos que posees con otros miembros requieren transferencia de propiedad primero. Esto no se puede deshacer.",
+  "deleteAccountConfirmTitle": "¿Eliminar Cuenta Permanentemente?",
+  "deleteAccountConfirmBody": "Esta acción no se puede deshacer. Tu historial de gastos se conservará, pero tu nombre será anonimizado. Los grupos donde eres el único propietario se eliminarán.",
+  "deleteAccountSuccess": "Tu cuenta ha sido eliminada.",
+  "deleteAccountOwnershipRequired": "Transferencia de Propiedad Requerida",
+  "deleteAccountOwnershipRequiredBody": "Eres propietario de los siguientes grupos con otros miembros. Transfiere la propiedad antes de eliminar tu cuenta.",
+  "transferOwnershipButton": "Transferir Propiedad",
+  "transferOwnershipTitle": "Transferir Propiedad del Grupo",
+  "transferOwnershipBody": "Selecciona un miembro para que sea el nuevo propietario. Seguirás siendo miembro del grupo.",
+  "transferOwnershipSuccess": "Propiedad transferida exitosamente.",
+  "deleteAccountReauthRequired": "Por favor, inicia sesión de nuevo para confirmar la eliminación de la cuenta.",
+  "deleteAccountProcessing": "Eliminando cuenta..."
 }

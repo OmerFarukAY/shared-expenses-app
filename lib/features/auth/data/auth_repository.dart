@@ -21,6 +21,13 @@ abstract class AuthRepository {
   Future<void> updateDisplayName(String newName);
   Future<void> deleteAccount();
 
+  /// Deletes the Firebase Auth account. Should be called AFTER all Firestore cleanup.
+  /// Throws [AuthReauthRequiredException] if the session is too old.
+  Future<void> deleteFirebaseAuthAccount();
+
+  /// Deletes the users/{uid} Firestore document and all known subcollections.
+  Future<void> deleteUserDocument(String uid);
+
   /// Links the current anonymous user with Google, preserving [currentUid].
   Future<void> linkGoogleAccount({AuthProvider? customProvider});
 
@@ -181,24 +188,59 @@ class FirebaseAuthRepository implements AuthRepository {
     try {
       final uid = currentUid;
       if (uid != null) {
-        try {
-          await _firestore.collection('users').doc(uid).delete();
-        } catch (e) {
-          debugPrint('Firestore user doc deletion warning: $e');
-        }
+        await deleteUserDocument(uid);
+      } else {
+        await _clearCachedProfile();
       }
-
-      await _clearCachedProfile();
-
-      if (_firebaseAuth.currentUser != null) {
-        try {
-          await _firebaseAuth.currentUser!.delete();
-        } catch (_) {
-          await _firebaseAuth.signOut();
-        }
-      }
+      await deleteFirebaseAuthAccount();
     } catch (e) {
       debugPrint('deleteAccount error: $e');
+      if (e is AppException) rethrow;
+      throw AppException.fromFirebase(e);
+    }
+  }
+
+  @override
+  Future<void> deleteFirebaseAuthAccount() async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) return; // Already deleted or signed out
+    try {
+      await user.delete();
+      await _clearCachedProfile();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        throw AuthReauthRequiredException(originalError: e);
+      }
+      throw AppException.fromFirebase(e);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw AppException.fromFirebase(e);
+    }
+  }
+
+  @override
+  Future<void> deleteUserDocument(String uid) async {
+    try {
+      final userRef = _firestore.collection('users').doc(uid);
+      // Delete subcollections first (Firestore does not cascade delete subcollections)
+      final userGroupsSnap = await userRef.collection('user_groups').get();
+      final joinReqsSnap = await userRef.collection('join_requests').get();
+      final allRefs = <DocumentReference>[
+        ...userGroupsSnap.docs.map((d) => d.reference),
+        ...joinReqsSnap.docs.map((d) => d.reference),
+      ];
+      for (var i = 0; i < allRefs.length; i += 450) {
+        final batch = _firestore.batch();
+        for (final ref in allRefs.skip(i).take(450)) {
+          batch.delete(ref);
+        }
+        await batch.commit();
+      }
+      // Delete the user document itself
+      await userRef.delete();
+    } catch (e) {
+      debugPrint('deleteUserDocument error: $e');
+      if (e is AppException) rethrow;
       throw AppException.fromFirebase(e);
     }
   }

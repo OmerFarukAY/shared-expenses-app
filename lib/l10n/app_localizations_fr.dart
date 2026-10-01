@@ -580,4 +580,49 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get accountLinkErrorGeneric =>
       'Échec de l\'association du compte. Veuillez réessayer.';
+
+  @override
+  String get deleteAccountTitle => 'Supprimer le Compte';
+
+  @override
+  String get deleteAccountSubtitle =>
+      'Supprimez définitivement votre compte. Les groupes dont vous êtes propriétaire avec d\'autres membres nécessitent un transfert de propriété. Irréversible.';
+
+  @override
+  String get deleteAccountConfirmTitle =>
+      'Supprimer définitivement le compte ?';
+
+  @override
+  String get deleteAccountConfirmBody =>
+      'Cette action est irréversible. Votre historique de dépenses sera conservé, mais votre nom sera anonymisé. Les groupes où vous êtes le seul propriétaire seront supprimés.';
+
+  @override
+  String get deleteAccountSuccess => 'Votre compte a été supprimé.';
+
+  @override
+  String get deleteAccountOwnershipRequired => 'Transfert de Propriété Requis';
+
+  @override
+  String get deleteAccountOwnershipRequiredBody =>
+      'Vous êtes propriétaire des groupes suivants avec d\'autres membres. Veuillez transférer la propriété avant de supprimer votre compte.';
+
+  @override
+  String get transferOwnershipButton => 'Transférer la Propriété';
+
+  @override
+  String get transferOwnershipTitle => 'Transférer la Propriété du Groupe';
+
+  @override
+  String get transferOwnershipBody =>
+      'Sélectionnez un membre pour devenir le nouveau propriétaire. Vous resterez membre du groupe.';
+
+  @override
+  String get transferOwnershipSuccess => 'Propriété transférée avec succès.';
+
+  @override
+  String get deleteAccountReauthRequired =>
+      'Veuillez vous reconnecter pour confirmer la suppression du compte.';
+
+  @override
+  String get deleteAccountProcessing => 'Suppression du compte...';
 }

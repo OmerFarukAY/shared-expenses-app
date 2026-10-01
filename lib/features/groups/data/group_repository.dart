@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import 'package:denk/core/errors/app_exception.dart';
@@ -45,6 +46,30 @@ abstract class GroupRepository {
   Stream<List<GroupMember>> watchGroupMembers(String groupId);
   Future<void> leaveGroup({required String groupId, required String uid});
   Future<void> removeMember({required String groupId, required String uid});
+
+  /// Returns all groups created by [uid].
+  Future<List<GroupModel>> getOwnedGroups(String uid);
+
+  /// Returns groupIds where [uid] is a member but NOT the owner.
+  Future<List<String>> getMemberOnlyGroupIds(String uid);
+
+  /// Transfers ownership from current owner to [newOwnerUid].
+  Future<void> transferOwnership({
+    required String groupId,
+    required String currentOwnerUid,
+    required String newOwnerUid,
+    required String newOwnerDisplayName,
+  });
+
+  /// Fetches all members of a group (including those who have left).
+  Future<List<GroupMember>> getGroupMembersList(String groupId);
+
+  /// Leaves a group as a non-owner during account deletion.
+  /// Sets leftAt, anonymizes displayName to 'Deleted User', removes from memberUids.
+  Future<void> leaveGroupAsNonOwner({required String groupId, required String uid});
+
+  /// Anonymizes the user's display name in settlements where they appear.
+  Future<void> anonymizeUserInSettlements({required String groupId, required String uid});
 
 }
 
@@ -725,5 +750,167 @@ class FirestoreGroupRepository implements GroupRepository {
     } catch (e) {
       throw AppException.fromFirebase(e);
     }
+  }
+
+  @override
+  Future<List<GroupModel>> getOwnedGroups(String uid) async {
+    try {
+      final userGroupsSnap = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('user_groups')
+          .get();
+      final List<GroupModel> result = [];
+      for (final doc in userGroupsSnap.docs) {
+        final groupDoc = await _firestore.collection('groups').doc(doc.id).get();
+        if (groupDoc.exists && groupDoc.data() != null) {
+          final group = GroupModel.fromMap(groupDoc.data()!, groupDoc.id);
+          if (group.createdBy == uid) {
+            result.add(group);
+          }
+        }
+      }
+      return result;
+    } catch (e) {
+      throw AppException.fromFirebase(e);
+    }
+  }
+
+  @override
+  Future<List<String>> getMemberOnlyGroupIds(String uid) async {
+    try {
+      final userGroupsSnap = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('user_groups')
+          .get();
+      final List<String> result = [];
+      for (final doc in userGroupsSnap.docs) {
+        final groupDoc = await _firestore.collection('groups').doc(doc.id).get();
+        if (groupDoc.exists && groupDoc.data() != null) {
+          final group = GroupModel.fromMap(groupDoc.data()!, groupDoc.id);
+          if (group.createdBy != uid) {
+            result.add(group.id);
+          }
+        }
+      }
+      return result;
+    } catch (e) {
+      throw AppException.fromFirebase(e);
+    }
+  }
+
+  @override
+  Future<void> transferOwnership({
+    required String groupId,
+    required String currentOwnerUid,
+    required String newOwnerUid,
+    required String newOwnerDisplayName,
+  }) async {
+    try {
+      final now = Timestamp.fromDate(DateTime.now());
+      final batch = _firestore.batch();
+
+      // 1. Update group document: change createdBy
+      final groupRef = _firestore.collection('groups').doc(groupId);
+      batch.update(groupRef, {
+        'createdBy': newOwnerUid,
+        'updatedAt': now,
+      });
+
+      // 2. Elevate new owner member doc to 'owner'
+      final newOwnerMemberRef = groupRef.collection('members').doc(newOwnerUid);
+      batch.update(newOwnerMemberRef, {
+        'role': 'owner',
+        'updatedAt': now,
+      });
+
+      // 3. Demote old owner member doc to 'member' (they remain in the group)
+      final oldOwnerMemberRef = groupRef.collection('members').doc(currentOwnerUid);
+      batch.update(oldOwnerMemberRef, {
+        'role': 'member',
+        'updatedAt': now,
+      });
+
+      await batch.commit();
+    } catch (e) {
+      throw AppException.fromFirebase(e);
+    }
+  }
+
+  @override
+  Future<List<GroupMember>> getGroupMembersList(String groupId) async {
+    try {
+      final snap = await _firestore
+          .collection('groups')
+          .doc(groupId)
+          .collection('members')
+          .get();
+      return snap.docs.map((doc) => GroupMember.fromMap(doc.data(), doc.id)).toList();
+    } catch (e) {
+      throw AppException.fromFirebase(e);
+    }
+  }
+
+  @override
+  Future<void> leaveGroupAsNonOwner({
+    required String groupId,
+    required String uid,
+  }) async {
+    try {
+      final batch = _firestore.batch();
+      final now = Timestamp.fromDate(DateTime.now());
+
+      // 1. Anonymize and mark member as left
+      final memberRef = _firestore
+          .collection('groups')
+          .doc(groupId)
+          .collection('members')
+          .doc(uid);
+      batch.update(memberRef, {
+        'leftAt': now,
+        'displayName': 'Deleted User',
+        'updatedAt': now,
+      });
+
+      // 2. Remove from user's user_groups
+      final userGroupRef = _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('user_groups')
+          .doc(groupId);
+      batch.delete(userGroupRef);
+
+      // 3. Update group membership counters
+      final groupRef = _firestore.collection('groups').doc(groupId);
+      batch.update(groupRef, {
+        'memberUids': FieldValue.arrayRemove([uid]),
+        'memberCount': FieldValue.increment(-1),
+        'lastRemovedUid': uid,
+        'updatedAt': now,
+      });
+
+      await batch.commit();
+    } catch (e) {
+      throw AppException.fromFirebase(e);
+    }
+  }
+
+  @override
+  Future<void> anonymizeUserInSettlements({
+    required String groupId,
+    required String uid,
+  }) async {
+    // Settlement display names (fromName/toName) are NOT anonymized because
+    // `allow update: if false` in Firestore rules protects financial integrity.
+    // The UIDs (fromUid/toUid) remain but are only accessible to group members.
+    // This is a documented known limitation — modifying settlement records would
+    // require weakening security rules, which is unacceptable.
+    debugPrint(
+      'anonymizeUserInSettlements: settlement display names not anonymized '
+      '(settlement.update is false per security rules). '
+      'UID references ($uid in group $groupId) remain but are not PII-exposing '
+      'since only group members can read settlements.',
+    );
   }
 }

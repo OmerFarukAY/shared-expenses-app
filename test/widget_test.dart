@@ -58,6 +58,12 @@ class MockAuthRepository implements AuthRepository {
 
   @override
   Future<void> signInWithProvider(AuthProvider provider) async {}
+
+  @override
+  Future<void> deleteFirebaseAuthAccount() async {}
+
+  @override
+  Future<void> deleteUserDocument(String uid) async {}
 }
 
 void main() {

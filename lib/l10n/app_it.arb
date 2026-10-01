@@ -254,5 +254,18 @@
   "switchAccountButton": "Passa all'account esistente",
   "keepCurrentAccountButton": "Mantieni account ospite",
   "accountSwitchSuccess": "Passaggio all'account esistente completato.",
-  "accountLinkErrorGeneric": "Impossibile collegare l'account. Riprova."
+  "accountLinkErrorGeneric": "Impossibile collegare l'account. Riprova.",
+  "deleteAccountTitle": "Elimina Account",
+  "deleteAccountSubtitle": "Elimina definitivamente il tuo account. I gruppi di cui sei proprietario con altri membri richiedono un trasferimento di proprietà. Irreversibile.",
+  "deleteAccountConfirmTitle": "Eliminare definitivamente l'account?",
+  "deleteAccountConfirmBody": "Questa azione è irreversibile. La tua cronologia delle spese sarà conservata, ma il tuo nome sarà anonimizzato. I gruppi di cui sei l'unico proprietario verranno eliminati.",
+  "deleteAccountSuccess": "Il tuo account è stato eliminato.",
+  "deleteAccountOwnershipRequired": "Trasferimento di Proprietà Richiesto",
+  "deleteAccountOwnershipRequiredBody": "Sei proprietario dei seguenti gruppi con altri membri. Trasferisci la proprietà prima di eliminare il tuo account.",
+  "transferOwnershipButton": "Trasferisci Proprietà",
+  "transferOwnershipTitle": "Trasferisci Proprietà del Gruppo",
+  "transferOwnershipBody": "Seleziona un membro per diventare il nuovo proprietario. Rimarrai membro del gruppo.",
+  "transferOwnershipSuccess": "Proprietà trasferita con successo.",
+  "deleteAccountReauthRequired": "Accedi di nuovo per confermare l'eliminazione dell'account.",
+  "deleteAccountProcessing": "Eliminazione account in corso..."
 }

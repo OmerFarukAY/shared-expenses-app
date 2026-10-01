@@ -72,3 +72,13 @@ class AuthCancelledException extends AppException {
     super.originalError,
   });
 }
+
+/// Thrown when a sensitive action requires recent authentication.
+/// The user should re-authenticate and retry the operation.
+class AuthReauthRequiredException extends AppException {
+  const AuthReauthRequiredException({
+    super.message = 'Please sign in again to confirm this action.',
+    super.code = 'requires-recent-login',
+    super.originalError,
+  });
+}

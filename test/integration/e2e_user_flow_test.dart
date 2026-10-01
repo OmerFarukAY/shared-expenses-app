@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart' show AuthProvider, AuthCredent
 import 'package:denk/core/theme/app_theme.dart';
 import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/auth/domain/user_profile.dart';
+import 'package:denk/features/auth/domain/account_deletion_service.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
 import 'package:denk/features/expenses/domain/expense_category.dart';
 import 'package:denk/features/expenses/domain/expense_model.dart';
@@ -182,7 +183,7 @@ void main() {
         expect(find.text('Language'), findsOneWidget);
         expect(find.text('Theme'), findsOneWidget);
         expect(find.text('Privacy Information'), findsOneWidget);
-        expect(find.text('Delete Local Account'), findsWidgets);
+        expect(find.text('Delete Account'), findsWidgets);
 
         // Step 8: Open Privacy Information modal
         await tester.ensureVisible(find.text('Read'));
@@ -247,4 +248,21 @@ class _MockUserProfileController extends AsyncNotifier<UserProfile?>
 
   @override
   Future<void> switchToExistingProvider(AuthProvider provider) async {}
+
+  @override
+  Future<List<OwnedGroupBlock>> analyzeOwnershipBlocks() async => const [];
+
+  @override
+  Future<void> transferGroupOwnership({
+    required String groupId,
+    required String currentOwnerUid,
+    required String newOwnerUid,
+    required String newOwnerDisplayName,
+  }) async {}
+
+  @override
+  Future<void> deleteAccountFull() async {
+    deleteCalled = true;
+    state = const AsyncValue.data(null);
+  }
 }

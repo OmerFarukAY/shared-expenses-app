@@ -84,6 +84,18 @@ class MockLinkingAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> deleteFirebaseAuthAccount() async {
+    _profile = null;
+    _uid = null;
+    _authController.add(null);
+  }
+
+  @override
+  Future<void> deleteUserDocument(String uid) async {
+    _profile = null;
+  }
+
+  @override
   Future<void> linkGoogleAccount({AuthProvider? customProvider}) async {
     if (shouldThrowConflictOnGoogle) {
       throw const AuthConflictException(

@@ -7,7 +7,9 @@ import 'package:denk/core/errors/app_exception.dart';
 import 'package:denk/core/theme/app_colors.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
+import 'package:denk/features/auth/domain/account_deletion_service.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
+import 'package:denk/features/groups/domain/group_model.dart';
 import 'package:denk/features/settings/presentation/settings_controller.dart';
 import 'package:denk/l10n/l10n.dart';
 
@@ -472,18 +474,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Future<void> _confirmDeleteAccount() async {
+  Future<void> _handleDeleteAccount() async {
+    if (_isDeleting) return;
     final l10n = AppLocalizations.of(context);
-    final confirm = await showDialog<bool>(
+
+    // Step 1: Show initial confirmation
+    final initialConfirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(
-          l10n?.settingsDeleteAccount ?? 'Delete Local Account',
+          l10n?.deleteAccountConfirmTitle ?? 'Permanently Delete Account?',
           style: AppTypography.h3,
         ),
         content: Text(
-          l10n?.settingsDeleteWarning ??
-              'This will remove your local anonymous identity on this device. You will lose access to groups unless invited back.',
+          l10n?.deleteAccountConfirmBody ??
+              'This action cannot be undone. Your expense history will be preserved but your name will be anonymized. Groups where you are the sole owner will be deleted.',
           style: AppTypography.bodyMedium,
         ),
         actions: [
@@ -494,22 +499,295 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.negative),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n?.commonDelete ?? 'Delete'),
+            child: Text(l10n?.commonConfirm ?? 'Confirm'),
           ),
         ],
       ),
     );
 
-    if (confirm == true && mounted) {
-      setState(() => _isDeleting = true);
+    if (initialConfirm != true || !mounted) return;
+
+    // Step 2: Check for ownership blocks
+    List<OwnedGroupBlock> blocks;
+    try {
+      blocks = await ref
+          .read(userProfileControllerProvider.notifier)
+          .analyzeOwnershipBlocks();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: AppColors.negative,
+          ),
+        );
+      }
+      return;
+    }
+
+    // Step 3: If blocks exist, show ownership transfer dialog
+    if (blocks.isNotEmpty && mounted) {
+      final transferred = await _showOwnershipTransferRequired(blocks);
+      if (!transferred || !mounted) return;
+    }
+
+    // Step 4: Execute deletion
+    if (!mounted) return;
+    setState(() => _isDeleting = true);
+    try {
+      await ref
+          .read(userProfileControllerProvider.notifier)
+          .deleteAccountFull();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n?.deleteAccountSuccess ?? 'Your account has been deleted.',
+            ),
+            backgroundColor: AppColors.positive,
+          ),
+        );
+      }
+    } on AuthReauthRequiredException catch (_) {
+      if (mounted) {
+        setState(() => _isDeleting = false);
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(
+              l10n?.commonError ?? 'Authentication Required',
+              style: AppTypography.h3,
+            ),
+            content: Text(
+              l10n?.deleteAccountReauthRequired ??
+                  'Please sign in again to confirm account deletion.',
+            ),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: Text(l10n?.commonDone ?? 'Done'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isDeleting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: AppColors.negative,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<bool> _showOwnershipTransferRequired(
+    List<OwnedGroupBlock> blocks,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final resolvedGroupIds = <String>{};
+    bool? result;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(
+            l10n?.deleteAccountOwnershipRequired ??
+                'Ownership Transfer Required',
+            style: AppTypography.h3,
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n?.deleteAccountOwnershipRequiredBody ??
+                      'You own the following group(s) with other members. Please transfer ownership before deleting your account.',
+                  style: AppTypography.bodySmall,
+                ),
+                const SizedBox(height: 16),
+                ...blocks.map((block) {
+                  final isResolved = resolvedGroupIds.contains(block.group.id);
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      children: [
+                        isResolved
+                            ? const Icon(
+                                Icons.check_circle_rounded,
+                                color: AppColors.positive,
+                                size: 20,
+                              )
+                            : const Icon(Icons.group_rounded, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            block.group.name,
+                            style: AppTypography.bodySmall.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        if (!isResolved)
+                          TextButton(
+                            onPressed: () async {
+                              final transferred =
+                                  await _showTransferOwnershipDialog(
+                                dialogContext: ctx,
+                                block: block,
+                              );
+                              if (transferred) {
+                                setDialogState(
+                                  () => resolvedGroupIds.add(block.group.id),
+                                );
+                              }
+                            },
+                            child: Text(
+                              l10n?.transferOwnershipButton ?? 'Transfer',
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                result = false;
+                Navigator.of(ctx).pop();
+              },
+              child: Text(l10n?.commonCancel ?? 'Cancel'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.negative),
+              onPressed: resolvedGroupIds.length == blocks.length
+                  ? () {
+                      result = true;
+                      Navigator.of(ctx).pop();
+                    }
+                  : null,
+              child: Text(l10n?.commonConfirm ?? 'Confirm'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    return result == true;
+  }
+
+  Future<bool> _showTransferOwnershipDialog({
+    required BuildContext dialogContext,
+    required OwnedGroupBlock block,
+  }) async {
+    final l10n = AppLocalizations.of(context);
+    GroupMember? selectedMember;
+
+    final confirmed = await showDialog<bool>(
+      context: dialogContext,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setInnerState) => AlertDialog(
+          title: Text(
+            l10n?.transferOwnershipTitle ?? 'Transfer Group Ownership',
+            style: AppTypography.h3,
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${block.group.name}:',
+                  style: AppTypography.bodyMedium
+                      .copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n?.transferOwnershipBody ??
+                      'Select a member to become the new owner. You will remain a member.',
+                  style: AppTypography.bodySmall,
+                ),
+                const SizedBox(height: 12),
+                ...block.eligibleNewOwners.map((member) {
+                  final isSelected = selectedMember?.uid == member.uid;
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      member.displayName,
+                      style: AppTypography.bodySmall.copyWith(
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                    ),
+                    leading: Icon(
+                      isSelected
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_off,
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : null,
+                      size: 20,
+                    ),
+                    onTap: () => setInnerState(() => selectedMember = member),
+                  );
+                }),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(l10n?.commonCancel ?? 'Cancel'),
+            ),
+            FilledButton(
+              onPressed: selectedMember != null
+                  ? () => Navigator.of(ctx).pop(true)
+                  : null,
+              child: Text(
+                l10n?.transferOwnershipButton ?? 'Transfer Ownership',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed == true && selectedMember != null && mounted) {
       try {
-        await ref.read(userProfileControllerProvider.notifier).deleteAccount();
-        if (mounted) {
-          Navigator.of(context).pop(); // Back to AuthGate
+        final profile = ref.read(userProfileControllerProvider).value;
+        if (profile != null) {
+          await ref
+              .read(userProfileControllerProvider.notifier)
+              .transferGroupOwnership(
+                groupId: block.group.id,
+                currentOwnerUid: profile.uid,
+                newOwnerUid: selectedMember!.uid,
+                newOwnerDisplayName: selectedMember!.displayName,
+              );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  l10n?.transferOwnershipSuccess ??
+                      'Ownership transferred successfully.',
+                ),
+                backgroundColor: AppColors.positive,
+              ),
+            );
+          }
+          return true;
         }
       } catch (e) {
         if (mounted) {
-          setState(() => _isDeleting = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(e.toString()),
@@ -519,6 +797,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         }
       }
     }
+    return false;
   }
 
   @override
@@ -917,7 +1196,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          l10n?.settingsDeleteAccount ?? 'Delete Local Account',
+                          l10n?.deleteAccountTitle ?? 'Delete Account',
                           style: AppTypography.bodyMedium.copyWith(
                             fontWeight: FontWeight.w600,
                             color: AppColors.negative,
@@ -925,8 +1204,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          l10n?.settingsDeleteWarning ??
-                              'This will remove your local anonymous identity on this device. You will lose access to groups unless invited back.',
+                          l10n?.deleteAccountSubtitle ??
+                              'Permanently delete your account. Groups you own with other members require ownership transfer first. This cannot be undone.',
                           style: AppTypography.bodySmall.copyWith(
                             color: theme.colorScheme.onSurface.withValues(
                               alpha: 0.6,
@@ -936,11 +1215,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         const SizedBox(height: 12),
                         DenkButton(
                           label:
-                              l10n?.settingsDeleteAccount ??
-                              'Delete Local Account',
+                              l10n?.deleteAccountTitle ?? 'Delete Account',
                           variant: DenkButtonVariant.destructive,
                           height: 42,
-                          onPressed: _confirmDeleteAccount,
+                          onPressed: _handleDeleteAccount,
                         ),
                       ],
                     ),

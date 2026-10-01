@@ -579,4 +579,49 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get accountLinkErrorGeneric =>
       'Error al vincular la cuenta. Por favor, inténtalo de nuevo.';
+
+  @override
+  String get deleteAccountTitle => 'Eliminar Cuenta';
+
+  @override
+  String get deleteAccountSubtitle =>
+      'Elimina permanentemente tu cuenta. Los grupos que posees con otros miembros requieren transferencia de propiedad primero. Esto no se puede deshacer.';
+
+  @override
+  String get deleteAccountConfirmTitle => '¿Eliminar Cuenta Permanentemente?';
+
+  @override
+  String get deleteAccountConfirmBody =>
+      'Esta acción no se puede deshacer. Tu historial de gastos se conservará, pero tu nombre será anonimizado. Los grupos donde eres el único propietario se eliminarán.';
+
+  @override
+  String get deleteAccountSuccess => 'Tu cuenta ha sido eliminada.';
+
+  @override
+  String get deleteAccountOwnershipRequired =>
+      'Transferencia de Propiedad Requerida';
+
+  @override
+  String get deleteAccountOwnershipRequiredBody =>
+      'Eres propietario de los siguientes grupos con otros miembros. Transfiere la propiedad antes de eliminar tu cuenta.';
+
+  @override
+  String get transferOwnershipButton => 'Transferir Propiedad';
+
+  @override
+  String get transferOwnershipTitle => 'Transferir Propiedad del Grupo';
+
+  @override
+  String get transferOwnershipBody =>
+      'Selecciona un miembro para que sea el nuevo propietario. Seguirás siendo miembro del grupo.';
+
+  @override
+  String get transferOwnershipSuccess => 'Propiedad transferida exitosamente.';
+
+  @override
+  String get deleteAccountReauthRequired =>
+      'Por favor, inicia sesión de nuevo para confirmar la eliminación de la cuenta.';
+
+  @override
+  String get deleteAccountProcessing => 'Eliminando cuenta...';
 }

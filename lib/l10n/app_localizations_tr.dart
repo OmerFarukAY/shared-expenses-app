@@ -575,4 +575,48 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get accountLinkErrorGeneric =>
       'Hesap bağlanamadı. Lütfen tekrar deneyin.';
+
+  @override
+  String get deleteAccountTitle => 'Hesabı Sil';
+
+  @override
+  String get deleteAccountSubtitle =>
+      'Hesabınızı kalıcı olarak silin. Diğer üyelerin bulunduğu gruplarınız için önce sahiplik devri gereklidir. Bu işlem geri alınamaz.';
+
+  @override
+  String get deleteAccountConfirmTitle => 'Hesabı Kalıcı Olarak Sil?';
+
+  @override
+  String get deleteAccountConfirmBody =>
+      'Bu işlem geri alınamaz. Harcama geçmişiniz korunacak ancak adınız anonimleştirilecektir. Yalnızca sizin bulunduğunuz gruplar silinecektir.';
+
+  @override
+  String get deleteAccountSuccess => 'Hesabınız silindi.';
+
+  @override
+  String get deleteAccountOwnershipRequired => 'Sahiplik Devri Gerekli';
+
+  @override
+  String get deleteAccountOwnershipRequiredBody =>
+      'Aşağıdaki grup(lar)ın diğer üyelerle birlikte sahibisiniz. Hesabınızı silmeden önce sahipliği devredin.';
+
+  @override
+  String get transferOwnershipButton => 'Sahipliği Devret';
+
+  @override
+  String get transferOwnershipTitle => 'Grup Sahipliğini Devret';
+
+  @override
+  String get transferOwnershipBody =>
+      'Yeni sahip olarak bir üye seçin. Grupta üye olarak kalmaya devam edeceksiniz.';
+
+  @override
+  String get transferOwnershipSuccess => 'Sahiplik başarıyla devredildi.';
+
+  @override
+  String get deleteAccountReauthRequired =>
+      'Hesap silme işlemini onaylamak için lütfen tekrar giriş yapın.';
+
+  @override
+  String get deleteAccountProcessing => 'Hesap siliniyor...';
 }

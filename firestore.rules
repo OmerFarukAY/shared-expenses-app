@@ -272,54 +272,67 @@ service cloud.firestore {
       // Members can update group details, or group creator can approve pending requests or kick
       allow update: if isAuthenticated() &&
                        request.resource.data.id == resource.data.id &&
-                       request.resource.data.createdBy == resource.data.createdBy &&
                        request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 60 &&
                        request.resource.data.createdAt == resource.data.createdAt &&
                        isValidUpdateTimestamp(request.resource.data.updatedAt, resource.data.updatedAt) &&
                        (
-                         // Case 1: Existing member updates group metadata (memberUids stays untouched)
-                         (isGroupMember(groupId) &&
-                          (!('memberUids' in resource.data) || request.resource.data.memberUids == resource.data.memberUids) &&
-                          (!('memberCount' in resource.data) || request.resource.data.memberCount == resource.data.memberCount))
+                         // Cases 1-4: createdBy stays the same (immutable for normal ops)
+                         (request.resource.data.createdBy == resource.data.createdBy &&
+                          (
+                            // Case 1: Existing member updates group metadata (memberUids stays untouched)
+                            (isGroupMember(groupId) &&
+                             (!('memberUids' in resource.data) || request.resource.data.memberUids == resource.data.memberUids) &&
+                             (!('memberCount' in resource.data) || request.resource.data.memberCount == resource.data.memberCount))
+                            ||
+                            // Case 2: Group creator approves a pending join request (+1 member)
+                            (request.auth.uid == resource.data.createdBy &&
+                             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt', 'lastAddedUid']) &&
+                             request.resource.data.memberUids is list &&
+                             request.resource.data.memberUids.size() == resource.data.memberUids.size() + 1 &&
+                             request.resource.data.lastAddedUid is string &&
+                             request.resource.data.lastAddedUid in request.resource.data.memberUids &&
+                             !(request.resource.data.lastAddedUid in resource.data.memberUids) &&
+                             request.resource.data.memberUids.hasAll(resource.data.memberUids) &&
+                             request.resource.data.memberUids.hasAll([resource.data.createdBy]) &&
+                             request.resource.data.memberCount == request.resource.data.memberUids.size() &&
+                             getAfter(/databases/$(database)/documents/groups/$(groupId)/members/$(request.resource.data.lastAddedUid)).data.role == 'member')
+                            ||
+                            // Case 3: Member self-leaves group (removes self only, creator cannot leave)
+                            (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt', 'lastRemovedUid']) &&
+                             request.resource.data.memberUids is list &&
+                             request.resource.data.memberUids.size() == resource.data.memberUids.size() - 1 &&
+                             request.resource.data.lastRemovedUid == request.auth.uid &&
+                             resource.data.memberUids.hasAll(request.resource.data.memberUids) &&
+                             !(request.auth.uid in request.resource.data.memberUids) &&
+                             request.auth.uid != resource.data.createdBy &&
+                             request.resource.data.memberUids.hasAll([resource.data.createdBy]) &&
+                             request.resource.data.memberCount == request.resource.data.memberUids.size() &&
+                             getAfter(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)).data.leftAt != null)
+                            ||
+                            // Case 4: Group creator removes a member (creator cannot remove self)
+                            (request.auth.uid == resource.data.createdBy &&
+                             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt', 'lastRemovedUid']) &&
+                             request.resource.data.memberUids is list &&
+                             request.resource.data.memberUids.size() == resource.data.memberUids.size() - 1 &&
+                             request.resource.data.lastRemovedUid is string &&
+                             request.resource.data.lastRemovedUid != resource.data.createdBy &&
+                             resource.data.memberUids.hasAll(request.resource.data.memberUids) &&
+                             !(request.resource.data.lastRemovedUid in request.resource.data.memberUids) &&
+                             request.resource.data.lastRemovedUid in resource.data.memberUids &&
+                             request.resource.data.memberUids.hasAll([resource.data.createdBy]) &&
+                             request.resource.data.memberCount == request.resource.data.memberUids.size() &&
+                             getAfter(/databases/$(database)/documents/groups/$(groupId)/members/$(request.resource.data.lastRemovedUid)).data.leftAt != null)
+                          )
+                         )
                          ||
-                         // Case 2: Group creator approves a pending join request (+1 member)
+                         // Case 5: Current owner transfers ownership to an existing active member
                          (request.auth.uid == resource.data.createdBy &&
-                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt', 'lastAddedUid']) &&
-                          request.resource.data.memberUids is list &&
-                          request.resource.data.memberUids.size() == resource.data.memberUids.size() + 1 &&
-                          request.resource.data.lastAddedUid is string &&
-                          request.resource.data.lastAddedUid in request.resource.data.memberUids &&
-                          !(request.resource.data.lastAddedUid in resource.data.memberUids) &&
-                          request.resource.data.memberUids.hasAll(resource.data.memberUids) &&
-                          request.resource.data.memberUids.hasAll([resource.data.createdBy]) &&
-                          request.resource.data.memberCount == request.resource.data.memberUids.size() &&
-                          getAfter(/databases/$(database)/documents/groups/$(groupId)/members/$(request.resource.data.lastAddedUid)).data.role == 'member')
-                         ||
-                         // Case 3: Member self-leaves group (removes self only, creator cannot leave)
-                         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt', 'lastRemovedUid']) &&
-                          request.resource.data.memberUids is list &&
-                          request.resource.data.memberUids.size() == resource.data.memberUids.size() - 1 &&
-                          request.resource.data.lastRemovedUid == request.auth.uid &&
-                          resource.data.memberUids.hasAll(request.resource.data.memberUids) &&
-                          !(request.auth.uid in request.resource.data.memberUids) &&
-                          request.auth.uid != resource.data.createdBy &&
-                          request.resource.data.memberUids.hasAll([resource.data.createdBy]) &&
-                          request.resource.data.memberCount == request.resource.data.memberUids.size() &&
-                          getAfter(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)).data.leftAt != null)
-                         ||
-                         // Case 4: Group creator removes a member (creator cannot remove self)
-                         (request.auth.uid == resource.data.createdBy &&
-                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'memberCount', 'updatedAt', 'lastRemovedUid']) &&
-                          request.resource.data.memberUids is list &&
-                          request.resource.data.memberUids.size() == resource.data.memberUids.size() - 1 &&
-                          request.resource.data.lastRemovedUid is string &&
-                          request.resource.data.lastRemovedUid != resource.data.createdBy &&
-                          resource.data.memberUids.hasAll(request.resource.data.memberUids) &&
-                          !(request.resource.data.lastRemovedUid in request.resource.data.memberUids) &&
-                          request.resource.data.lastRemovedUid in resource.data.memberUids &&
-                          request.resource.data.memberUids.hasAll([resource.data.createdBy]) &&
-                          request.resource.data.memberCount == request.resource.data.memberUids.size() &&
-                          getAfter(/databases/$(database)/documents/groups/$(groupId)/members/$(request.resource.data.lastRemovedUid)).data.leftAt != null)
+                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['createdBy', 'updatedAt']) &&
+                          request.resource.data.createdBy is string &&
+                          request.resource.data.createdBy in resource.data.memberUids &&
+                          request.resource.data.createdBy != resource.data.createdBy &&
+                          getAfter(/databases/$(database)/documents/groups/$(groupId)/members/$(request.resource.data.createdBy)).data.role == 'owner' &&
+                          getAfter(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)).data.role == 'member')
                        );
 
       allow delete: if isAuthenticated() && request.auth.uid == resource.data.createdBy;
@@ -410,32 +423,52 @@ service cloud.firestore {
                             exists(/databases/$(database)/documents/groups/$(groupId)/joinRequests/$(memberUid)))
                          );
 
-        allow update: if isAuthenticated() && 
+        allow update: if isAuthenticated() &&
                          request.resource.data.uid == memberUid &&
-                         request.resource.data.role == resource.data.role &&
                          request.resource.data.joinedAt == resource.data.joinedAt &&
                          (
-                           // 1. İsim Güncelleme (Sadece kendisi)
-                           (request.auth.uid == memberUid && 
-                            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'updatedAt']))
-                           ||
-                           // 2. Ayrılma / Atılma (leftAt eklenmesi)
-                           (
-                             (request.auth.uid == memberUid || isGroupCreator(groupId)) &&
-                             memberUid != get(/databases/$(database)/documents/groups/$(groupId)).data.createdBy &&
-                             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['leftAt', 'updatedAt']) &&
-                             isValidCreationTimestamp(request.resource.data.leftAt) &&
-                             !getAfter(/databases/$(database)/documents/groups/$(groupId)).data.memberUids.hasAny([memberUid])
+                           // Cases 1-3: role is immutable
+                           (request.resource.data.role == resource.data.role &&
+                            (
+                              // 1. İsim Güncelleme (Sadece kendisi)
+                              (request.auth.uid == memberUid &&
+                               request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'updatedAt']))
+                              ||
+                              // 2. Ayrılma / Atılma (leftAt eklenmesi) — displayName may be 'Deleted User' during account deletion
+                              (
+                                (request.auth.uid == memberUid || isGroupCreator(groupId)) &&
+                                memberUid != get(/databases/$(database)/documents/groups/$(groupId)).data.createdBy &&
+                                request.resource.data.diff(resource.data).affectedKeys().hasOnly(['leftAt', 'displayName', 'updatedAt']) &&
+                                isValidCreationTimestamp(request.resource.data.leftAt) &&
+                                (resource.data.displayName == request.resource.data.displayName ||
+                                 request.resource.data.displayName == 'Deleted User') &&
+                                !getAfter(/databases/$(database)/documents/groups/$(groupId)).data.memberUids.hasAny([memberUid])
+                              )
+                              ||
+                              // 3. Tekrar katılma (leftAt alanının silinmesi)
+                              (
+                                isGroupCreator(groupId) &&
+                                !('leftAt' in request.resource.data) && ('leftAt' in resource.data) &&
+                                request.resource.data.diff(resource.data).affectedKeys().hasOnly(['leftAt', 'updatedAt']) &&
+                                getAfter(/databases/$(database)/documents/groups/$(groupId)).data.memberUids.hasAny([memberUid]) &&
+                                exists(/databases/$(database)/documents/groups/$(groupId)/joinRequests/$(memberUid))
+                              )
+                            )
                            )
                            ||
-                           // 3. Tekrar katılma (leftAt alanının silinmesi)
-                           (
-                             isGroupCreator(groupId) &&
-                             !('leftAt' in request.resource.data) && ('leftAt' in resource.data) &&
-                             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['leftAt', 'updatedAt']) &&
-                             getAfter(/databases/$(database)/documents/groups/$(groupId)).data.memberUids.hasAny([memberUid]) &&
-                             exists(/databases/$(database)/documents/groups/$(groupId)/joinRequests/$(memberUid))
-                           )
+                           // Case 4: Group creator (current or incoming) promotes a member to owner during ownership transfer
+                           (request.auth.uid == get(/databases/$(database)/documents/groups/$(groupId)).data.createdBy &&
+                            request.resource.data.role == 'owner' &&
+                            resource.data.role == 'member' &&
+                            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role', 'updatedAt']) &&
+                            getAfter(/databases/$(database)/documents/groups/$(groupId)).data.createdBy == memberUid)
+                           ||
+                           // Case 5: Old owner demotes self to member after ownership transfer
+                           (request.auth.uid == memberUid &&
+                            resource.data.role == 'owner' &&
+                            request.resource.data.role == 'member' &&
+                            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role', 'updatedAt']) &&
+                            getAfter(/databases/$(database)/documents/groups/$(groupId)).data.createdBy != memberUid)
                          );
 
         // ONLY allowed when deleting the group (Batch 500)

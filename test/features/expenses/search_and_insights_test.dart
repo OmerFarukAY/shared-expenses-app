@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:denk/core/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart' show AuthProvider, AuthCredential;
 import 'package:denk/features/auth/domain/user_profile.dart';
+import 'package:denk/features/auth/domain/account_deletion_service.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
 import 'package:denk/features/groups/presentation/group_controller.dart';
@@ -210,4 +211,18 @@ class _FakeUserProfileController extends AsyncNotifier<UserProfile?>
 
   @override
   Future<void> switchToExistingProvider(AuthProvider provider) async {}
+
+  @override
+  Future<List<OwnedGroupBlock>> analyzeOwnershipBlocks() async => const [];
+
+  @override
+  Future<void> transferGroupOwnership({
+    required String groupId,
+    required String currentOwnerUid,
+    required String newOwnerUid,
+    required String newOwnerDisplayName,
+  }) async {}
+
+  @override
+  Future<void> deleteAccountFull() async {}
 }

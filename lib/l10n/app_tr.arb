@@ -254,5 +254,18 @@
   "switchAccountButton": "Kayıtlı Hesaba Geç",
   "keepCurrentAccountButton": "Misafir Hesapta Kal",
   "accountSwitchSuccess": "Kayıtlı hesaba geçildi.",
-  "accountLinkErrorGeneric": "Hesap bağlanamadı. Lütfen tekrar deneyin."
+  "accountLinkErrorGeneric": "Hesap bağlanamadı. Lütfen tekrar deneyin.",
+  "deleteAccountTitle": "Hesabı Sil",
+  "deleteAccountSubtitle": "Hesabınızı kalıcı olarak silin. Diğer üyelerin bulunduğu gruplarınız için önce sahiplik devri gereklidir. Bu işlem geri alınamaz.",
+  "deleteAccountConfirmTitle": "Hesabı Kalıcı Olarak Sil?",
+  "deleteAccountConfirmBody": "Bu işlem geri alınamaz. Harcama geçmişiniz korunacak ancak adınız anonimleştirilecektir. Yalnızca sizin bulunduğunuz gruplar silinecektir.",
+  "deleteAccountSuccess": "Hesabınız silindi.",
+  "deleteAccountOwnershipRequired": "Sahiplik Devri Gerekli",
+  "deleteAccountOwnershipRequiredBody": "Aşağıdaki grup(lar)ın diğer üyelerle birlikte sahibisiniz. Hesabınızı silmeden önce sahipliği devredin.",
+  "transferOwnershipButton": "Sahipliği Devret",
+  "transferOwnershipTitle": "Grup Sahipliğini Devret",
+  "transferOwnershipBody": "Yeni sahip olarak bir üye seçin. Grupta üye olarak kalmaya devam edeceksiniz.",
+  "transferOwnershipSuccess": "Sahiplik başarıyla devredildi.",
+  "deleteAccountReauthRequired": "Hesap silme işlemini onaylamak için lütfen tekrar giriş yapın.",
+  "deleteAccountProcessing": "Hesap siliniyor..."
 }

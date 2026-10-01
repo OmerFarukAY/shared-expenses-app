@@ -65,6 +65,17 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> deleteFirebaseAuthAccount() async {
+    _uid = null;
+    _controller.add(null);
+  }
+
+  @override
+  Future<void> deleteUserDocument(String uid) async {
+    _profile = null;
+  }
+
+  @override
   Future<void> linkGoogleAccount({AuthProvider? customProvider}) async {
     _linkedProviders.add('google.com');
     _providersController.add(_linkedProviders);

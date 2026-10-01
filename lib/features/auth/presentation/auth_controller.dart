@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart' show AuthProvider, AuthCredent
 import 'package:denk/core/errors/app_exception.dart';
 import 'package:denk/features/auth/data/auth_repository.dart';
 import 'package:denk/features/auth/domain/user_profile.dart';
+import 'package:denk/features/auth/domain/account_deletion_service.dart';
+import 'package:denk/features/groups/data/group_repository.dart';
 
 /// Provider for the singleton [AuthRepository].
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
@@ -156,6 +158,53 @@ class UserProfileController extends AsyncNotifier<UserProfile?> {
       await repo.signInWithProvider(provider);
       final profile = await repo.fetchUserProfile();
       state = AsyncValue.data(profile);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
+  }
+
+  /// Analyzes which groups need ownership transfer before account deletion.
+  Future<List<OwnedGroupBlock>> analyzeOwnershipBlocks() async {
+    final repo = ref.read(authRepositoryProvider);
+    final groupRepo = FirestoreGroupRepository();
+    final uid = repo.currentUid;
+    if (uid == null) return const [];
+    final service = AccountDeletionService(authRepo: repo, groupRepo: groupRepo);
+    return service.analyzeOwnershipBlocks(uid);
+  }
+
+  /// Transfers group ownership to a new owner.
+  Future<void> transferGroupOwnership({
+    required String groupId,
+    required String currentOwnerUid,
+    required String newOwnerUid,
+    required String newOwnerDisplayName,
+  }) async {
+    final groupRepo = FirestoreGroupRepository();
+    await groupRepo.transferOwnership(
+      groupId: groupId,
+      currentOwnerUid: currentOwnerUid,
+      newOwnerUid: newOwnerUid,
+      newOwnerDisplayName: newOwnerDisplayName,
+    );
+  }
+
+  /// Full account deletion with Firestore cleanup.
+  /// Throws [AuthReauthRequiredException] if re-authentication is needed.
+  Future<void> deleteAccountFull() async {
+    state = const AsyncValue.loading();
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final groupRepo = FirestoreGroupRepository();
+      final uid = repo.currentUid;
+      if (uid == null) {
+        state = const AsyncValue.data(null);
+        return;
+      }
+      final service = AccountDeletionService(authRepo: repo, groupRepo: groupRepo);
+      await service.executeFullDeletion(uid);
+      state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
       rethrow;
