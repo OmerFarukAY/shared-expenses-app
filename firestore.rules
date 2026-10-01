@@ -197,8 +197,26 @@ service cloud.firestore {
       let v = splits.values();
       return splits is map && s >= 1 && s <= 20 &&
              participants is list && participants.size() == s &&
-             v[0] is int && v[0] > 0 &&
-             v[s - 1] is int && v[s - 1] > 0 &&
+             (s > 0 ? (v[0] is int && v[0] > 0) : true) &&
+             (s > 1 ? (v[1] is int && v[1] > 0) : true) &&
+             (s > 2 ? (v[2] is int && v[2] > 0) : true) &&
+             (s > 3 ? (v[3] is int && v[3] > 0) : true) &&
+             (s > 4 ? (v[4] is int && v[4] > 0) : true) &&
+             (s > 5 ? (v[5] is int && v[5] > 0) : true) &&
+             (s > 6 ? (v[6] is int && v[6] > 0) : true) &&
+             (s > 7 ? (v[7] is int && v[7] > 0) : true) &&
+             (s > 8 ? (v[8] is int && v[8] > 0) : true) &&
+             (s > 9 ? (v[9] is int && v[9] > 0) : true) &&
+             (s > 10 ? (v[10] is int && v[10] > 0) : true) &&
+             (s > 11 ? (v[11] is int && v[11] > 0) : true) &&
+             (s > 12 ? (v[12] is int && v[12] > 0) : true) &&
+             (s > 13 ? (v[13] is int && v[13] > 0) : true) &&
+             (s > 14 ? (v[14] is int && v[14] > 0) : true) &&
+             (s > 15 ? (v[15] is int && v[15] > 0) : true) &&
+             (s > 16 ? (v[16] is int && v[16] > 0) : true) &&
+             (s > 17 ? (v[17] is int && v[17] > 0) : true) &&
+             (s > 18 ? (v[18] is int && v[18] > 0) : true) &&
+             (s > 19 ? (v[19] is int && v[19] > 0) : true) &&
              participants.hasAll(splits.keys()) &&
              splits.keys().hasAll(participants) &&
              groupMembers.hasAll(participants) &&

@@ -277,4 +277,318 @@ describe('Denk Firestore Rules', () => {
     }
   });
 
+  describe('Extended Expense Tests', () => {
+    it('1) Geçerli expense UPDATE ve DELETE (grup üyesi) 2, 10, 20 katılımcıyla', async () => {
+      const sizes = [2, 10, 20];
+      for (const size of sizes) {
+        const uids = Array.from({length: size}, (_, i) => `member${i}`);
+        await setupGroup(`grp_ext_${size}`, 'user1');
+        await addMembers(`grp_ext_${size}`, uids);
+
+        const testParticipants = uids.slice(0, size);
+        const splits = {};
+        for (const u of testParticipants) splits[u] = 100;
+
+        // Setup real expense
+        await testEnv.withSecurityRulesDisabled(async (context) => {
+          const adminDb = context.firestore();
+          await adminDb.collection('groups').doc(`grp_ext_${size}`).collection('expenses').doc('exp1').set({
+            id: 'exp1',
+            groupId: `grp_ext_${size}`,
+            title: 'Lunch',
+            category: 'Food',
+            currency: 'TRY',
+            totalMinor: 100 * size,
+            date: new Date(),
+            splitMethod: 'equal',
+            payers: { 'member0': 100 * size },
+            participants: testParticipants,
+            splits: splits,
+            createdBy: 'user1',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        });
+
+        // Member 0 updates and deletes
+        const db = testEnv.authenticatedContext('member0').firestore();
+        const docRef = db.collection('groups').doc(`grp_ext_${size}`).collection('expenses').doc('exp1');
+        
+        const snap = await docRef.get();
+        const currentData = snap.data();
+
+        // Update
+        await assertSucceeds(
+          docRef.update({
+            ...currentData,
+            title: 'Dinner',
+            updatedAt: new Date()
+          })
+        );
+
+        // Hacker cannot update/delete
+        const hackerDb = testEnv.authenticatedContext('hacker99').firestore();
+        const hackerDocRef = hackerDb.collection('groups').doc(`grp_ext_${size}`).collection('expenses').doc('exp1');
+        
+        await assertFails(hackerDocRef.update({ title: 'Hacked' }));
+        await assertFails(hackerDocRef.delete());
+
+        // Delete (by member0)
+        await assertSucceeds(docRef.delete());
+      }
+    });
+
+    it('2) 21 katılımcılı splits map reddedilmeli', async () => {
+      const size = 21;
+      const uids = Array.from({length: size}, (_, i) => `m${i}`);
+      await setupGroup('grp_21', 'user1');
+      await addMembers('grp_21', uids);
+
+      const db = testEnv.authenticatedContext('user1').firestore();
+      const docRef = db.collection('groups').doc('grp_21').collection('expenses').doc('exp1');
+
+      const splits = {};
+      for (const u of uids) splits[u] = 100;
+
+      await assertFails(docRef.set({
+        id: 'exp1',
+        groupId: 'grp_21',
+        title: 'Large Group',
+        category: 'Food',
+        currency: 'TRY',
+        totalMinor: 100 * size,
+        date: new Date(),
+        splitMethod: 'equal',
+        payers: { 'user1': 100 * size },
+        participants: uids,
+        splits: splits,
+        createdBy: 'user1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }));
+    });
+
+    it('3) Negatif split değeri reddedilmeli', async () => {
+      await setupGroup('grp_neg', 'user1');
+      await addMembers('grp_neg', ['user2']);
+
+      const db = testEnv.authenticatedContext('user1').firestore();
+      const docRef = db.collection('groups').doc('grp_neg').collection('expenses').doc('exp1');
+
+      await assertFails(docRef.set({
+        id: 'exp1',
+        groupId: 'grp_neg',
+        title: 'Negative',
+        category: 'Food',
+        currency: 'TRY',
+        totalMinor: 1000,
+        date: new Date(),
+        splitMethod: 'custom',
+        payers: { 'user1': 1000 },
+        participants: ['user1', 'user2'],
+        splits: { 'user1': 1500, 'user2': -500 },
+        createdBy: 'user1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }));
+    });
+
+    it('4) splits veya payers içinde participants listesinde olmayan uid reddedilmeli', async () => {
+      await setupGroup('grp_uid', 'user1');
+      await addMembers('grp_uid', ['user2', 'user3']);
+
+      const db = testEnv.authenticatedContext('user1').firestore();
+      
+      const baseData = {
+        groupId: 'grp_uid',
+        title: 'Wrong UID',
+        category: 'Food',
+        currency: 'TRY',
+        totalMinor: 1000,
+        date: new Date(),
+        splitMethod: 'custom',
+        createdBy: 'user1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      
+      // Splits uid not in participants
+      await assertFails(db.collection('groups').doc('grp_uid').collection('expenses').doc('exp1').set({
+        ...baseData,
+        id: 'exp1',
+        payers: { 'user1': 1000 },
+        participants: ['user1', 'user2'],
+        splits: { 'user1': 500, 'user2': 250, 'user3': 250 },
+      }));
+
+      // Payers uid not in groupMembers
+      await assertFails(db.collection('groups').doc('grp_uid').collection('expenses').doc('exp2').set({
+        ...baseData,
+        id: 'exp2',
+        payers: { 'stranger': 1000 },
+        participants: ['user1', 'user2'],
+        splits: { 'user1': 500, 'user2': 500 },
+      }));
+    });
+
+    it('5) payers toplamı totalMinor`a eşit değilse reddedilmeli', async () => {
+      await setupGroup('grp_payer', 'user1');
+      await addMembers('grp_payer', ['user2']);
+
+      const db = testEnv.authenticatedContext('user1').firestore();
+      const docRef = db.collection('groups').doc('grp_payer').collection('expenses').doc('exp1');
+
+      await assertFails(docRef.set({
+        id: 'exp1',
+        groupId: 'grp_payer',
+        title: 'Wrong Payers',
+        category: 'Food',
+        currency: 'TRY',
+        totalMinor: 1000,
+        date: new Date(),
+        splitMethod: 'equal',
+        payers: { 'user1': 600, 'user2': 500 },
+        participants: ['user1', 'user2'],
+        splits: { 'user1': 500, 'user2': 500 },
+        createdBy: 'user1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }));
+    });
+
+    it('6) Başkası adına createdBy ile harcama oluşturma reddedilmeli', async () => {
+      await setupGroup('grp_spoof', 'user1');
+      await addMembers('grp_spoof', ['user2']);
+
+      const db = testEnv.authenticatedContext('user1').firestore();
+      const docRef = db.collection('groups').doc('grp_spoof').collection('expenses').doc('exp1');
+
+      await assertFails(docRef.set({
+        id: 'exp1',
+        groupId: 'grp_spoof',
+        title: 'Spoofed',
+        category: 'Food',
+        currency: 'TRY',
+        totalMinor: 1000,
+        date: new Date(),
+        splitMethod: 'equal',
+        payers: { 'user1': 1000 },
+        participants: ['user1', 'user2'],
+        splits: { 'user1': 500, 'user2': 500 },
+        createdBy: 'user2', // spoofing
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }));
+    });
+
+    it('7) Negatif değerler (başta, ortada, sonda) reddedilmeli (splits ve payers)', async () => {
+      // Test for 3, 5, 10, 20 participants
+      const sizes = [3, 5, 10, 20];
+      for (const size of sizes) {
+        const uids = Array.from({length: size}, (_, i) => `member${i}`); // sorted: member0, member1, member10, member11, ... member2. We need to be careful with sorting if we strictly want 'start', 'middle', 'end' but Firestore sorts by key.
+        // Let's use clean alphabetical keys so we can control position.
+        const letters = 'abcdefghijklmnopqrstuvwxyz';
+        const sortedUids = Array.from({length: size}, (_, i) => `${letters[i]}_user`);
+        
+        await setupGroup(`grp_neg_${size}`, 'user1');
+        await addMembers(`grp_neg_${size}`, sortedUids);
+        const db = testEnv.authenticatedContext('user1').firestore();
+        
+        const baseData = {
+          groupId: `grp_neg_${size}`,
+          title: 'Negative Test',
+          category: 'Food',
+          currency: 'TRY',
+          totalMinor: 1000,
+          date: new Date(),
+          splitMethod: 'custom',
+          payers: { [sortedUids[0]]: 1000 },
+          participants: sortedUids,
+          createdBy: 'user1',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        // Positions: start (0), middle (Math.floor(size/2)), end (size-1)
+        const positions = [0, Math.floor(size / 2), size - 1];
+        
+        for (const pos of positions) {
+          // SPLITS TEST
+          const splits = {};
+          for (let i = 0; i < size; i++) {
+            splits[sortedUids[i]] = 100;
+          }
+          // Make pos negative, compensate elsewhere to keep sum = 1000
+          splits[sortedUids[pos]] = -500;
+          const otherPos = pos === 0 ? 1 : 0;
+          splits[sortedUids[otherPos]] += (1000 - (100 * size - 100 - 500)); // ensure sum is 1000
+          
+          await assertFails(db.collection('groups').doc(`grp_neg_${size}`).collection('expenses').doc(`exp_s_${pos}`).set({
+            ...baseData, id: `exp_s_${pos}`, splits
+          }));
+
+          // PAYERS TEST (only for sizes <= 5, as payer limit is 5)
+          if (size <= 5) {
+            const payers = {};
+            for (let i = 0; i < size; i++) {
+              payers[sortedUids[i]] = 100;
+            }
+            payers[sortedUids[pos]] = -500;
+            payers[sortedUids[otherPos]] += (1000 - (100 * size - 100 - 500)); // sum = 1000
+            
+            // Valid splits for payer test
+            const validSplits = {};
+            for (const uid of sortedUids) validSplits[uid] = 100;
+            validSplits[sortedUids[otherPos]] += (1000 - (100 * size));
+
+            await assertFails(db.collection('groups').doc(`grp_neg_${size}`).collection('expenses').doc(`exp_p_${pos}`).set({
+              ...baseData, id: `exp_p_${pos}`, payers, splits: validSplits
+            }));
+          }
+        }
+      }
+    });
+
+    it('8) Sıfır (0) değeri mevcut semantiğe göre reddedilmeli', async () => {
+      await setupGroup('grp_zero', 'user1');
+      await addMembers('grp_zero', ['a_user', 'b_user', 'c_user']);
+      const db = testEnv.authenticatedContext('user1').firestore();
+      const baseData = {
+        id: 'exp1', groupId: 'grp_zero', title: 'Zero Test', category: 'Food', currency: 'TRY', totalMinor: 1000,
+        date: new Date(), splitMethod: 'custom', createdBy: 'user1', createdAt: new Date(), updatedAt: new Date(),
+        participants: ['a_user', 'b_user', 'c_user'], payers: { 'a_user': 1000 }
+      };
+
+      // Split has 0
+      await assertFails(db.collection('groups').doc('grp_zero').collection('expenses').doc('exp_s_0').set({
+        ...baseData, splits: { 'a_user': 1000, 'b_user': 0, 'c_user': 0 }
+      }));
+      
+      // Payer has 0
+      await assertFails(db.collection('groups').doc('grp_zero').collection('expenses').doc('exp_p_0').set({
+        ...baseData, splits: { 'a_user': 500, 'b_user': 250, 'c_user': 250 }, payers: { 'a_user': 1000, 'b_user': 0 }
+      }));
+    });
+
+    it('9) Float veya string değerler reddedilmeli', async () => {
+      await setupGroup('grp_type', 'user1');
+      await addMembers('grp_type', ['a_user', 'b_user']);
+      const db = testEnv.authenticatedContext('user1').firestore();
+      const baseData = {
+        id: 'exp1', groupId: 'grp_type', title: 'Type Test', category: 'Food', currency: 'TRY', totalMinor: 1000,
+        date: new Date(), splitMethod: 'custom', createdBy: 'user1', createdAt: new Date(), updatedAt: new Date(),
+        participants: ['a_user', 'b_user'], payers: { 'a_user': 1000 }
+      };
+
+      // Float split
+      await assertFails(db.collection('groups').doc('grp_type').collection('expenses').doc('exp_float').set({
+        ...baseData, splits: { 'a_user': 500.5, 'b_user': 499.5 }
+      }));
+
+      // String split
+      await assertFails(db.collection('groups').doc('grp_type').collection('expenses').doc('exp_str').set({
+        ...baseData, splits: { 'a_user': '500', 'b_user': '500' }
+      }));
+    });
+  });
 });
