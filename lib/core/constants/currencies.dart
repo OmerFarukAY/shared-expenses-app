@@ -178,8 +178,25 @@ class Currency {
     audCurrency,
   ];
 
+  static Currency getDefaultCurrencyForLocale(String languageCode, [String? countryCode]) {
+    final lang = languageCode.toLowerCase();
+    final country = countryCode?.toUpperCase();
+
+    if (lang == 'tr') return tryCurrency;
+    if (lang == 'es' || lang == 'fr' || lang == 'it') return eurCurrency;
+
+    if (lang == 'en') {
+      if (country == 'GB') return gbpCurrency;
+      if (country == 'CA') return cadCurrency;
+      if (country == 'AU') return audCurrency;
+      return usdCurrency;
+    }
+
+    return usdCurrency;
+  }
+
   static Currency fromCode(String? code) {
-    if (code == null) return tryCurrency;
+    if (code == null) return usdCurrency;
     final String upper = code.trim().toUpperCase();
     return supportedCurrencies.firstWhere(
       (c) => c.code == upper,

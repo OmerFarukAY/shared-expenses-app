@@ -536,12 +536,31 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      _currency.symbol,
-                      style: AppTypography.monetary(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: theme.colorScheme.primary,
+                    DropdownButtonHideUnderline(
+                      child: DropdownButton<Currency>(
+                        value: _currency,
+                        icon: Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: theme.colorScheme.primary,
+                        ),
+                        style: AppTypography.monetary(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                          color: theme.colorScheme.primary,
+                        ),
+                        items: Currency.supportedCurrencies
+                            .map(
+                              (c) => DropdownMenuItem(
+                                value: c,
+                                child: Text(c.code),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) {
+                          if (val != null) {
+                            setState(() => _currency = val);
+                          }
+                        },
                       ),
                     ),
                     const SizedBox(width: 12),

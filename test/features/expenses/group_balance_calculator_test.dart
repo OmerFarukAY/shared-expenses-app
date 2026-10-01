@@ -47,11 +47,11 @@ void main() {
         updatedAt: now,
       );
 
-      final summary = GroupBalanceCalculator.calculate(
+      final summary = GroupBalanceCalculator.calculateAll(
         expenses: [expense],
         members: members,
         defaultCurrency: 'TRY',
-      );
+      )['TRY']!;
 
       expect(summary.totalGroupSpendingMinor, 90000);
       expect(summary.currencyCode, 'TRY');
@@ -108,11 +108,11 @@ void main() {
         updatedAt: now,
       );
 
-      final summary = GroupBalanceCalculator.calculate(
+      final summary = GroupBalanceCalculator.calculateAll(
         expenses: [expense],
         members: members,
         defaultCurrency: 'TRY',
-      );
+      )['TRY']!;
 
       expect(summary.totalGroupSpendingMinor, 200000);
 
@@ -166,11 +166,11 @@ void main() {
         updatedAt: now,
       );
 
-      final summary = GroupBalanceCalculator.calculate(
+      final summary = GroupBalanceCalculator.calculateAll(
         expenses: [exp1, exp2],
         members: members,
         defaultCurrency: 'TRY',
-      );
+      )['TRY']!;
 
       expect(summary.totalGroupSpendingMinor, 24000);
 
@@ -219,14 +219,16 @@ void main() {
         updatedAt: now,
       );
 
-      final summary = GroupBalanceCalculator.calculate(
+      final summaries = GroupBalanceCalculator.calculateAll(
         expenses: [expTRY, expUSD],
         members: members,
         defaultCurrency: 'TRY',
       );
+      final summaryTRY = summaries['TRY']!;
+      final summaryUSD = summaries['USD']!;
 
-      // USD should not be added into TRY spending
-      expect(summary.totalGroupSpendingMinor, 10000);
+      expect(summaryTRY.totalGroupSpendingMinor, 10000);
+      expect(summaryUSD.totalGroupSpendingMinor, 5000);
     });
   });
 }

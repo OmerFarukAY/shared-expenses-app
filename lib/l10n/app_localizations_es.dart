@@ -481,4 +481,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String expenseZeroShareRemoved(int count) {
     return '$count participant(s) with 0 share removed.';
   }
+
+  @override
+  String get languageSystem => 'Idioma del sistema';
+
+  @override
+  String get currency => 'Moneda';
 }

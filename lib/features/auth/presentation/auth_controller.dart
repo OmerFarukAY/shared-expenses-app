@@ -32,8 +32,8 @@ class UserProfileController extends AsyncNotifier<UserProfile?> {
   /// Sets the initial display name and optional preferences for the user.
   Future<void> setDisplayName(
     String name, {
-    String preferredCurrency = 'TRY',
-    String languageCode = 'en',
+    String? preferredCurrency,
+    String? languageCode,
   }) async {
     final trimmed = name.trim();
     if (trimmed.length < 2 || trimmed.length > 50) {
@@ -52,8 +52,8 @@ class UserProfileController extends AsyncNotifier<UserProfile?> {
       final newProfile = UserProfile(
         uid: uid,
         displayName: trimmed,
-        preferredCurrency: preferredCurrency,
-        languageCode: languageCode,
+        preferredCurrency: preferredCurrency ?? 'USD',
+        languageCode: languageCode ?? 'en',
         createdAt: now,
         updatedAt: now,
       );

@@ -985,6 +985,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} participant(s) with 0 share removed.'**
   String expenseZeroShareRemoved(int count);
+
+  /// No description provided for @languageSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System Language'**
+  String get languageSystem;
+
+  /// No description provided for @currency.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get currency;
 }
 
 class _AppLocalizationsDelegate

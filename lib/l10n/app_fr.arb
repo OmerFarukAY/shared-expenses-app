@@ -225,5 +225,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "languageSystem": "Langue du système",
+  "currency": "Devise"
 }

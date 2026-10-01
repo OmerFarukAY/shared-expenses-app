@@ -15,7 +15,7 @@ class UserProfile {
   const UserProfile({
     required this.uid,
     required this.displayName,
-    this.preferredCurrency = 'TRY',
+    this.preferredCurrency = 'USD',
     this.languageCode = 'en',
     required this.createdAt,
     required this.updatedAt,

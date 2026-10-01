@@ -45,11 +45,11 @@ void main() {
       );
 
       // Before settlement: Ömer is +50, Ahmet is -50
-      final beforeSummary = GroupBalanceCalculator.calculate(
+      final beforeSummary = GroupBalanceCalculator.calculateAll(
         expenses: [expense],
         members: members,
         defaultCurrency: 'TRY',
-      );
+      )['TRY']!;
 
       expect(beforeSummary.getUserNetMinor('user_omer'), 5000);
       expect(beforeSummary.getUserNetMinor('user_ahmet'), -5000);
@@ -69,12 +69,12 @@ void main() {
       );
 
       // After settlement: Both net balances should be 0
-      final afterSummary = GroupBalanceCalculator.calculate(
+      final afterSummary = GroupBalanceCalculator.calculateAll(
         expenses: [expense],
         members: members,
         defaultCurrency: 'TRY',
         settlements: [settlement],
-      );
+      )['TRY']!;
 
       expect(afterSummary.getUserNetMinor('user_omer'), 0);
       expect(afterSummary.getUserNetMinor('user_ahmet'), 0);

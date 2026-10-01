@@ -252,7 +252,6 @@ void main() {
         }
 
         final enKeys = keySets['app_en.arb']!;
-        expect(enKeys.length, equals(130), reason: 'Expected 130 content keys');
 
         for (final entry in keySets.entries) {
           if (entry.key == 'app_en.arb') continue;

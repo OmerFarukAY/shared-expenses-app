@@ -225,5 +225,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "languageSystem": "Idioma del sistema",
+  "currency": "Moneda"
 }

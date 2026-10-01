@@ -38,6 +38,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
   final TextEditingController _searchController = TextEditingController();
   ExpenseCategory? _selectedCategory;
   String? _selectedMemberUid;
+  String? _selectedViewCurrency;
 
   @override
   void initState() {
@@ -188,12 +189,14 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
             data: (members) => expensesAsync.when(
               data: (expenses) => settlementsAsync.when(
                 data: (settlements) {
-                  final summary = GroupBalanceCalculator.calculate(
+                  final summaries = GroupBalanceCalculator.calculateAll(
                     expenses: expenses,
                     members: members,
                     defaultCurrency: widget.group.defaultCurrency,
                     settlements: settlements,
                   );
+                  final activeCurrency = _selectedViewCurrency ?? widget.group.defaultCurrency;
+                  final summary = summaries[activeCurrency]!;
                   return IconButton(
                     icon: const Icon(Icons.insights_rounded),
                     tooltip: l10n?.spendingInsights ?? 'Spending Overview',
@@ -294,12 +297,16 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
             data: (expenses) {
               return settlementsAsync.when(
                 data: (settlements) {
-                  final summary = GroupBalanceCalculator.calculate(
+                  final summaries = GroupBalanceCalculator.calculateAll(
                     expenses: expenses,
                     members: members,
                     defaultCurrency: widget.group.defaultCurrency,
                     settlements: settlements,
                   );
+
+                  final availableCurrencies = summaries.keys.toList()..sort();
+                  final activeCurrencyCode = _selectedViewCurrency ?? widget.group.defaultCurrency;
+                  final summary = summaries[activeCurrencyCode] ?? summaries[widget.group.defaultCurrency]!;
 
                   final currency = summary.currency;
                   final myNetMinor = summary.getUserNetMinor(currentUserId);
@@ -318,7 +325,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                   final simplifiedTransactions = SettlementEngine.simplifyDebts(
                     netBalances: netBalances,
                     memberNames: memberNames,
-                    currency: widget.group.defaultCurrency,
+                    currency: summary.currencyCode,
                   );
 
                   // Filter expenses based on search & filter selection
@@ -353,6 +360,43 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
 
                   return Column(
                     children: [
+                      // CURRENCY SELECTOR
+                      if (availableCurrencies.length > 1)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(l10n?.currency ?? 'Currency:', style: AppTypography.labelSmall),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    value: activeCurrencyCode,
+                                    isDense: true,
+                                    icon: const Icon(Icons.arrow_drop_down, size: 18),
+                                    style: AppTypography.labelMedium.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                    items: availableCurrencies
+                                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                                        .toList(),
+                                    onChanged: (val) {
+                                      if (val != null) setState(() => _selectedViewCurrency = val);
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
                       // HERO BALANCE CARD
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
@@ -922,7 +966,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                               ),
                               children: [
                                 if (simplifiedTransactions.isEmpty &&
-                                    settlements.isEmpty)
+                                    settlements.where((s) => s.currency.toUpperCase() == activeCurrencyCode).isEmpty)
                                   Padding(
                                     padding: const EdgeInsets.only(top: 40),
                                     child: DenkEmptyState(
@@ -1040,7 +1084,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                   }),
                                 ],
 
-                                if (settlements.isNotEmpty) ...[
+                                if (settlements.where((s) => s.currency.toUpperCase() == activeCurrencyCode).isNotEmpty) ...[
                                   const SizedBox(height: 20),
                                   Text(
                                     l10n?.settlementHistory ??
@@ -1048,7 +1092,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                     style: AppTypography.h3,
                                   ),
                                   const SizedBox(height: 10),
-                                  ...settlements.map((record) {
+                                  ...settlements.where((s) => s.currency.toUpperCase() == activeCurrencyCode).map((record) {
                                     final dateFormatted = DateFormat.yMMMd()
                                         .format(record.settledAt);
                                     return DenkCard(

@@ -72,6 +72,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final l10n = AppLocalizations.of(context);
 
     final languages = [
+      {'code': null, 'name': l10n?.languageSystem ?? 'System Language'},
       {'code': 'en', 'name': 'English'},
       {'code': 'tr', 'name': 'Türkçe'},
       {'code': 'es', 'name': 'Español'},
@@ -89,7 +90,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: languages.map((lang) {
-            final code = lang['code']!;
+            final code = lang['code'];
             final name = lang['name']!;
             final isSelected = currentLocale?.languageCode == code;
 
@@ -102,7 +103,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     )
                   : null,
               onTap: () {
-                ref.read(appLocaleProvider.notifier).setLocale(Locale(code));
+                ref.read(appLocaleProvider.notifier).setLocale(
+                  code != null ? Locale(code) : null,
+                );
                 Navigator.of(ctx).pop();
               },
             );
@@ -287,13 +290,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final currentLocale = ref.watch(appLocaleProvider);
     final currentThemeMode = ref.watch(appThemeModeProvider);
 
-    final langName = currentLocale?.languageCode == 'tr'
+    final langName = currentLocale == null
+        ? (l10n?.languageSystem ?? 'System Language')
+        : currentLocale.languageCode == 'tr'
         ? 'Türkçe'
-        : currentLocale?.languageCode == 'es'
+        : currentLocale.languageCode == 'es'
         ? 'Español'
-        : currentLocale?.languageCode == 'fr'
+        : currentLocale.languageCode == 'fr'
         ? 'Français'
-        : currentLocale?.languageCode == 'it'
+        : currentLocale.languageCode == 'it'
         ? 'Italiano'
         : 'English';
 

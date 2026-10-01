@@ -479,4 +479,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String expenseZeroShareRemoved(int count) {
     return 'Payı 0 olan $count kişi bölüşümden çıkarıldı.';
   }
+
+  @override
+  String get languageSystem => 'Sistem Dili';
+
+  @override
+  String get currency => 'Para Birimi';
 }

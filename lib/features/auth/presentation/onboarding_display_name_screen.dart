@@ -19,9 +19,21 @@ class _OnboardingDisplayNameScreenState
     extends ConsumerState<OnboardingDisplayNameScreen> {
   final TextEditingController _nameController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  Currency _selectedCurrency = Currency.tryCurrency;
+  Currency? _selectedCurrency;
   String? _errorText;
   bool _isSubmitting = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_selectedCurrency == null) {
+      final locale = Localizations.localeOf(context);
+      _selectedCurrency = Currency.getDefaultCurrencyForLocale(
+        locale.languageCode,
+        locale.countryCode,
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -54,7 +66,7 @@ class _OnboardingDisplayNameScreenState
           .read(userProfileControllerProvider.notifier)
           .setDisplayName(
             name,
-            preferredCurrency: _selectedCurrency.code,
+            preferredCurrency: _selectedCurrency!.code,
             languageCode: currentLocale,
           );
     } catch (e) {

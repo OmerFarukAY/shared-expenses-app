@@ -62,69 +62,77 @@ class GroupFinancialSummary {
 }
 
 abstract class GroupBalanceCalculator {
-  /// Computes the complete financial summary for a group and its members
-  /// based on recorded expenses and completed settlement records.
-  ///
-  /// All computations use strict 64-bit integer minor currency units.
-  static GroupFinancialSummary calculate({
+  /// Computes the complete financial summaries for a group and its members
+  /// grouped by each currency used in expenses or settlements.
+  static Map<String, GroupFinancialSummary> calculateAll({
     required List<ExpenseModel> expenses,
     required List<GroupMember> members,
     required String defaultCurrency,
     List<SettlementRecord> settlements = const [],
   }) {
-    final currency = Currency.fromCode(defaultCurrency);
-    int totalSpending = 0;
-
-    final Map<String, int> paidByMember = {};
-    final Map<String, int> owedByMember = {};
-
-    for (final m in members) {
-      paidByMember[m.uid] = 0;
-      owedByMember[m.uid] = 0;
+    final Set<String> usedCurrencies = {defaultCurrency.toUpperCase()};
+    for (final exp in expenses) {
+      usedCurrencies.add(exp.currency.toUpperCase());
+    }
+    for (final set in settlements) {
+      usedCurrencies.add(set.currency.toUpperCase());
     }
 
-    for (final expense in expenses) {
-      // For V1, calculate per group default currency or match currency
-      if (expense.currency.toUpperCase() == defaultCurrency.toUpperCase()) {
-        totalSpending += expense.totalMinor;
+    final Map<String, GroupFinancialSummary> summaries = {};
 
-        // Add payer contributions
-        expense.payers.forEach((uid, paid) {
-          paidByMember[uid] = (paidByMember[uid] ?? 0) + paid;
-        });
+    for (final currCode in usedCurrencies) {
+      final currency = Currency.fromCode(currCode);
+      int totalSpending = 0;
 
-        // Add participant owed allocations
-        expense.splits.forEach((uid, owed) {
-          owedByMember[uid] = (owedByMember[uid] ?? 0) + owed;
-        });
+      final Map<String, int> paidByMember = {};
+      final Map<String, int> owedByMember = {};
+
+      for (final m in members) {
+        paidByMember[m.uid] = 0;
+        owedByMember[m.uid] = 0;
       }
-    }
 
-    // Apply completed settlements (transfers between debtor and creditor)
-    for (final settlement in settlements) {
-      if (settlement.currency.toUpperCase() == defaultCurrency.toUpperCase()) {
-        paidByMember[settlement.fromUid] =
-            (paidByMember[settlement.fromUid] ?? 0) + settlement.amountMinor;
-        owedByMember[settlement.toUid] =
-            (owedByMember[settlement.toUid] ?? 0) + settlement.amountMinor;
+      for (final expense in expenses) {
+        if (expense.currency.toUpperCase() == currCode) {
+          totalSpending += expense.totalMinor;
+
+          expense.payers.forEach((uid, paid) {
+            paidByMember[uid] = (paidByMember[uid] ?? 0) + paid;
+          });
+
+          expense.splits.forEach((uid, owed) {
+            owedByMember[uid] = (owedByMember[uid] ?? 0) + owed;
+          });
+        }
       }
-    }
 
-    final Map<String, MemberBalance> memberBalances = {};
-    for (final m in members) {
-      memberBalances[m.uid] = MemberBalance(
-        uid: m.uid,
-        displayName: m.displayName,
-        totalPaidMinor: paidByMember[m.uid] ?? 0,
-        totalOwedMinor: owedByMember[m.uid] ?? 0,
+      for (final settlement in settlements) {
+        if (settlement.currency.toUpperCase() == currCode) {
+          paidByMember[settlement.fromUid] =
+              (paidByMember[settlement.fromUid] ?? 0) + settlement.amountMinor;
+          owedByMember[settlement.toUid] =
+              (owedByMember[settlement.toUid] ?? 0) + settlement.amountMinor;
+        }
+      }
+
+      final Map<String, MemberBalance> memberBalances = {};
+      for (final m in members) {
+        memberBalances[m.uid] = MemberBalance(
+          uid: m.uid,
+          displayName: m.displayName,
+          totalPaidMinor: paidByMember[m.uid] ?? 0,
+          totalOwedMinor: owedByMember[m.uid] ?? 0,
+        );
+      }
+
+      summaries[currCode] = GroupFinancialSummary(
+        currencyCode: currCode,
+        currency: currency,
+        totalGroupSpendingMinor: totalSpending,
+        memberBalances: memberBalances,
       );
     }
 
-    return GroupFinancialSummary(
-      currencyCode: defaultCurrency,
-      currency: currency,
-      totalGroupSpendingMinor: totalSpending,
-      memberBalances: memberBalances,
-    );
+    return summaries;
   }
 }

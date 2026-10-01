@@ -17,7 +17,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(DenkLogo),
-          matching: find.byType(CustomPaint),
+          matching: find.byType(Image),
         ),
         findsOneWidget,
       );

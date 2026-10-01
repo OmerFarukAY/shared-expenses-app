@@ -225,5 +225,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "languageSystem": "Sistem Dili",
+  "currency": "Para Birimi"
 }

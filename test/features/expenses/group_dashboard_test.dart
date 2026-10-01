@@ -180,8 +180,8 @@ class _FakeUserProfileController extends AsyncNotifier<UserProfile?>
   @override
   Future<void> setDisplayName(
     String name, {
-    String preferredCurrency = 'TRY',
-    String languageCode = 'en',
+    String? preferredCurrency,
+    String? languageCode,
   }) async {}
 
   @override

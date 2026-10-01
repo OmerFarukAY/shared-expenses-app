@@ -83,11 +83,11 @@ void main() {
   testWidgets('GroupInsightsSheet renders category and member statistics', (
     tester,
   ) async {
-    final summary = GroupBalanceCalculator.calculate(
+    final summary = GroupBalanceCalculator.calculateAll(
       expenses: testExpenses,
       members: testMembers,
       defaultCurrency: 'TRY',
-    );
+    )['TRY']!;
 
     await tester.pumpWidget(
       MaterialApp(
@@ -188,8 +188,8 @@ class _FakeUserProfileController extends AsyncNotifier<UserProfile?>
   @override
   Future<void> setDisplayName(
     String name, {
-    String preferredCurrency = 'TRY',
-    String languageCode = 'en',
+    String? preferredCurrency,
+    String? languageCode,
   }) async {}
 
   @override
