@@ -317,7 +317,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: _isDeleting
           ? const Center(child: DenkLoadingView())
           : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              padding: EdgeInsets.fromLTRB(20, 16, 20, widget.isTab ? 116 : 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

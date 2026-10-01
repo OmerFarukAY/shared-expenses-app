@@ -93,7 +93,7 @@ class GroupsListScreen extends ConsumerWidget {
           }
 
           return ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: EdgeInsets.fromLTRB(16, 16, 16, isTab ? 116 : 16),
             children: [
               if (pendingRequests.isNotEmpty) ...[
                 _PendingRequestsSection(

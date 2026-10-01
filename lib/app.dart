@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:native_liquid_glass/native_liquid_glass.dart';
 import 'package:denk/core/theme/app_theme.dart';
 import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
@@ -26,6 +27,10 @@ class DenkApp extends ConsumerWidget {
       title: 'Denk',
       debugShowCheckedModeBanner: false,
       locale: forcedLocale ?? appLocale,
+      navigatorObservers: [
+        if (NativeLiquidGlassUtils.supportsLiquidGlass)
+          LiquidGlassNavigatorObserver(),
+      ],
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
