@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:native_liquid_glass/native_liquid_glass.dart';
+import 'package:denk/features/groups/presentation/group_action_sheet.dart';
 import 'package:denk/features/groups/presentation/groups_list_screen.dart';
 import 'package:denk/features/settings/presentation/settings_screen.dart';
 import 'package:denk/l10n/l10n.dart';
@@ -57,6 +58,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 iosItemPositioning: LiquidGlassTabBarItemPositioning.centered,
                 iosItemSpacing: 48,
                 iosItemWidth: 100,
+                iosActionButton: LiquidGlassTabItem(
+                  label: l10n?.createGroup ?? 'Ekle',
+                  icon: const NativeLiquidGlassIcon.sfSymbol('plus'),
+                ),
+                onActionButtonPressed: () => GroupActionSheet.show(context),
                 items: [
                   LiquidGlassTabItem(
                     label: l10n?.appName ?? 'Denk',

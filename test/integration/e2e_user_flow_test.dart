@@ -1,4 +1,5 @@
 import 'package:denk/core/theme/app_theme.dart';
+import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/auth/domain/user_profile.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
 import 'package:denk/features/expenses/domain/expense_category.dart';
@@ -114,7 +115,7 @@ void main() {
         await tester.pumpWidget(buildTestApp(home: const GroupsListScreen()));
         await tester.pumpAndSettle();
 
-        expect(find.text('Denk'), findsOneWidget);
+        expect(find.byType(DenkLogo), findsOneWidget);
         expect(find.text('Ankara Flat'), findsOneWidget);
         expect(find.text('Invite Code: DNK-7X2K'), findsOneWidget);
 

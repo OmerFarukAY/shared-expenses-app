@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:native_liquid_glass/native_liquid_glass.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
 import 'package:denk/features/groups/domain/join_request_model.dart';
 import 'package:denk/features/groups/presentation/create_group_sheet.dart';
+import 'package:denk/features/groups/presentation/group_action_sheet.dart';
 import 'package:denk/features/groups/presentation/group_controller.dart';
 import 'package:denk/features/groups/presentation/group_dashboard_screen.dart';
 import 'package:denk/features/groups/presentation/join_group_sheet.dart';
@@ -32,35 +34,31 @@ class GroupsListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            const DenkLogo(size: 28, showBackground: false),
-            const SizedBox(width: 12),
-            Text(l10n?.appName ?? 'Denk', style: AppTypography.h2),
-          ],
-        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        centerTitle: true,
+        title: const DenkLogo(size: 32, showBackground: false),
         actions: [
-          IconButton(
-            tooltip: l10n?.joinGroup ?? 'Join Group',
-            icon: const Icon(Icons.key_rounded, size: 20),
-            onPressed: () => JoinGroupSheet.show(context),
-          ),
-          IconButton(
-            tooltip: l10n?.createGroup ?? 'Create Group',
-            icon: const Icon(Icons.add_rounded, size: 24),
-            onPressed: () => CreateGroupSheet.show(context),
-          ),
-          if (!isTab)
+          if (!NativeLiquidGlassUtils.supportsLiquidGlass || !isTab) ...[
             IconButton(
-              tooltip: l10n?.settingsTitle ?? 'Settings',
-              icon: const Icon(Icons.settings_outlined, size: 20),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                );
-              },
+              tooltip: l10n?.createGroup ?? 'Group Actions',
+              icon: const Icon(Icons.add_rounded, size: 24),
+              onPressed: () => GroupActionSheet.show(context),
             ),
-          const SizedBox(width: 8),
+            if (!isTab)
+              IconButton(
+                tooltip: l10n?.settingsTitle ?? 'Settings',
+                icon: const Icon(Icons.settings_outlined, size: 20),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  );
+                },
+              ),
+            const SizedBox(width: 8),
+          ],
         ],
       ),
       body: groupsAsync.when(
