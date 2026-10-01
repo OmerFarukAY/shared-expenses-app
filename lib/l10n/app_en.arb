@@ -238,5 +238,21 @@
   "privacyBullet2": "No advertising identifiers or tracker SDKs.",
   "privacyBullet3": "No device contact book or GPS location permissions.",
   "privacyBullet4": "Authentication uses anonymous Firebase credentials.",
-  "privacyBullet5": "Only group members you share your invite code with can view your group expenses."
+  "privacyBullet5": "Only group members you share your invite code with can view your group expenses.",
+  "accountSecurityTitle": "Account Security & Recovery",
+  "accountSecuritySubtitle": "Link an account to recover your groups and balances across devices.",
+  "accountSecuredSubtitle": "Your groups and balances are backed up and recoverable across devices.",
+  "accountStatusAnonymous": "Guest Account (Unsecured)",
+  "accountStatusSecured": "Secured Account",
+  "linkWithGoogle": "Link with Google",
+  "linkWithApple": "Sign in with Apple",
+  "linkedWithGoogle": "Linked with Google",
+  "linkedWithApple": "Linked with Apple",
+  "accountLinkingSuccess": "Account linked successfully!",
+  "accountAlreadyInUseTitle": "Account Already Exists",
+  "accountAlreadyInUseBody": "This account is already associated with another Denk profile. Would you like to switch to that account on this device, or keep using your current guest account?",
+  "switchAccountButton": "Switch to Existing Account",
+  "keepCurrentAccountButton": "Keep Guest Account",
+  "accountSwitchSuccess": "Switched to existing account.",
+  "accountLinkErrorGeneric": "Failed to link account. Please try again."
 }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart'
+    show GoogleAuthProvider, AppleAuthProvider;
+import 'package:denk/core/errors/app_exception.dart';
 import 'package:denk/core/theme/app_colors.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
@@ -18,6 +21,241 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _isDeleting = false;
+  bool _isLinking = false;
+  String? _activeLinkingProvider;
+
+  Future<void> _handleLinkGoogle() async {
+    if (_isLinking) return;
+    setState(() {
+      _isLinking = true;
+      _activeLinkingProvider = 'google.com';
+    });
+
+    try {
+      await ref.read(userProfileControllerProvider.notifier).linkGoogle();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.accountLinkingSuccess ??
+                  'Account linked successfully!',
+            ),
+            backgroundColor: AppColors.positive,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } on AuthCancelledException {
+      // User cancelled; no action required
+    } on AuthConflictException catch (conflict) {
+      if (mounted) {
+        setState(() {
+          _isLinking = false;
+          _activeLinkingProvider = null;
+        });
+        await _showAccountConflictDialog(conflict, isGoogle: true);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: AppColors.negative,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLinking = false;
+          _activeLinkingProvider = null;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleLinkApple() async {
+    if (_isLinking) return;
+    setState(() {
+      _isLinking = true;
+      _activeLinkingProvider = 'apple.com';
+    });
+
+    try {
+      await ref.read(userProfileControllerProvider.notifier).linkApple();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.accountLinkingSuccess ??
+                  'Account linked successfully!',
+            ),
+            backgroundColor: AppColors.positive,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } on AuthCancelledException {
+      // User cancelled; no action required
+    } on AuthConflictException catch (conflict) {
+      if (mounted) {
+        setState(() {
+          _isLinking = false;
+          _activeLinkingProvider = null;
+        });
+        await _showAccountConflictDialog(conflict, isGoogle: false);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: AppColors.negative,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLinking = false;
+          _activeLinkingProvider = null;
+        });
+      }
+    }
+  }
+
+  Future<void> _showAccountConflictDialog(
+    AuthConflictException conflict, {
+    required bool isGoogle,
+  }) async {
+    final l10n = AppLocalizations.of(context);
+
+    final switchConfirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          l10n?.accountAlreadyInUseTitle ?? 'Account Already Exists',
+          style: AppTypography.h3,
+        ),
+        content: Text(
+          l10n?.accountAlreadyInUseBody ??
+              'This account is already associated with another Denk profile. Would you like to switch to that account on this device, or keep using your current guest account?',
+          style: AppTypography.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              l10n?.keepCurrentAccountButton ?? 'Keep Guest Account',
+            ),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              l10n?.switchAccountButton ?? 'Switch to Existing Account',
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (switchConfirmed == true && mounted) {
+      setState(() => _isLinking = true);
+      try {
+        if (conflict.credential != null) {
+          await ref
+              .read(userProfileControllerProvider.notifier)
+              .switchToExistingAccount(conflict.credential!);
+        } else {
+          await ref
+              .read(userProfileControllerProvider.notifier)
+              .switchToExistingProvider(
+                isGoogle ? GoogleAuthProvider() : AppleAuthProvider(),
+              );
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                l10n?.accountSwitchSuccess ??
+                    'Switched to existing account.',
+              ),
+              backgroundColor: AppColors.positive,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: AppColors.negative,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLinking = false);
+        }
+      }
+    }
+  }
+
+  Widget _buildLinkedProviderTile({
+    required IconData icon,
+    required String title,
+    required String? subtitle,
+    required ThemeData theme,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: theme.colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTypography.bodySmall.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (subtitle != null && subtitle.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: AppTypography.caption.copyWith(
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.check_circle_rounded,
+            color: AppColors.positive,
+            size: 18,
+          ),
+        ],
+      ),
+    );
+  }
 
   void _showEditNameDialog(String currentName) {
     final controller = TextEditingController(text: currentName);
@@ -418,6 +656,129 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ],
                       ],
                     ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ACCOUNT RECOVERY & SECURITY SECTION
+                  Text(
+                    l10n?.accountSecurityTitle ?? 'Account Security & Recovery',
+                    style: AppTypography.h3,
+                  ),
+                  const SizedBox(height: 12),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final linkedAsync = ref.watch(linkedProvidersProvider);
+                      List<String> linkedProviders = linkedAsync.value ?? const [];
+                      String? userEmail;
+                      try {
+                        final repo = ref.read(authRepositoryProvider);
+                        if (linkedAsync.value == null) {
+                          linkedProviders = repo.linkedProviderIds;
+                        }
+                        userEmail = repo.currentEmail;
+                      } catch (_) {
+                        // In widget tests without mocked authRepositoryProvider
+                      }
+                      final isGoogleLinked =
+                          linkedProviders.contains('google.com');
+                      final isAppleLinked =
+                          linkedProviders.contains('apple.com');
+                      final isSecured = isGoogleLinked || isAppleLinked;
+
+                      return DenkCard(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  isSecured
+                                      ? Icons.verified_user_rounded
+                                      : Icons.shield_outlined,
+                                  color: isSecured
+                                      ? AppColors.positive
+                                      : theme.colorScheme.primary,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    isSecured
+                                        ? (l10n?.accountStatusSecured ??
+                                            'Secured Account')
+                                        : (l10n?.accountStatusAnonymous ??
+                                            'Guest Account (Unsecured)'),
+                                    style: AppTypography.bodyMedium.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: isSecured
+                                          ? AppColors.positive
+                                          : null,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              isSecured
+                                  ? (l10n?.accountSecuredSubtitle ??
+                                      'Your groups and balances are backed up and recoverable across devices.')
+                                  : (l10n?.accountSecuritySubtitle ??
+                                      'Link an account to recover your groups and balances across devices.'),
+                              style: AppTypography.bodySmall.copyWith(
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.6),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            // Google
+                            if (isGoogleLinked)
+                              _buildLinkedProviderTile(
+                                icon: Icons.account_circle,
+                                title: l10n?.linkedWithGoogle ??
+                                    'Linked with Google',
+                                subtitle: userEmail,
+                                theme: theme,
+                              )
+                            else
+                              DenkButton(
+                                label: l10n?.linkWithGoogle ??
+                                    'Link with Google',
+                                variant: DenkButtonVariant.secondary,
+                                icon: Icons.account_circle_outlined,
+                                isLoading: _isLinking &&
+                                    _activeLinkingProvider == 'google.com',
+                                onPressed:
+                                    _isLinking ? null : _handleLinkGoogle,
+                                height: 44,
+                              ),
+                            const SizedBox(height: 10),
+                            // Apple
+                            if (isAppleLinked)
+                              _buildLinkedProviderTile(
+                                icon: Icons.apple,
+                                title: l10n?.linkedWithApple ??
+                                    'Linked with Apple',
+                                subtitle: null,
+                                theme: theme,
+                              )
+                            else
+                              DenkButton(
+                                label: l10n?.linkWithApple ??
+                                    'Sign in with Apple',
+                                variant: DenkButtonVariant.secondary,
+                                icon: Icons.apple,
+                                isLoading: _isLinking &&
+                                    _activeLinkingProvider == 'apple.com',
+                                onPressed: _isLinking ? null : _handleLinkApple,
+                                height: 44,
+                              ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 24),

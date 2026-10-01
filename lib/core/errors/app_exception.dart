@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+
 /// Standard application exception model that maps low-level or network errors
 /// to user-friendly, actionable error messages.
 class AppException implements Exception {
@@ -46,4 +48,27 @@ class AppException implements Exception {
       originalError: error,
     );
   }
+}
+
+/// Thrown when linking an account conflicts with an already-existing account.
+class AuthConflictException extends AppException {
+  final AuthCredential? credential;
+  final String? conflictingEmail;
+
+  const AuthConflictException({
+    required super.message,
+    super.code = 'credential-already-in-use',
+    this.credential,
+    this.conflictingEmail,
+    super.originalError,
+  });
+}
+
+/// Thrown when the user intentionally cancels or dismisses an external authentication sheet.
+class AuthCancelledException extends AppException {
+  const AuthCancelledException({
+    super.message = 'Authentication was cancelled.',
+    super.code = 'cancelled',
+    super.originalError,
+  });
 }

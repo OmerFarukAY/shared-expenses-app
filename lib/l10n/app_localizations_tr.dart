@@ -523,4 +523,56 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get privacyBullet5 =>
       'Grup harcamalarını yalnızca davet kodunu paylaştığınız grup üyeleri görebilir.';
+
+  @override
+  String get accountSecurityTitle => 'Hesap Güvenliği ve Kurtarma';
+
+  @override
+  String get accountSecuritySubtitle =>
+      'Gruplarınızı ve bakiyelerinizi cihazlar arasında kurtarmak için bir hesap bağlayın.';
+
+  @override
+  String get accountSecuredSubtitle =>
+      'Gruplarınız ve bakiyeleriniz yedeklendi, cihazlar arasında kurtarılabilir.';
+
+  @override
+  String get accountStatusAnonymous => 'Misafir Hesap (Güvenceye Alınmadı)';
+
+  @override
+  String get accountStatusSecured => 'Güvenceye Alındı';
+
+  @override
+  String get linkWithGoogle => 'Google ile Bağla';
+
+  @override
+  String get linkWithApple => 'Apple ile Bağla';
+
+  @override
+  String get linkedWithGoogle => 'Google ile Bağlandı';
+
+  @override
+  String get linkedWithApple => 'Apple ile Bağlandı';
+
+  @override
+  String get accountLinkingSuccess => 'Hesabınız başarıyla bağlandı!';
+
+  @override
+  String get accountAlreadyInUseTitle => 'Hesap Zaten Mevcut';
+
+  @override
+  String get accountAlreadyInUseBody =>
+      'Bu hesap başka bir Denk profiliyle ilişkilendirilmiş. Mevcut misafir hesabınızda kalmak mı, yoksa kayıtlı hesabınıza geçiş yapmak mı istersiniz?';
+
+  @override
+  String get switchAccountButton => 'Kayıtlı Hesaba Geç';
+
+  @override
+  String get keepCurrentAccountButton => 'Misafir Hesapta Kal';
+
+  @override
+  String get accountSwitchSuccess => 'Kayıtlı hesaba geçildi.';
+
+  @override
+  String get accountLinkErrorGeneric =>
+      'Hesap bağlanamadı. Lütfen tekrar deneyin.';
 }

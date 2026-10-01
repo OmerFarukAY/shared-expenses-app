@@ -523,4 +523,56 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get privacyBullet5 =>
       'Only group members you share your invite code with can view your group expenses.';
+
+  @override
+  String get accountSecurityTitle => 'Account Security & Recovery';
+
+  @override
+  String get accountSecuritySubtitle =>
+      'Link an account to recover your groups and balances across devices.';
+
+  @override
+  String get accountSecuredSubtitle =>
+      'Your groups and balances are backed up and recoverable across devices.';
+
+  @override
+  String get accountStatusAnonymous => 'Guest Account (Unsecured)';
+
+  @override
+  String get accountStatusSecured => 'Secured Account';
+
+  @override
+  String get linkWithGoogle => 'Link with Google';
+
+  @override
+  String get linkWithApple => 'Sign in with Apple';
+
+  @override
+  String get linkedWithGoogle => 'Linked with Google';
+
+  @override
+  String get linkedWithApple => 'Linked with Apple';
+
+  @override
+  String get accountLinkingSuccess => 'Account linked successfully!';
+
+  @override
+  String get accountAlreadyInUseTitle => 'Account Already Exists';
+
+  @override
+  String get accountAlreadyInUseBody =>
+      'This account is already associated with another Denk profile. Would you like to switch to that account on this device, or keep using your current guest account?';
+
+  @override
+  String get switchAccountButton => 'Switch to Existing Account';
+
+  @override
+  String get keepCurrentAccountButton => 'Keep Guest Account';
+
+  @override
+  String get accountSwitchSuccess => 'Switched to existing account.';
+
+  @override
+  String get accountLinkErrorGeneric =>
+      'Failed to link account. Please try again.';
 }

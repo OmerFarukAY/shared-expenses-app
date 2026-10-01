@@ -1063,6 +1063,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Only group members you share your invite code with can view your group expenses.'**
   String get privacyBullet5;
+
+  /// No description provided for @accountSecurityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Security & Recovery'**
+  String get accountSecurityTitle;
+
+  /// No description provided for @accountSecuritySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link an account to recover your groups and balances across devices.'**
+  String get accountSecuritySubtitle;
+
+  /// No description provided for @accountSecuredSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your groups and balances are backed up and recoverable across devices.'**
+  String get accountSecuredSubtitle;
+
+  /// No description provided for @accountStatusAnonymous.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest Account (Unsecured)'**
+  String get accountStatusAnonymous;
+
+  /// No description provided for @accountStatusSecured.
+  ///
+  /// In en, this message translates to:
+  /// **'Secured Account'**
+  String get accountStatusSecured;
+
+  /// No description provided for @linkWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link with Google'**
+  String get linkWithGoogle;
+
+  /// No description provided for @linkWithApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Apple'**
+  String get linkWithApple;
+
+  /// No description provided for @linkedWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked with Google'**
+  String get linkedWithGoogle;
+
+  /// No description provided for @linkedWithApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked with Apple'**
+  String get linkedWithApple;
+
+  /// No description provided for @accountLinkingSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Account linked successfully!'**
+  String get accountLinkingSuccess;
+
+  /// No description provided for @accountAlreadyInUseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Already Exists'**
+  String get accountAlreadyInUseTitle;
+
+  /// No description provided for @accountAlreadyInUseBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This account is already associated with another Denk profile. Would you like to switch to that account on this device, or keep using your current guest account?'**
+  String get accountAlreadyInUseBody;
+
+  /// No description provided for @switchAccountButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to Existing Account'**
+  String get switchAccountButton;
+
+  /// No description provided for @keepCurrentAccountButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep Guest Account'**
+  String get keepCurrentAccountButton;
+
+  /// No description provided for @accountSwitchSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched to existing account.'**
+  String get accountSwitchSuccess;
+
+  /// No description provided for @accountLinkErrorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to link account. Please try again.'**
+  String get accountLinkErrorGeneric;
 }
 
 class _AppLocalizationsDelegate

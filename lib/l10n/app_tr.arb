@@ -238,5 +238,21 @@
   "privacyBullet2": "Reklam kimliği veya takipçi SDK'ları bulunmaz.",
   "privacyBullet3": "Rehber veya GPS konum izinleri istenmez.",
   "privacyBullet4": "Kimlik doğrulama anonim Firebase hesaplarıyla yapılır.",
-  "privacyBullet5": "Grup harcamalarını yalnızca davet kodunu paylaştığınız grup üyeleri görebilir."
+  "privacyBullet5": "Grup harcamalarını yalnızca davet kodunu paylaştığınız grup üyeleri görebilir.",
+  "accountSecurityTitle": "Hesap Güvenliği ve Kurtarma",
+  "accountSecuritySubtitle": "Gruplarınızı ve bakiyelerinizi cihazlar arasında kurtarmak için bir hesap bağlayın.",
+  "accountSecuredSubtitle": "Gruplarınız ve bakiyeleriniz yedeklendi, cihazlar arasında kurtarılabilir.",
+  "accountStatusAnonymous": "Misafir Hesap (Güvenceye Alınmadı)",
+  "accountStatusSecured": "Güvenceye Alındı",
+  "linkWithGoogle": "Google ile Bağla",
+  "linkWithApple": "Apple ile Bağla",
+  "linkedWithGoogle": "Google ile Bağlandı",
+  "linkedWithApple": "Apple ile Bağlandı",
+  "accountLinkingSuccess": "Hesabınız başarıyla bağlandı!",
+  "accountAlreadyInUseTitle": "Hesap Zaten Mevcut",
+  "accountAlreadyInUseBody": "Bu hesap başka bir Denk profiliyle ilişkilendirilmiş. Mevcut misafir hesabınızda kalmak mı, yoksa kayıtlı hesabınıza geçiş yapmak mı istersiniz?",
+  "switchAccountButton": "Kayıtlı Hesaba Geç",
+  "keepCurrentAccountButton": "Misafir Hesapta Kal",
+  "accountSwitchSuccess": "Kayıtlı hesaba geçildi.",
+  "accountLinkErrorGeneric": "Hesap bağlanamadı. Lütfen tekrar deneyin."
 }

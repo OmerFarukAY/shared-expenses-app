@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:denk/core/theme/app_theme.dart';
+import 'package:firebase_auth/firebase_auth.dart' show AuthProvider, AuthCredential;
 import 'package:denk/features/auth/domain/user_profile.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
@@ -189,4 +190,16 @@ class _FakeUserProfileController extends AsyncNotifier<UserProfile?>
 
   @override
   Future<void> deleteAccount() async {}
+
+  @override
+  Future<void> linkGoogle({AuthProvider? customProvider}) async {}
+
+  @override
+  Future<void> linkApple({AuthProvider? customProvider}) async {}
+
+  @override
+  Future<void> switchToExistingAccount(AuthCredential credential) async {}
+
+  @override
+  Future<void> switchToExistingProvider(AuthProvider provider) async {}
 }

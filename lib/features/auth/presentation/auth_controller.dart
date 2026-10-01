@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart' show AuthProvider, AuthCredential;
 import 'package:denk/core/errors/app_exception.dart';
 import 'package:denk/features/auth/data/auth_repository.dart';
 import 'package:denk/features/auth/domain/user_profile.dart';
@@ -13,6 +14,16 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 final authStateProvider = StreamProvider<String?>((ref) {
   final repo = ref.watch(authRepositoryProvider);
   return repo.authStateChanges;
+});
+
+/// Stream of linked provider IDs for the current session (e.g. ['google.com', 'apple.com']).
+final linkedProvidersProvider = StreamProvider<List<String>>((ref) {
+  try {
+    final repo = ref.watch(authRepositoryProvider);
+    return repo.linkedProvidersChanges;
+  } catch (_) {
+    return Stream.value(const []);
+  }
 });
 
 /// Async state controller for the user's minimal profile.
@@ -101,6 +112,50 @@ class UserProfileController extends AsyncNotifier<UserProfile?> {
       final repo = ref.read(authRepositoryProvider);
       await repo.deleteAccount();
       state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
+  }
+
+  /// Links current user with Google, preserving current UID.
+  Future<void> linkGoogle({AuthProvider? customProvider}) async {
+    final repo = ref.read(authRepositoryProvider);
+    await repo.linkGoogleAccount(customProvider: customProvider);
+    final updated = await repo.fetchUserProfile();
+    state = AsyncValue.data(updated);
+  }
+
+  /// Links current user with Apple, preserving current UID.
+  Future<void> linkApple({AuthProvider? customProvider}) async {
+    final repo = ref.read(authRepositoryProvider);
+    await repo.linkAppleAccount(customProvider: customProvider);
+    final updated = await repo.fetchUserProfile();
+    state = AsyncValue.data(updated);
+  }
+
+  /// Switches to an existing account using an existing [AuthCredential].
+  Future<void> switchToExistingAccount(AuthCredential credential) async {
+    state = const AsyncValue.loading();
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      await repo.signInWithExistingCredential(credential);
+      final profile = await repo.fetchUserProfile();
+      state = AsyncValue.data(profile);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
+  }
+
+  /// Switches to an existing account using an [AuthProvider].
+  Future<void> switchToExistingProvider(AuthProvider provider) async {
+    state = const AsyncValue.loading();
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      await repo.signInWithProvider(provider);
+      final profile = await repo.fetchUserProfile();
+      state = AsyncValue.data(profile);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
       rethrow;

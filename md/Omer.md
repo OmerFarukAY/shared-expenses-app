@@ -463,3 +463,233 @@ All Phase 14 financial and performance invariants remain 100% active:
 - **Whitespace Check**: `git diff --check` passed with 0 warnings.
 - **Builds**: Android debug APK (`app-debug.apk`) & iOS simulator app (`Runner.app`) built cleanly.
 - **Production Deployment**: Rules deployed successfully to `denk-262c0`.
+
+
+---
+
+# Denk — Production Readiness Roadmap & Technical Audit
+
+## Executive Technical Audit: Store Mandates vs. Recommendations
+
+Before executing production readiness phases, an exhaustive audit was conducted across Apple App Store Review Guidelines, Google Play Store Policies, Firebase Auth lifecycle, and Firestore Security Rules.
+
+### 1. Store Mandates vs. Best Practices
+
+| Platform / Area | Category | Requirement / Rule | Classification | Technical Impact on Denk |
+| :--- | :--- | :--- | :--- | :--- |
+| **Apple App Store** | Guideline 5.1.1(v) | In-App Account Deletion | **MANDATORY BLOCKER** | Apps with account creation must allow deleting accounts in-app and purging/anonymizing user data. In Denk, creator deletion currently risks leaving orphaned groups without management rights due to immutable `createdBy`. |
+| **Apple App Store** | Guideline 4.8 | Sign in with Apple | **MANDATORY BLOCKER** | Any app offering third-party social login (e.g. Google Sign-In) must offer Sign in with Apple as an equivalent option. Requires `com.apple.developer.applesignin` entitlement. |
+| **Apple App Store** | Guideline 5.1.1(i) | Public Privacy Policy URL | **MANDATORY BLOCKER** | Must provide a publicly accessible HTTP/HTTPS URL in App Store Connect and linkable within the app. In-app native dialog is insufficient on its own. |
+| **Apple App Store** | Guideline 2.1 | App Completeness | **MANDATORY BLOCKER** | No dead-end buttons, placeholder URLs, or unhandled crashes during review. |
+| **Apple App Store** | UI / Haptics | Haptic Feedback & Liquid Glass | *Recommendation (Non-Blocker)* | Enhances tactile feel; Apple does not reject apps lacking haptics. |
+| **Google Play** | Target SDK | Target API Level 34+ | **MANDATORY BLOCKER** | New apps and updates must target Android 14 (API level 34) or higher. |
+| **Google Play** | User Data Policy | Account & Data Deletion Web Form | **MANDATORY BLOCKER** | Developers must provide an in-app deletion path AND a public web URL where users can request account and data deletion. |
+| **Google Play** | Play Console | Release Keystore & App Signing | **MANDATORY BLOCKER** | Google Play rejects packages signed with `androiddebugkey`. Must use a production upload keystore with `key.properties` and build an `.aab` (Android App Bundle). |
+| **Google Play** | Data Safety | Data Safety Declaration | **MANDATORY BLOCKER** | Must truthfully declare data types collected (User IDs, financial ledger entries, App Check tokens) and encryption in transit. |
+| **Google Play / Firebase** | Notifications | FCM Push Notifications | *Recommendation (Non-Blocker)* | Enhances retention but is not a store prerequisite for financial ledger utilities. |
+| **Cross-Platform** | Observability | Firebase Crashlytics | *Recommendation (Should-Have)* | Highly recommended for production stability monitoring, but store reviewers do not mandate third-party crash SDKs. |
+| **Cross-Platform** | Performance | Firestore N+1 Optimization | *Recommendation (Should-Have)* | Affects backend billing and read latency, not store approval. |
+
+---
+
+### 2. Deep-Dive Findings & Technical Implications
+
+#### A. Firebase Auth & Account Linking Lifecycle
+1. **Preserving UID via `linkWithCredential`**:
+   - Calling `user.linkWithCredential(credential)` upgrades an anonymous `User` to a permanent account **without changing their `uid`**.
+   - Because the UID is preserved, all existing Firestore paths (`users/{uid}`, `groups/{groupId}/members/{uid}`, `expenses/{expenseId}.payers`, `memberUids`) retain 100% data continuity with zero database migration required.
+2. **Account Conflict Handling (`credential-already-in-use`)**:
+   - If a user attempts to link an Apple or Google account that was already registered previously, Firebase Auth throws `FirebaseAuthException(code: 'credential-already-in-use')`.
+   - The app must present a non-destructive choice:
+     - Prompt: *"This account is already linked to another Denk profile. Would you like to switch to that account or keep using your current profile?"*
+     - If the user confirms switching: call `signInWithCredential` and load their existing remote groups.
+     - If the user cancels: maintain the existing anonymous session without data corruption.
+3. **Re-Authentication during Account Deletion (`requires-recent-login`)**:
+   - When a linked user requests account deletion, `currentUser.delete()` may throw `requires-recent-login` if the session token is stale.
+   - The deletion flow must catch this exception and re-authenticate the user with their linked provider before completing deletion.
+
+#### B. Firestore Security Rules & Group Ownership Lifecycle
+1. **The Orphaned Group Threat**:
+   - In `firestore.rules` (line 275 and 325), `createdBy` is immutable, and group deletion is restricted:
+     `allow delete: if isAuthenticated() && request.auth.uid == resource.data.createdBy;`
+   - If a group creator deletes their account while other active members exist in the group:
+     - The creator's UID is removed from Firebase Auth.
+     - The remaining group members can **never delete the group**, approve pending join requests, or modify creator-restricted settings because `request.auth.uid == createdBy` can never again evaluate to `true`.
+2. **Deterministic Ownership-Transfer Invariants**:
+   - A group must never be left without an active owner if active members remain.
+   - **Deterministic Rule**:
+     - If the deleting owner is the **sole member** (`memberCount == 1`): the group and all its subcollections (`expenses`, `settlements`, `members`, `joinRequests`, `invites`) must be completely deleted via atomic batch.
+     - If the deleting owner has **other active members** (`memberCount > 1`): ownership must be transferred to the earliest joined active member (`role: 'owner'`, `createdBy: newOwnerUid`).
+   - `firestore.rules` must be updated to permit `createdBy` reassignment when:
+     - The current creator authorizes the transfer to an active member in `resource.data.memberUids`.
+     - The target member's role in `/members/{targetUid}` is atomically elevated to `owner`.
+3. **Financial Ledger Integrity vs. PII Anonymization**:
+   - Apple Guideline 5.1.1(v) explicitly permits retaining financial records for accounting and audit integrity provided personal identifiable information is stripped.
+   - When an account is deleted:
+     - `users/{uid}` document is deleted.
+     - In active groups where the user participated in past expenses or settlements, their member record display name is scrubbed to `"Deleted User"` (or localized equivalent) and marked `leftAt: now`, while preserving `uid` foreign keys in `payers` and `splits` so historical arithmetic balances remain mathematically consistent.
+
+#### C. Privacy & Data Disclosure Alignment
+1. **Accurate Disclosure**:
+   - `docs/privacy.md` previously claimed *"No third-party OAuth integrations (Google, Apple, Facebook)"*.
+   - With Account Linking introduced, this claim must be refined: OAuth is strictly optional for account recovery across devices; only basic user IDs/emails are processed, with zero tracking, marketing, or contact book access.
+2. **Web-Accessible Deletion Form**:
+   - Google Play mandates a publicly accessible URL where users can request data deletion without having the app installed.
+   - This URL must be hosted alongside the Privacy Policy and Terms of Service.
+
+#### D. Native Release Configuration & Hygiene
+1. **Android Keystore Security**:
+   - `android/app/build.gradle.kts` currently points `buildTypes.release` to `signingConfigs.getByName("debug")`.
+   - `android/key.properties` and keystore binaries (`*.jks`, `*.keystore`) must be explicitly gitignored.
+   - The Gradle configuration must fall back cleanly to debug signing for local test runners if `key.properties` is absent, but use the upload keystore when building release artifacts.
+2. **iOS Signing & Entitlements**:
+   - Sign in with Apple requires the `com.apple.developer.applesignin` capability in Xcode and `Runner.entitlements`.
+   - Bundle identifier consistency: iOS bundle ID is `com.denk.denk`, Android package is `com.omerfarukay.denk`.
+
+---
+
+## Production-Readiness Phases
+
+```mermaid
+flowchart TD
+    subgraph Phase 1: Store Blockers
+        P16[Phase 16: Account Linking & Recovery] --> P17[Phase 17: Account Deletion & Ownership Lifecycle]
+        P17 --> P18[Phase 18: Privacy Policy, Terms & Web Deletion Form]
+        P18 --> P19[Phase 19: Android Release Signing & AAB Build]
+    end
+
+    subgraph Phase 2: Production Hardening
+        P19 --> P20[Phase 20: Firebase Crashlytics Integration]
+        P20 --> P21[Phase 21: Firestore N+1 Read Optimization]
+        P21 --> P22[Phase 22: Tactile Haptic Feedback]
+    end
+
+    subgraph Phase 3: Post-Launch
+        P22 -.-> P23[Phase 23: FCM Notifications & Receipt Uploads]
+    end
+```
+
+---
+
+### Phase 16 — Account Recovery & Account Linking (Phase 1 Priority 1 - Blocker) — COMPLETED
+
+* **Goal**: Provide cross-device data recovery while retaining zero-friction anonymous onboarding.
+* **Status**: COMPLETED
+* **Key Implementation Details**:
+  1. **Anonymous Onboarding Preserved**: Initial launch and onboarding remain strictly anonymous (`signInAnonymously()`). No mandatory sign-in wall.
+  2. **UID-Preserving Account Linking**: Implemented `linkGoogleAccount()` and `linkAppleAccount()` via Firebase Auth's `linkWithProvider` / `linkWithCredential`. Preserves the user's existing `uid`, requiring zero Firestore document migrations.
+  3. **Safe Conflict & Cancellation Handling**:
+     - Added `AuthConflictException` with `conflictingCredential` and `conflictingEmail`.
+     - Added `AuthCancelledException` mapping provider cancellation codes (`canceled`, `sign_in_canceled`, `web-context-cancelled`, `user-cancelled`, `1001`).
+     - Conflict resolution dialog in `SettingsScreen` gives users an explicit, non-destructive choice: Keep Guest Account vs. Switch to Existing Account.
+  4. **Account Security & Recovery UI**:
+     - Added dedicated `DenkCard` in `SettingsScreen`.
+     - Displays badge status ("Guest Account (Unsecured)" vs. "Secured Account" with email).
+     - Buttons for "Link with Google" and "Sign in with Apple" (or linked indicators when already linked).
+     - Apple Sign-in button automatically respects platform availability (`defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS`).
+  5. **5-Language Localization Parity**: Added 16 keys across EN, TR, ES, FR, and IT with 100% test-verified parity.
+  6. **iOS Entitlements**: Created `ios/Runner/Runner.entitlements` configuring `com.apple.developer.applesignin` across Debug, Profile, and Release configurations.
+  7. **Comprehensive Test Coverage**:
+     - Added 9 unit/widget tests in `test/features/auth/account_linking_test.dart` testing UID preservation, Apple/Google linking, conflict detection, user cancellation, conflict resolution dialog, and account switching.
+     - Updated all existing test mocks. Total test suite expanded to 106 tests.
+
+* **Verification Gates**:
+  - `flutter analyze`: Passed (0 issues).
+  - `flutter test`: Passed (all 106 tests passing).
+  - `git diff --check`: Passed (clean whitespace).
+
+---
+
+### Phase 17 — Account Deletion, Ownership Lifecycle & Data Anonymization (Phase 1 Priority 2 - Blocker)
+* **Goal**: Ensure 100% compliance with Apple Guideline 5.1.1(v) and Google Play User Data Policy without leaving orphaned groups or corrupting ledger balances.
+* **Scope & Tasks**:
+  1. **Rules Hardening (`firestore.rules`)**:
+     - Add `transferOwnership` case to `groups/{groupId}` update rules: creator can assign `createdBy` to an existing active member in `resource.data.memberUids`.
+     - Update `/members/{uid}` rules to permit elevating target member to `role: 'owner'`.
+  2. **Deterministic Deletion Flow (`AuthRepository.deleteAccount`)**:
+     - Query all user groups via `users/{uid}/user_groups`.
+     - For each group where user is creator (`createdBy == uid`):
+       - If `memberCount <= 1`: delete group, subcollections (`expenses`, `settlements`, `members`, `joinRequests`), and invite document via chunked batch.
+       - If `memberCount > 1`: deterministically transfer ownership to the earliest remaining active member (`role: 'owner'`, `createdBy: nextUid`).
+     - For groups where user is a regular member:
+       - Anonymize member document in `groups/{groupId}/members/{uid}` (`displayName: "Deleted User"`, `leftAt: now`).
+       - Remove UID from `groups/{groupId}.memberUids` and decrement `memberCount`.
+     - Delete `users/{uid}` and subcollections (`user_groups`, `join_requests`).
+     - Catch `requires-recent-login` and prompt re-authentication if credentials have expired.
+     - Delete Firebase Auth user.
+  3. **Verification**:
+     - Rules tests in `test/security/rules.test.js` validating ownership transfer authorization.
+     - Unit tests verifying clean cleanup for sole-creator vs. multi-member scenarios.
+
+---
+
+### Phase 18 — Privacy Policy, Terms & Web Deletion Form (Phase 1 Priority 3 - Blocker)
+* **Goal**: Provide publicly accessible, store-compliant legal documentation accurately describing Denk's data collection and deletion practices.
+* **Scope & Tasks**:
+  1. Author production-ready static HTML documents:
+     - `web/privacy.html`: Truthful data disclosure (anonymous UID, display name, user-entered transaction records, App Check device tokens; zero advertising IDs, zero location, zero contact book access).
+     - `web/terms.html`: Terms of Service for shared ledger utility.
+     - `web/delete-account.html`: Public web deletion request form matching Google Play Data Safety requirements.
+  2. Deploy static web assets to Firebase Hosting (`denk-262c0.web.app/privacy.html`, `terms.html`, `delete-account.html`).
+  3. Integrate `url_launcher` in `SettingsScreen` to open verified live URLs in external Safari/Chrome browser.
+  4. Update `docs/privacy.md` and in-app privacy information dialog to ensure 100% terminology parity.
+
+---
+
+### Phase 19 — Android Release Signing & AAB Verification (Phase 1 Priority 4 - Blocker)
+* **Goal**: Ensure production-grade Android builds compliant with Google Play Console requirements.
+* **Scope & Tasks**:
+  1. Add `android/key.properties`, `*.jks`, `*.keystore` to `.gitignore` and verify zero tracking.
+  2. Update `android/app/build.gradle.kts`:
+     - Load `key.properties` dynamically if present.
+     - Configure `signingConfigs.create("release")`.
+     - Configure `buildTypes.release` to use release signing config when `key.properties` exists.
+     - Enable ProGuard/R8 code shrinking and resource optimization with safe rules for Firebase SDKs.
+  3. Document step-by-step keystore generation for the developer in `docs/release-guide.md`.
+  4. Build and verify a production Android App Bundle:
+     - Command: `flutter build appbundle --release` (or fallback verification).
+
+---
+
+### Phase 20 — Observability with Firebase Crashlytics (Phase 2 Priority 5 - Should-Have)
+* **Goal**: Real-time crash reporting and non-fatal error logging for production telemetry.
+* **Scope & Tasks**:
+  1. Add `firebase_crashlytics` to `pubspec.yaml`.
+  2. Configure `FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError` in `lib/main.dart`.
+  3. Pass unhandled platform errors via `PlatformDispatcher.instance.onError`.
+  4. Ensure debug runs disable crash collection (`setCrashlyticsCollectionEnabled(!kDebugMode)`).
+  5. Verify release symbol mapping generation.
+
+---
+
+### Phase 21 — Firestore Read Optimization (Phase 2 Priority 6 - Should-Have)
+* **Goal**: Eliminate N+1 read overhead on user dashboard without introducing data drift.
+* **Scope & Tasks**:
+  1. Measure baseline read pattern on `watchUserGroups(uid)`.
+  2. Denormalize essential display metadata (`groupName`, `defaultCurrency`, `memberCount`, `role`) into `users/{uid}/user_groups/{groupId}` on join/creation.
+  3. Update `watchUserGroups` to stream directly from `user_groups` collection without requiring secondary document fetches for list rendering.
+  4. Establish synchronization handler: when a group name or currency is modified in `updateGroup`, update the active members' `user_groups` entries or sync on entering `GroupDashboardScreen`.
+  5. Document measured read cost reduction before and after implementation.
+
+---
+
+### Phase 22 — Tactile Experience & Haptic Feedback (Phase 2 Priority 7 - Should-Have)
+* **Goal**: Provide subtle, tactile feedback on critical financial events while adhering to platform human interface guidelines.
+* **Scope & Tasks**:
+  1. Integrate `HapticFeedback.lightImpact()` on:
+     - Successfully adding an expense.
+     - Selecting currency/category chips.
+  2. Integrate `HapticFeedback.mediumImpact()` on:
+     - Recording settlement confirmation ("Mark as Settled").
+  3. Integrate `HapticFeedback.heavyImpact()` on:
+     - Destructive actions (deleting group, deleting expense, removing member).
+  4. Respect system-level accessibility settings (graceful no-op if device haptics are disabled).
+
+---
+
+### Phase 23 — Post-Launch Enhancements (Phase 3 - Deferred / Non-Blocker)
+* **Explicitly Deferred Items**:
+  1. **Firebase Cloud Messaging (FCM) & APNs**: Push notifications for new expenses, join requests, and settlements.
+  2. **Receipt & Photo Attachments**: Camera integration, Firebase Storage image compression, and thumbnail generation.
+  3. **Exporting Data**: CSV/PDF group ledger export.
+  4. **Dynamic Currency Conversion**: Real-time exchange rate API integration.

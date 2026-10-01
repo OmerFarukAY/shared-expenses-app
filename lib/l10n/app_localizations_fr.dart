@@ -528,4 +528,56 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get privacyBullet5 =>
       'Seuls les membres du groupe avec lesquels vous partagez votre code d\'invitation peuvent voir les dépenses.';
+
+  @override
+  String get accountSecurityTitle => 'Sécurité et récupération du compte';
+
+  @override
+  String get accountSecuritySubtitle =>
+      'Associez un compte pour récupérer vos groupes et soldes sur tous vos appareils.';
+
+  @override
+  String get accountSecuredSubtitle =>
+      'Vos groupes et soldes sont sauvegardés et récupérables sur tous vos appareils.';
+
+  @override
+  String get accountStatusAnonymous => 'Compte invité (non sécurisé)';
+
+  @override
+  String get accountStatusSecured => 'Compte sécurisé';
+
+  @override
+  String get linkWithGoogle => 'Associer avec Google';
+
+  @override
+  String get linkWithApple => 'Continuer avec Apple';
+
+  @override
+  String get linkedWithGoogle => 'Associé avec Google';
+
+  @override
+  String get linkedWithApple => 'Associé avec Apple';
+
+  @override
+  String get accountLinkingSuccess => 'Compte associé avec succès !';
+
+  @override
+  String get accountAlreadyInUseTitle => 'Compte déjà existant';
+
+  @override
+  String get accountAlreadyInUseBody =>
+      'Ce compte est déjà associé à un autre profil Denk. Souhaitez-vous passer à ce compte sur cet appareil ou continuer avec votre compte invité actuel ?';
+
+  @override
+  String get switchAccountButton => 'Passer au compte existant';
+
+  @override
+  String get keepCurrentAccountButton => 'Garder le compte invité';
+
+  @override
+  String get accountSwitchSuccess => 'Passage au compte existant effectué.';
+
+  @override
+  String get accountLinkErrorGeneric =>
+      'Échec de l\'association du compte. Veuillez réessayer.';
 }

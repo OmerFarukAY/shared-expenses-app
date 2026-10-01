@@ -527,4 +527,56 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get privacyBullet5 =>
       'Solo los miembros del grupo con quienes comparta su código de invitación pueden ver los gastos.';
+
+  @override
+  String get accountSecurityTitle => 'Seguridad y recuperación de cuenta';
+
+  @override
+  String get accountSecuritySubtitle =>
+      'Vincula una cuenta para recuperar tus grupos y saldos en otros dispositivos.';
+
+  @override
+  String get accountSecuredSubtitle =>
+      'Tus grupos y saldos están respaldados y son recuperables en otros dispositivos.';
+
+  @override
+  String get accountStatusAnonymous => 'Cuenta de invitado (no asegurada)';
+
+  @override
+  String get accountStatusSecured => 'Cuenta protegida';
+
+  @override
+  String get linkWithGoogle => 'Vincular con Google';
+
+  @override
+  String get linkWithApple => 'Iniciar sesión con Apple';
+
+  @override
+  String get linkedWithGoogle => 'Vinculado con Google';
+
+  @override
+  String get linkedWithApple => 'Vinculado con Apple';
+
+  @override
+  String get accountLinkingSuccess => '¡Cuenta vinculada con éxito!';
+
+  @override
+  String get accountAlreadyInUseTitle => 'La cuenta ya existe';
+
+  @override
+  String get accountAlreadyInUseBody =>
+      'Esta cuenta ya está asociada con otro perfil de Denk. ¿Deseas cambiar a esa cuenta en este dispositivo o seguir usando tu cuenta de invitado actual?';
+
+  @override
+  String get switchAccountButton => 'Cambiar a cuenta existente';
+
+  @override
+  String get keepCurrentAccountButton => 'Mantener cuenta de invitado';
+
+  @override
+  String get accountSwitchSuccess => 'Se cambió a la cuenta existente.';
+
+  @override
+  String get accountLinkErrorGeneric =>
+      'Error al vincular la cuenta. Por favor, inténtalo de nuevo.';
 }

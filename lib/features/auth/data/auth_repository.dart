@@ -9,12 +9,32 @@ import 'package:denk/features/auth/domain/user_profile.dart';
 /// Contract for authentication and minimal user profile operations.
 abstract class AuthRepository {
   Stream<String?> get authStateChanges;
+  Stream<List<String>> get linkedProvidersChanges;
   String? get currentUid;
+  bool get isAnonymous;
+  List<String> get linkedProviderIds;
+  String? get currentEmail;
+
   Future<String> ensureAnonymousUser();
   Future<UserProfile?> fetchUserProfile();
   Future<void> saveUserProfile(UserProfile profile);
   Future<void> updateDisplayName(String newName);
   Future<void> deleteAccount();
+
+  /// Links the current anonymous user with Google, preserving [currentUid].
+  Future<void> linkGoogleAccount({AuthProvider? customProvider});
+
+  /// Links the current anonymous user with Apple, preserving [currentUid].
+  Future<void> linkAppleAccount({AuthProvider? customProvider});
+
+  /// Links the current user with an explicit [AuthCredential], preserving [currentUid].
+  Future<void> linkCredential(AuthCredential credential);
+
+  /// Switches to an existing account if a conflict occurs during linking.
+  Future<void> signInWithExistingCredential(AuthCredential credential);
+
+  /// Signs in with a provider if credentials are not directly available.
+  Future<void> signInWithProvider(AuthProvider provider);
 }
 
 /// Production implementation of [AuthRepository] using Firebase Auth & Cloud Firestore
@@ -38,7 +58,27 @@ class FirebaseAuthRepository implements AuthRepository {
       _firebaseAuth.authStateChanges().map((user) => user?.uid);
 
   @override
+  Stream<List<String>> get linkedProvidersChanges =>
+      _firebaseAuth.userChanges().map((user) {
+        if (user == null) return const [];
+        return user.providerData.map((p) => p.providerId).toList();
+      });
+
+  @override
   String? get currentUid => _firebaseAuth.currentUser?.uid;
+
+  @override
+  bool get isAnonymous => _firebaseAuth.currentUser?.isAnonymous ?? true;
+
+  @override
+  List<String> get linkedProviderIds {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) return const [];
+    return user.providerData.map((p) => p.providerId).toList();
+  }
+
+  @override
+  String? get currentEmail => _firebaseAuth.currentUser?.email;
 
   @override
   Future<String> ensureAnonymousUser() async {
@@ -161,6 +201,165 @@ class FirebaseAuthRepository implements AuthRepository {
       debugPrint('deleteAccount error: $e');
       throw AppException.fromFirebase(e);
     }
+  }
+
+  @override
+  Future<void> linkGoogleAccount({AuthProvider? customProvider}) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      throw const AppException(
+        message: 'No active session to link.',
+        code: 'no-current-user',
+      );
+    }
+
+    try {
+      final provider = customProvider ?? GoogleAuthProvider();
+      await user.linkWithProvider(provider);
+      await _syncLinkedProfileName();
+    } on FirebaseAuthException catch (e) {
+      throw _mapFirebaseAuthException(e);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw AppException.fromFirebase(e);
+    }
+  }
+
+  @override
+  Future<void> linkAppleAccount({AuthProvider? customProvider}) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      throw const AppException(
+        message: 'No active session to link.',
+        code: 'no-current-user',
+      );
+    }
+
+    try {
+      final provider = customProvider ?? AppleAuthProvider();
+      await user.linkWithProvider(provider);
+      await _syncLinkedProfileName();
+    } on FirebaseAuthException catch (e) {
+      throw _mapFirebaseAuthException(e);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw AppException.fromFirebase(e);
+    }
+  }
+
+  @override
+  Future<void> linkCredential(AuthCredential credential) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      throw const AppException(
+        message: 'No active session to link.',
+        code: 'no-current-user',
+      );
+    }
+
+    try {
+      await user.linkWithCredential(credential);
+      await _syncLinkedProfileName();
+    } on FirebaseAuthException catch (e) {
+      throw _mapFirebaseAuthException(e);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw AppException.fromFirebase(e);
+    }
+  }
+
+  @override
+  Future<void> signInWithExistingCredential(AuthCredential credential) async {
+    try {
+      final userCredential =
+          await _firebaseAuth.signInWithCredential(credential);
+      final user = userCredential.user;
+      if (user == null) {
+        throw const AppException(
+          message: 'Unable to switch account.',
+          code: 'sign-in-failed',
+        );
+      }
+      await fetchUserProfile();
+    } on FirebaseAuthException catch (e) {
+      throw _mapFirebaseAuthException(e);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw AppException.fromFirebase(e);
+    }
+  }
+
+  @override
+  Future<void> signInWithProvider(AuthProvider provider) async {
+    try {
+      final userCredential = await _firebaseAuth.signInWithProvider(provider);
+      final user = userCredential.user;
+      if (user == null) {
+        throw const AppException(
+          message: 'Unable to sign in.',
+          code: 'sign-in-failed',
+        );
+      }
+      await fetchUserProfile();
+    } on FirebaseAuthException catch (e) {
+      throw _mapFirebaseAuthException(e);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw AppException.fromFirebase(e);
+    }
+  }
+
+  Future<void> _syncLinkedProfileName() async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) return;
+    try {
+      final profile = await fetchUserProfile();
+      if (profile != null &&
+          profile.displayName.trim().isEmpty &&
+          user.displayName != null &&
+          user.displayName!.trim().isNotEmpty) {
+        await updateDisplayName(user.displayName!.trim());
+      }
+    } catch (e) {
+      debugPrint('Optional profile name sync notice: $e');
+    }
+  }
+
+  AppException _mapFirebaseAuthException(FirebaseAuthException e) {
+    final code = e.code.toLowerCase();
+
+    // Cancellation cases
+    if (code == 'canceled' ||
+        code == 'sign_in_canceled' ||
+        code == 'web-context-cancelled' ||
+        code == 'user-cancelled' ||
+        code == '1001') {
+      return AuthCancelledException(originalError: e);
+    }
+
+    // Account conflict cases
+    if (code == 'credential-already-in-use' ||
+        code == 'email-already-in-use' ||
+        code == 'account-exists-with-different-credential') {
+      return AuthConflictException(
+        message:
+            'This account is already associated with another Denk profile.',
+        code: e.code,
+        credential: e.credential,
+        conflictingEmail: e.email,
+        originalError: e,
+      );
+    }
+
+    // Provider already linked
+    if (code == 'provider-already-linked') {
+      return const AppException(
+        message: 'This provider is already linked to your account.',
+        code: 'provider-already-linked',
+      );
+    }
+
+    return AppException.fromFirebase(e);
   }
 
   Future<void> _cacheProfile(UserProfile profile) async {

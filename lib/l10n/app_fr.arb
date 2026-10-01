@@ -238,5 +238,21 @@
   "privacyBullet2": "Aucun identifiant publicitaire ou SDK de suivi.",
   "privacyBullet3": "Aucune autorisation d'accès aux contacts ou à la localisation GPS.",
   "privacyBullet4": "L'authentification utilise des identifiants Firebase anonymes.",
-  "privacyBullet5": "Seuls les membres du groupe avec lesquels vous partagez votre code d'invitation peuvent voir les dépenses."
+  "privacyBullet5": "Seuls les membres du groupe avec lesquels vous partagez votre code d'invitation peuvent voir les dépenses.",
+  "accountSecurityTitle": "Sécurité et récupération du compte",
+  "accountSecuritySubtitle": "Associez un compte pour récupérer vos groupes et soldes sur tous vos appareils.",
+  "accountSecuredSubtitle": "Vos groupes et soldes sont sauvegardés et récupérables sur tous vos appareils.",
+  "accountStatusAnonymous": "Compte invité (non sécurisé)",
+  "accountStatusSecured": "Compte sécurisé",
+  "linkWithGoogle": "Associer avec Google",
+  "linkWithApple": "Continuer avec Apple",
+  "linkedWithGoogle": "Associé avec Google",
+  "linkedWithApple": "Associé avec Apple",
+  "accountLinkingSuccess": "Compte associé avec succès !",
+  "accountAlreadyInUseTitle": "Compte déjà existant",
+  "accountAlreadyInUseBody": "Ce compte est déjà associé à un autre profil Denk. Souhaitez-vous passer à ce compte sur cet appareil ou continuer avec votre compte invité actuel ?",
+  "switchAccountButton": "Passer au compte existant",
+  "keepCurrentAccountButton": "Garder le compte invité",
+  "accountSwitchSuccess": "Passage au compte existant effectué.",
+  "accountLinkErrorGeneric": "Échec de l'association du compte. Veuillez réessayer."
 }

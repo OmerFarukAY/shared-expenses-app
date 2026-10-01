@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' show AuthProvider, AuthCredential;
 import 'package:denk/core/theme/app_theme.dart';
 import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/auth/domain/user_profile.dart';
@@ -184,6 +185,8 @@ void main() {
         expect(find.text('Delete Local Account'), findsWidgets);
 
         // Step 8: Open Privacy Information modal
+        await tester.ensureVisible(find.text('Read'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Read'));
         await tester.pumpAndSettle();
 
@@ -232,4 +235,16 @@ class _MockUserProfileController extends AsyncNotifier<UserProfile?>
     deleteCalled = true;
     state = const AsyncValue.data(null);
   }
+
+  @override
+  Future<void> linkGoogle({AuthProvider? customProvider}) async {}
+
+  @override
+  Future<void> linkApple({AuthProvider? customProvider}) async {}
+
+  @override
+  Future<void> switchToExistingAccount(AuthCredential credential) async {}
+
+  @override
+  Future<void> switchToExistingProvider(AuthProvider provider) async {}
 }

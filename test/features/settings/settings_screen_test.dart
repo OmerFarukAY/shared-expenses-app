@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:denk/core/theme/app_theme.dart';
+import 'package:firebase_auth/firebase_auth.dart' show AuthProvider, AuthCredential;
 import 'package:denk/features/auth/domain/user_profile.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
 import 'package:denk/features/settings/presentation/settings_screen.dart';
@@ -67,6 +68,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify Privacy Info Dialog
+      await tester.ensureVisible(find.text('Read'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Read'));
       await tester.pumpAndSettle();
       expect(
@@ -159,4 +162,16 @@ class _MockUserProfileController extends AsyncNotifier<UserProfile?>
     deleteCalled = true;
     state = const AsyncValue.data(null);
   }
+
+  @override
+  Future<void> linkGoogle({AuthProvider? customProvider}) async {}
+
+  @override
+  Future<void> linkApple({AuthProvider? customProvider}) async {}
+
+  @override
+  Future<void> switchToExistingAccount(AuthCredential credential) async {}
+
+  @override
+  Future<void> switchToExistingProvider(AuthProvider provider) async {}
 }
