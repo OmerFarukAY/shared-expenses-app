@@ -62,3 +62,9 @@ firebase-debug.log
 ios/Runner/GoogleService-Info.plist
 # Android: download from Firebase Console > Project Settings > Android app > google-services.json
 android/app/google-services.json
+
+# Android keystore and signing credentials — must NOT be committed to version control.
+*.jks
+*.keystore
+**/key.properties
+**/android/key.properties

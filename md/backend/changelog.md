@@ -1,5 +1,40 @@
 # Backend & Security Changelog
 
+## [Phase 19] - Android Production Signing & Release Build
+**Status:** TAMAMLANDI
+**Date:** 2026-10-02
+
+### 1. Release Signing Architecture & Gradle Decoupling
+- Removed debug signing fallback from `buildTypes.release` in `android/app/build.gradle.kts`.
+- Configured production `signingConfigs.create("release")` that dynamically reads credentials from `android/key.properties`.
+- Created `android/key.properties.example` template for development and CI environments.
+
+### 2. Keystore & Credential Security
+- Added `*.jks`, `*.keystore`, and `key.properties` to `.gitignore`.
+- Verified zero git tracking for `android/upload-keystore.jks` and `android/key.properties`.
+- Generated 2048-bit RSA PKCS12 upload keystore (`upload`) with 10,000 days validity.
+
+### 3. R8 / ProGuard Shrinking & Optimization
+- Enabled `isMinifyEnabled = true` and `isShrinkResources = true` in `buildTypes.release`.
+- Created `android/app/proguard-rules.pro` protecting Flutter engine entrypoints, Firebase SDKs, URL Launcher custom tabs, and Google Play Core SplitInstall classes.
+
+### 4. Build & Signature Verification
+- Package identifier verified: `com.omerfarukay.denk`.
+- Built production Android App Bundle: `build/app/outputs/bundle/release/app-release.aab` (58.6 MB).
+- Verified bundle signature with `jarsigner -verify -verbose -certs`: signed by `CN=Omer Faruk Ay, OU=Denk Mobile, O=Denk, L=Istanbul, ST=Istanbul, C=TR`.
+
+### 5. Documentation & Firebase Setup
+- Authored `docs/release-guide.md` documenting keystore generation, fingerprint extraction, Google Play App Signing, and Firebase Console integration steps.
+- Public certificate fingerprints extracted:
+  - **SHA-1:** `18:98:48:76:F2:0C:DB:35:6A:F9:59:12:B0:29:46:DB:B9:EC:39:99`
+  - **SHA-256:** `C3:A2:C5:22:8A:E1:3E:EF:60:60:C2:A1:6B:67:C8:5E:23:87:9F:FC:41:C8:CF:F0:06:25:77:48:21:D1:F8:B9`
+
+### 6. Tests & Analysis
+- `flutter analyze`: **0 issues found**.
+- `flutter test`: **119 / 119 tests passing**.
+
+---
+
 ## [Phase 18] - Privacy Policy, Terms of Service & Web Account Deletion
 **Status:** TAMAMLANDI
 **Date:** 2026-10-02

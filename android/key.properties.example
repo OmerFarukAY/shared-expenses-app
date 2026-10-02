@@ -1,0 +1,7 @@
+# Example key.properties for Android release signing
+# Copy this file to key.properties in the android/ directory and fill in your credentials.
+# NEVER commit key.properties or your keystore file to version control!
+storePassword=YOUR_KEYSTORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=upload
+storeFile=upload-keystore.jks
