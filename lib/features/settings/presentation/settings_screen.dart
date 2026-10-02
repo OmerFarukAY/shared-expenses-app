@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart'
     show GoogleAuthProvider, AppleAuthProvider;
 import 'package:denk/core/errors/app_exception.dart';
+import 'package:denk/core/errors/error_localizer.dart';
 import 'package:denk/core/theme/app_colors.dart';
 import 'package:denk/core/theme/app_haptics.dart';
 import 'package:denk/core/theme/app_typography.dart';
@@ -220,7 +221,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.toString()),
+              content: Text(context.localizedErrorMessage(e)),
               backgroundColor: AppColors.negative,
               behavior: SnackBarBehavior.floating,
             ),
@@ -324,7 +325,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   if (mounted) {
                     ScaffoldMessenger.of(
                       context,
-                    ).showSnackBar(SnackBar(content: Text(e.toString())));
+                    ).showSnackBar(SnackBar(content: Text(context.localizedErrorMessage(e))));
                   }
                 } finally {
                   if (mounted) {
@@ -552,7 +553,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(e.toString()),
+                    content: Text(context.localizedErrorMessage(e)),
                     backgroundColor: AppColors.negative,
                   ),
                 );
@@ -720,7 +721,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Text(context.localizedErrorMessage(e)),
             backgroundColor: AppColors.negative,
           ),
         );
@@ -779,7 +780,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         setState(() => _isDeleting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Text(context.localizedErrorMessage(e)),
             backgroundColor: AppColors.negative,
           ),
         );
@@ -993,7 +994,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.toString()),
+              content: Text(context.localizedErrorMessage(e)),
               backgroundColor: AppColors.negative,
             ),
           );

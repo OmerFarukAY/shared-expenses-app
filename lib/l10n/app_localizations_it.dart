@@ -664,4 +664,113 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get dashboardJoinGroupSubtitle => 'Inserisci il codice di un amico';
+
+  @override
+  String get copied => 'Copiato';
+
+  @override
+  String get errorEnterValidAmount => 'Inserisci un importo valido.';
+
+  @override
+  String get errorEnterExpenseTitle => 'Inserisci la causale della spesa.';
+
+  @override
+  String get errorSelectParticipant =>
+      'È necessario selezionare almeno un partecipante.';
+
+  @override
+  String get errorSelectPayer => 'Seleziona chi ha pagato.';
+
+  @override
+  String errorPayerSumMismatch(String sum, String total) {
+    return 'I contributi dei pagatori ($sum) devono corrispondere alla spesa totale ($total).';
+  }
+
+  @override
+  String errorSplitSumMismatch(String sum, String total) {
+    return 'La ripartizione ($sum) deve essere uguale alla spesa totale ($total).';
+  }
+
+  @override
+  String get errorPayerMismatchGeneric =>
+      'Il totale pagato non corrisponde all\'importo della spesa.';
+
+  @override
+  String get errorSplitMismatchGeneric =>
+      'La somma delle parti non corrisponde alla spesa totale.';
+
+  @override
+  String get errorAtLeastOneParticipantShare =>
+      'Almeno un partecipante deve avere una quota superiore a 0.';
+
+  @override
+  String get errorInvalidPercentageSum =>
+      'La somma di tutte le percentuali deve essere pari al 100%.';
+
+  @override
+  String get errorGroupNameLength =>
+      'Il nome del gruppo deve essere compreso tra 1 e 60 caratteri.';
+
+  @override
+  String get errorInvalidCodeFormat =>
+      'Formato del codice di invito non valido. I codici sono di 6 caratteri.';
+
+  @override
+  String get errorPermissionDenied =>
+      'Accesso negato. Potresti non avere i permessi per questo gruppo o azione.';
+
+  @override
+  String get errorNetworkUnavailable =>
+      'Nessuna connessione internet. Controlla la tua rete e riprova.';
+
+  @override
+  String get errorNotFound =>
+      'Il gruppo o la registrazione richiesta non è stata trovata.';
+
+  @override
+  String get errorSettlementRecordFailed =>
+      'Impossibile registrare il pareggio. Riprova.';
+
+  @override
+  String get errorSettlementDeleteFailed =>
+      'Impossibile eliminare il pareggio. Riprova.';
+
+  @override
+  String removeMemberConfirmMessage(String name) {
+    return 'Sei sicuro di voler rimuovere $name dal gruppo?';
+  }
+
+  @override
+  String get leaveGroupConfirmMessage =>
+      'Sei sicuro di voler abbandonare questo gruppo?';
+
+  @override
+  String get deleteGroupConfirmMessage =>
+      'Sei sicuro di voler eliminare questo gruppo? Questa azione non può essere annullata.';
+
+  @override
+  String get groupActionsTitle => 'Azioni del gruppo';
+
+  @override
+  String get groupActionsCreateSubtitle =>
+      'Crea un nuovo gruppo e dividi le spese con gli amici';
+
+  @override
+  String get groupActionsJoinSubtitle =>
+      'Inserisci un codice di invito per unirti a un gruppo esistente';
+
+  @override
+  String insightsPaidLabel(String amount) {
+    return 'Pagato: $amount';
+  }
+
+  @override
+  String insightsFairShareLabel(String amount) {
+    return 'Quota equa: $amount';
+  }
+
+  @override
+  String insightsExpenseCount(int count, String groupName) {
+    return 'Su $count spese in $groupName';
+  }
 }

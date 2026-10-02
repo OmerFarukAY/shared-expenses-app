@@ -41,7 +41,6 @@ class GroupActionSheet extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final isTr = Localizations.localeOf(context).languageCode == 'tr';
 
     return SafeArea(
       child: Padding(
@@ -55,7 +54,7 @@ class GroupActionSheet extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  isTr ? 'Grup İşlemleri' : 'Group Actions',
+                  l10n?.groupActionsTitle ?? 'Group Actions',
                   style: AppTypography.h2,
                 ),
                 IconButton(
@@ -72,10 +71,8 @@ class GroupActionSheet extends StatelessWidget {
               iconBgColor: theme.colorScheme.primary.withValues(
                 alpha: isDark ? 0.2 : 0.1,
               ),
-              title: l10n?.createGroup ?? (isTr ? 'Grup Oluştur' : 'Create Group'),
-              subtitle: isTr
-                  ? 'Yeni bir grup kurun ve harcamaları bölüşmeye başlayın'
-                  : 'Start a new group and split expenses with friends',
+              title: l10n?.createGroup ?? 'Create Group',
+              subtitle: l10n?.groupActionsCreateSubtitle ?? 'Start a new group and split expenses with friends',
               onTap: () => Navigator.of(context).pop(GroupActionType.create),
             ),
             const SizedBox(height: 12),
@@ -84,10 +81,8 @@ class GroupActionSheet extends StatelessWidget {
               iconColor: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
               iconBgColor: (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))
                   .withValues(alpha: isDark ? 0.2 : 0.1),
-              title: l10n?.joinGroup ?? (isTr ? 'Gruba Katıl' : 'Join Group'),
-              subtitle: isTr
-                  ? 'Mevcut bir gruba katılmak için davet kodunu girin'
-                  : 'Enter an invite code to join an existing group',
+              title: l10n?.joinGroup ?? 'Join Group',
+              subtitle: l10n?.groupActionsJoinSubtitle ?? 'Enter an invite code to join an existing group',
               onTap: () => Navigator.of(context).pop(GroupActionType.join),
             ),
           ],

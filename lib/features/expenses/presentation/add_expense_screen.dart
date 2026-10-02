@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:denk/core/constants/currencies.dart';
+import 'package:denk/core/errors/error_localizer.dart';
 import 'package:denk/core/theme/app_colors.dart';
 import 'package:denk/core/theme/app_haptics.dart';
 import 'package:denk/core/theme/app_typography.dart';
@@ -179,19 +180,19 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     final totalMinor = _parsedTotalMinor;
 
     if (totalMinor <= 0) {
-      setState(() => _errorMessage = 'Please enter a valid amount.');
+      setState(() => _errorMessage = l10n?.errorEnterValidAmount ?? 'Please enter a valid amount.');
       return;
     }
 
     final title = _titleController.text.trim();
     if (title.isEmpty) {
-      setState(() => _errorMessage = 'Please enter what the expense was for.');
+      setState(() => _errorMessage = l10n?.errorEnterExpenseTitle ?? 'Please enter what the expense was for.');
       return;
     }
 
     if (_selectedParticipants.isEmpty) {
       setState(
-        () => _errorMessage = 'At least one participant must be selected.',
+        () => _errorMessage = l10n?.errorSelectParticipant ?? 'At least one participant must be selected.',
       );
       return;
     }
@@ -200,7 +201,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     final Map<String, int> payers = {};
     if (!_isMultiplePayers) {
       if (_singlePayerUid == null) {
-        setState(() => _errorMessage = 'Please select who paid.');
+        setState(() => _errorMessage = l10n?.errorSelectPayer ?? 'Please select who paid.');
         return;
       }
       payers[_singlePayerUid!] = totalMinor;
@@ -213,20 +214,20 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           payers[m.uid] = amt;
           sumPayers += amt;
         } else if (amt < 0) {
-           setState(() => _errorMessage = 'Amounts must be positive.');
+           setState(() => _errorMessage = l10n?.errorNegativeAmount ?? 'Amounts must be positive.');
            return;
         }
       }
       if (payers.length > 5) {
-        setState(() => _errorMessage = 'Too many payers (max 5).');
+        setState(() => _errorMessage = l10n?.errorTooManyPayers ?? 'Too many payers (max 5).');
         return;
       }
       if (sumPayers != totalMinor) {
         final formattedTotal = _currency.formatMinor(totalMinor);
         final formattedSum = _currency.formatMinor(sumPayers);
         setState(() {
-          _errorMessage =
-              'Payer contributions ($formattedSum) must match total expense ($formattedTotal).';
+          _errorMessage = l10n?.errorPayerSumMismatch(formattedSum, formattedTotal)
+              ?? 'Payer contributions ($formattedSum) must match total expense ($formattedTotal).';
         });
         return;
       }
@@ -249,7 +250,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
              splits[uid] = amt;
              sumCustom += amt;
           } else if (amt < 0) {
-             setState(() => _errorMessage = 'Amounts must be positive.');
+             setState(() => _errorMessage = l10n?.errorNegativeAmount ?? 'Amounts must be positive.');
              return;
           }
         }
@@ -257,8 +258,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           final formattedTotal = _currency.formatMinor(totalMinor);
           final formattedSum = _currency.formatMinor(sumCustom);
           setState(() {
-            _errorMessage =
-                'Allocated splits ($formattedSum) must equal total expense ($formattedTotal).';
+            _errorMessage = l10n?.errorSplitSumMismatch(formattedSum, formattedTotal)
+                ?? 'Allocated splits ($formattedSum) must equal total expense ($formattedTotal).';
           });
           return;
         }
@@ -270,7 +271,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           if (pct > 0) {
              pcts[uid] = pct;
           } else if (pct < 0) {
-             setState(() => _errorMessage = 'Amounts must be positive.');
+             setState(() => _errorMessage = l10n?.errorNegativeAmount ?? 'Amounts must be positive.');
              return;
           }
         }
@@ -280,7 +281,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         );
       }
     } catch (e) {
-      setState(() => _errorMessage = e.toString());
+      setState(() => _errorMessage = context.localizedErrorMessage(e));
       return;
     }
     
@@ -289,11 +290,11 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     splits.removeWhere((key, value) => value <= 0);
     final finalParticipants = splits.keys.toList();
     if (finalParticipants.isEmpty) {
-        setState(() => _errorMessage = 'At least one participant must have a share > 0.');
+        setState(() => _errorMessage = l10n?.errorAtLeastOneParticipantShare ?? 'At least one participant must have a share > 0.');
         return;
     }
     if (finalParticipants.length > 20) {
-        setState(() => _errorMessage = 'Too many participants (max 20).');
+        setState(() => _errorMessage = l10n?.errorTooManyParticipants ?? 'Too many participants (max 20).');
         return;
     }
 
@@ -345,7 +346,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _errorMessage = e.toString());
+        setState(() => _errorMessage = context.localizedErrorMessage(e));
       }
     } finally {
       if (mounted) {

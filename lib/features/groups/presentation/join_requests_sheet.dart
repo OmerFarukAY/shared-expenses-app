@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:denk/core/errors/error_localizer.dart';
 import 'package:denk/core/theme/app_colors.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
@@ -153,7 +154,7 @@ class JoinRequestsSheet extends ConsumerWidget {
                                 } catch (e) {
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(e.toString())),
+                                      SnackBar(content: Text(context.localizedErrorMessage(e))),
                                     );
                                   }
                                 }
@@ -180,7 +181,7 @@ class JoinRequestsSheet extends ConsumerWidget {
                                 } catch (e) {
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(e.toString())),
+                                      SnackBar(content: Text(context.localizedErrorMessage(e))),
                                     );
                                   }
                                 }

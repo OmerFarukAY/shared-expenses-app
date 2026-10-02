@@ -4,6 +4,7 @@ import 'package:denk/core/constants/currencies.dart';
 import 'package:denk/core/theme/app_colors.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
+import 'package:denk/core/errors/error_localizer.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
 import 'package:denk/l10n/l10n.dart';
 
@@ -71,7 +72,7 @@ class _OnboardingDisplayNameScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Text(context.localizedErrorMessage(e)),
             backgroundColor: AppColors.negative,
           ),
         );

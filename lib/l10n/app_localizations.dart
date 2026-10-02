@@ -1309,6 +1309,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter a code from a friend'**
   String get dashboardJoinGroupSubtitle;
+
+  /// No description provided for @copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get copied;
+
+  /// No description provided for @errorEnterValidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid amount.'**
+  String get errorEnterValidAmount;
+
+  /// No description provided for @errorEnterExpenseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter what the expense was for.'**
+  String get errorEnterExpenseTitle;
+
+  /// No description provided for @errorSelectParticipant.
+  ///
+  /// In en, this message translates to:
+  /// **'At least one participant must be selected.'**
+  String get errorSelectParticipant;
+
+  /// No description provided for @errorSelectPayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select who paid.'**
+  String get errorSelectPayer;
+
+  /// No description provided for @errorPayerSumMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Payer contributions ({sum}) must match total expense ({total}).'**
+  String errorPayerSumMismatch(String sum, String total);
+
+  /// No description provided for @errorSplitSumMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Allocated splits ({sum}) must equal total expense ({total}).'**
+  String errorSplitSumMismatch(String sum, String total);
+
+  /// No description provided for @errorPayerMismatchGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Total paid does not match the expense amount.'**
+  String get errorPayerMismatchGeneric;
+
+  /// No description provided for @errorSplitMismatchGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Sum of splits does not match total expense.'**
+  String get errorSplitMismatchGeneric;
+
+  /// No description provided for @errorAtLeastOneParticipantShare.
+  ///
+  /// In en, this message translates to:
+  /// **'At least one participant must have a share > 0.'**
+  String get errorAtLeastOneParticipantShare;
+
+  /// No description provided for @errorInvalidPercentageSum.
+  ///
+  /// In en, this message translates to:
+  /// **'The sum of all percentages must equal 100%.'**
+  String get errorInvalidPercentageSum;
+
+  /// No description provided for @errorGroupNameLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Group name must be between 1 and 60 characters.'**
+  String get errorGroupNameLength;
+
+  /// No description provided for @errorInvalidCodeFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid invite code format. Codes are 6 characters.'**
+  String get errorInvalidCodeFormat;
+
+  /// No description provided for @errorPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Access restricted. You might not have permission for this group or action.'**
+  String get errorPermissionDenied;
+
+  /// No description provided for @errorNetworkUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection. Please check your network and try again.'**
+  String get errorNetworkUnavailable;
+
+  /// No description provided for @errorNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'The requested group or record could not be found.'**
+  String get errorNotFound;
+
+  /// No description provided for @errorSettlementRecordFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to record settlement. Please try again.'**
+  String get errorSettlementRecordFailed;
+
+  /// No description provided for @errorSettlementDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete settlement. Please try again.'**
+  String get errorSettlementDeleteFailed;
+
+  /// No description provided for @removeMemberConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove {name} from the group?'**
+  String removeMemberConfirmMessage(String name);
+
+  /// No description provided for @leaveGroupConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to leave this group?'**
+  String get leaveGroupConfirmMessage;
+
+  /// No description provided for @deleteGroupConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this group? This action cannot be undone.'**
+  String get deleteGroupConfirmMessage;
+
+  /// No description provided for @groupActionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Group Actions'**
+  String get groupActionsTitle;
+
+  /// No description provided for @groupActionsCreateSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a new group and split expenses with friends'**
+  String get groupActionsCreateSubtitle;
+
+  /// No description provided for @groupActionsJoinSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an invite code to join an existing group'**
+  String get groupActionsJoinSubtitle;
+
+  /// No description provided for @insightsPaidLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid: {amount}'**
+  String insightsPaidLabel(String amount);
+
+  /// No description provided for @insightsFairShareLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fair Share: {amount}'**
+  String insightsFairShareLabel(String amount);
+
+  /// No description provided for @insightsExpenseCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Across {count} expenses in {groupName}'**
+  String insightsExpenseCount(int count, String groupName);
 }
 
 class _AppLocalizationsDelegate

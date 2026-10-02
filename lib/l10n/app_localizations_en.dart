@@ -657,4 +657,113 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardJoinGroupSubtitle => 'Enter a code from a friend';
+
+  @override
+  String get copied => 'Copied';
+
+  @override
+  String get errorEnterValidAmount => 'Please enter a valid amount.';
+
+  @override
+  String get errorEnterExpenseTitle => 'Please enter what the expense was for.';
+
+  @override
+  String get errorSelectParticipant =>
+      'At least one participant must be selected.';
+
+  @override
+  String get errorSelectPayer => 'Please select who paid.';
+
+  @override
+  String errorPayerSumMismatch(String sum, String total) {
+    return 'Payer contributions ($sum) must match total expense ($total).';
+  }
+
+  @override
+  String errorSplitSumMismatch(String sum, String total) {
+    return 'Allocated splits ($sum) must equal total expense ($total).';
+  }
+
+  @override
+  String get errorPayerMismatchGeneric =>
+      'Total paid does not match the expense amount.';
+
+  @override
+  String get errorSplitMismatchGeneric =>
+      'Sum of splits does not match total expense.';
+
+  @override
+  String get errorAtLeastOneParticipantShare =>
+      'At least one participant must have a share > 0.';
+
+  @override
+  String get errorInvalidPercentageSum =>
+      'The sum of all percentages must equal 100%.';
+
+  @override
+  String get errorGroupNameLength =>
+      'Group name must be between 1 and 60 characters.';
+
+  @override
+  String get errorInvalidCodeFormat =>
+      'Invalid invite code format. Codes are 6 characters.';
+
+  @override
+  String get errorPermissionDenied =>
+      'Access restricted. You might not have permission for this group or action.';
+
+  @override
+  String get errorNetworkUnavailable =>
+      'No internet connection. Please check your network and try again.';
+
+  @override
+  String get errorNotFound =>
+      'The requested group or record could not be found.';
+
+  @override
+  String get errorSettlementRecordFailed =>
+      'Failed to record settlement. Please try again.';
+
+  @override
+  String get errorSettlementDeleteFailed =>
+      'Failed to delete settlement. Please try again.';
+
+  @override
+  String removeMemberConfirmMessage(String name) {
+    return 'Are you sure you want to remove $name from the group?';
+  }
+
+  @override
+  String get leaveGroupConfirmMessage =>
+      'Are you sure you want to leave this group?';
+
+  @override
+  String get deleteGroupConfirmMessage =>
+      'Are you sure you want to delete this group? This action cannot be undone.';
+
+  @override
+  String get groupActionsTitle => 'Group Actions';
+
+  @override
+  String get groupActionsCreateSubtitle =>
+      'Start a new group and split expenses with friends';
+
+  @override
+  String get groupActionsJoinSubtitle =>
+      'Enter an invite code to join an existing group';
+
+  @override
+  String insightsPaidLabel(String amount) {
+    return 'Paid: $amount';
+  }
+
+  @override
+  String insightsFairShareLabel(String amount) {
+    return 'Fair Share: $amount';
+  }
+
+  @override
+  String insightsExpenseCount(int count, String groupName) {
+    return 'Across $count expenses in $groupName';
+  }
 }

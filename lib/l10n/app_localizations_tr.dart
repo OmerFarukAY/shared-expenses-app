@@ -659,4 +659,111 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get dashboardJoinGroupSubtitle => 'Bir arkadaştan gelen kodu gir';
+
+  @override
+  String get copied => 'Kopyalandı';
+
+  @override
+  String get errorEnterValidAmount => 'Lütfen geçerli bir tutar girin.';
+
+  @override
+  String get errorEnterExpenseTitle =>
+      'Lütfen harcamanın ne için olduğunu girin.';
+
+  @override
+  String get errorSelectParticipant => 'En az bir katılımcı seçilmelidir.';
+
+  @override
+  String get errorSelectPayer => 'Lütfen kimin ödediğini seçin.';
+
+  @override
+  String errorPayerSumMismatch(String sum, String total) {
+    return 'Ödeyenlerin toplamı ($sum) harcama tutarına ($total) eşit olmalıdır.';
+  }
+
+  @override
+  String errorSplitSumMismatch(String sum, String total) {
+    return 'Bölüşüm toplamı ($sum) harcama tutarına ($total) eşit olmalıdır.';
+  }
+
+  @override
+  String get errorPayerMismatchGeneric =>
+      'Ödenen toplam tutar harcama tutarıyla eşleşmiyor.';
+
+  @override
+  String get errorSplitMismatchGeneric =>
+      'Bölüşüm toplamı harcama tutarıyla eşleşmiyor.';
+
+  @override
+  String get errorAtLeastOneParticipantShare =>
+      'En az bir katılımcının payı 0\'dan büyük olmalıdır.';
+
+  @override
+  String get errorInvalidPercentageSum => 'Yüzdelerin toplamı %100 olmalıdır.';
+
+  @override
+  String get errorGroupNameLength =>
+      'Grup adı 1 ile 60 karakter arasında olmalıdır.';
+
+  @override
+  String get errorInvalidCodeFormat =>
+      'Geçersiz davet kodu formatı. Kodlar 6 karakterdir.';
+
+  @override
+  String get errorPermissionDenied =>
+      'Erişim kısıtlandı. Bu grup veya işlem için yetkiniz olmayabilir.';
+
+  @override
+  String get errorNetworkUnavailable =>
+      'İnternet bağlantısı yok. Lütfen ağınızı kontrol edip tekrar deneyin.';
+
+  @override
+  String get errorNotFound => 'İstenen grup veya kayıt bulunamadı.';
+
+  @override
+  String get errorSettlementRecordFailed =>
+      'Ödeşme kaydedilemedi. Lütfen tekrar deneyin.';
+
+  @override
+  String get errorSettlementDeleteFailed =>
+      'Ödeşme silinemedi. Lütfen tekrar deneyin.';
+
+  @override
+  String removeMemberConfirmMessage(String name) {
+    return '$name adlı üyeyi gruptan çıkarmak istediğinizden emin misiniz?';
+  }
+
+  @override
+  String get leaveGroupConfirmMessage =>
+      'Gruptan ayrılmak istediğinizden emin misiniz?';
+
+  @override
+  String get deleteGroupConfirmMessage =>
+      'Bu grubu tamamen silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.';
+
+  @override
+  String get groupActionsTitle => 'Grup İşlemleri';
+
+  @override
+  String get groupActionsCreateSubtitle =>
+      'Yeni bir grup kurun ve harcamaları bölüşmeye başlayın';
+
+  @override
+  String get groupActionsJoinSubtitle =>
+      'Mevcut bir gruba katılmak için davet kodunu girin';
+
+  @override
+  String insightsPaidLabel(String amount) {
+    return 'Ödenen: $amount';
+  }
+
+  @override
+  String insightsFairShareLabel(String amount) {
+    return 'Düşen Pay: $amount';
+  }
+
+  @override
+  String insightsExpenseCount(int count, String groupName) {
+    return '$groupName grubundaki $count harcama genelinde';
+  }
 }

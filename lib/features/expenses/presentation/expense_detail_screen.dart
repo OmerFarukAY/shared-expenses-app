@@ -10,6 +10,7 @@ import 'package:denk/features/groups/domain/group_model.dart';
 import 'package:denk/features/expenses/domain/expense_model.dart';
 import 'package:denk/features/expenses/presentation/add_expense_screen.dart';
 import 'package:denk/features/expenses/presentation/expense_controller.dart';
+import 'package:denk/core/errors/error_localizer.dart';
 import 'package:denk/l10n/l10n.dart';
 
 class ExpenseDetailScreen extends ConsumerStatefulWidget {
@@ -83,7 +84,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
           setState(() => _isDeleting = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.toString()),
+              content: Text(context.localizedErrorMessage(e)),
               backgroundColor: AppColors.negative,
             ),
           );

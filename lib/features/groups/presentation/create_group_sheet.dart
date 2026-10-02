@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:denk/core/errors/error_localizer.dart';
 import 'package:denk/core/theme/app_haptics.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
@@ -42,10 +43,11 @@ class _CreateGroupSheetState extends ConsumerState<CreateGroupSheet> {
   }
 
   void _submit() async {
+    final l10n = AppLocalizations.of(context);
     final name = _nameController.text.trim();
     if (name.isEmpty || name.length > 60) {
       setState(() {
-        _errorText = 'Group name must be between 1 and 60 characters';
+        _errorText = l10n?.errorGroupNameLength ?? 'Group name must be between 1 and 60 characters';
       });
       return;
     }
@@ -76,7 +78,7 @@ class _CreateGroupSheetState extends ConsumerState<CreateGroupSheet> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorText = e.toString();
+          _errorText = context.localizedErrorMessage(e);
         });
       }
     } finally {

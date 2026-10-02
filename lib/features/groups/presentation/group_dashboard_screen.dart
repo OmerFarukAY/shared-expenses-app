@@ -23,6 +23,7 @@ import 'package:denk/features/settlements/domain/settlement_engine.dart';
 import 'package:denk/features/settlements/domain/settlement_model.dart';
 import 'package:denk/features/settlements/presentation/settlement_controller.dart';
 import 'package:denk/features/groups/presentation/join_requests_sheet.dart';
+import 'package:denk/core/errors/error_localizer.dart';
 import 'package:denk/l10n/l10n.dart';
 
 class GroupDashboardScreen extends ConsumerStatefulWidget {
@@ -42,6 +43,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
   ExpenseCategory? _selectedCategory;
   String? _selectedMemberUid;
   String? _selectedViewCurrency;
+  bool _isInviteCodeCopied = false;
 
   @override
   void initState() {
@@ -64,16 +66,15 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
     });
   }
 
-  void _copyInviteCode(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+  void _copyInviteCode() {
     Clipboard.setData(ClipboardData(text: widget.group.inviteCode));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n?.inviteCodeCopied ?? 'Invite code copied'),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    AppHaptics.light();
+    setState(() => _isInviteCodeCopied = true);
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() => _isInviteCodeCopied = false);
+      }
+    });
   }
 
   Future<void> _recordSettlement(SettlementTransaction tx) async {
@@ -138,7 +139,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.toString()),
+              content: Text(context.localizedErrorMessage(e)),
               backgroundColor: AppColors.negative,
             ),
           );
@@ -255,29 +256,36 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: InkWell(
-              onTap: () => _copyInviteCode(context),
+              onTap: _copyInviteCode,
               borderRadius: BorderRadius.circular(20),
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
+                  color: _isInviteCodeCopied
+                      ? AppColors.positive.withValues(alpha: 0.1)
+                      : theme.colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isDark
-                        ? AppColors.darkBorder
-                        : AppColors.lightBorder,
+                    color: _isInviteCodeCopied
+                        ? AppColors.positive.withValues(alpha: 0.3)
+                        : isDark
+                            ? AppColors.darkBorder
+                            : AppColors.lightBorder,
                   ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.key_rounded,
+                      _isInviteCodeCopied ? Icons.check_circle_rounded : Icons.key_rounded,
                       size: 14,
-                      color: theme.colorScheme.primary,
+                      color: _isInviteCodeCopied
+                          ? AppColors.positive
+                          : theme.colorScheme.primary,
                     ),
                     const SizedBox(width: 6),
                     Text(
@@ -285,7 +293,9 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                       style: AppTypography.monetary(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: theme.colorScheme.onSurface,
+                        color: _isInviteCodeCopied
+                            ? AppColors.positive
+                            : theme.colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -998,7 +1008,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                               }
                                             } catch(e) {
                                               if (!context.mounted) return;
-                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.localizedErrorMessage(e))));
                                             }
                                           },
                                           itemBuilder: (context) => [

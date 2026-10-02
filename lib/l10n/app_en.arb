@@ -279,5 +279,84 @@
   "privacyFirstInfo": "Privacy-First • No Email or Phone Required",
   "changeCurrency": "Change Currency",
   "dashboardCreateGroupSubtitle": "Start tracking shared expenses",
-  "dashboardJoinGroupSubtitle": "Enter a code from a friend"
+  "dashboardJoinGroupSubtitle": "Enter a code from a friend",
+  "copied": "Copied",
+  "errorEnterValidAmount": "Please enter a valid amount.",
+  "errorEnterExpenseTitle": "Please enter what the expense was for.",
+  "errorSelectParticipant": "At least one participant must be selected.",
+  "errorSelectPayer": "Please select who paid.",
+  "errorPayerSumMismatch": "Payer contributions ({sum}) must match total expense ({total}).",
+  "@errorPayerSumMismatch": {
+    "placeholders": {
+      "sum": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "errorSplitSumMismatch": "Allocated splits ({sum}) must equal total expense ({total}).",
+  "@errorSplitSumMismatch": {
+    "placeholders": {
+      "sum": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "errorPayerMismatchGeneric": "Total paid does not match the expense amount.",
+  "errorSplitMismatchGeneric": "Sum of splits does not match total expense.",
+  "errorAtLeastOneParticipantShare": "At least one participant must have a share > 0.",
+  "errorInvalidPercentageSum": "The sum of all percentages must equal 100%.",
+  "errorGroupNameLength": "Group name must be between 1 and 60 characters.",
+  "errorInvalidCodeFormat": "Invalid invite code format. Codes are 6 characters.",
+  "errorPermissionDenied": "Access restricted. You might not have permission for this group or action.",
+  "errorNetworkUnavailable": "No internet connection. Please check your network and try again.",
+  "errorNotFound": "The requested group or record could not be found.",
+  "errorSettlementRecordFailed": "Failed to record settlement. Please try again.",
+  "errorSettlementDeleteFailed": "Failed to delete settlement. Please try again.",
+  "removeMemberConfirmMessage": "Are you sure you want to remove {name} from the group?",
+  "@removeMemberConfirmMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveGroupConfirmMessage": "Are you sure you want to leave this group?",
+  "deleteGroupConfirmMessage": "Are you sure you want to delete this group? This action cannot be undone.",
+  "groupActionsTitle": "Group Actions",
+  "groupActionsCreateSubtitle": "Start a new group and split expenses with friends",
+  "groupActionsJoinSubtitle": "Enter an invite code to join an existing group",
+  "insightsPaidLabel": "Paid: {amount}",
+  "@insightsPaidLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "insightsFairShareLabel": "Fair Share: {amount}",
+  "@insightsFairShareLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "insightsExpenseCount": "Across {count} expenses in {groupName}",
+  "@insightsExpenseCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "groupName": {
+        "type": "String"
+      }
+    }
+  }
 }
+
