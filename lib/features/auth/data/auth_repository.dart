@@ -419,6 +419,17 @@ class FirebaseAuthRepository implements AuthRepository {
       );
     }
 
+    // Provider not enabled in Firebase Console
+    if (code == 'operation-not-allowed' ||
+        combined.contains('operation-not-allowed') ||
+        combined.contains('identity provider configuration is not found')) {
+      return const AppException(
+        message:
+            'Firebase Console üzerinde Google ile giriş henüz etkinleştirilmemiş.',
+        code: 'operation-not-allowed',
+      );
+    }
+
     return AppException.fromFirebase(e);
   }
 

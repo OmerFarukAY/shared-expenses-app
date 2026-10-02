@@ -41,6 +41,28 @@ class DenkApp extends ConsumerWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: appThemeMode,
+      onGenerateRoute: (settings) {
+        if (settings.name != null &&
+            (settings.name!.startsWith('/link') ||
+             settings.name!.contains('deep_link_id') ||
+             settings.name!.contains('firebaseError'))) {
+          return PageRouteBuilder<void>(
+            settings: settings,
+            opaque: false,
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const SizedBox.shrink(),
+          );
+        }
+        return null;
+      },
+      onUnknownRoute: (settings) {
+        return PageRouteBuilder<void>(
+          settings: settings,
+          opaque: false,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const SizedBox.shrink(),
+        );
+      },
       home: const DenkAuthGate(),
     );
   }
