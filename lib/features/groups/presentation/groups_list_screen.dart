@@ -83,23 +83,53 @@ class GroupsListScreen extends ConsumerWidget {
           if (groups.isEmpty && pendingRequests.isEmpty) {
             return Center(
               child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    DenkEmptyState(
-                      icon: Icons.group_add_outlined,
-                      title: l10n?.noGroupsTitle ?? 'No groups yet',
-                      subtitle:
-                          l10n?.noGroupsSubtitle ??
-                          'Create a group or enter an invite code to start sharing expenses.',
-                      actionLabel: l10n?.createGroup ?? 'Create Group',
-                      onAction: () => CreateGroupSheet.show(context),
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.space_dashboard_rounded,
+                        size: 48,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
-                    const SizedBox(height: 12),
-                    DenkButton(
-                      label: l10n?.joinGroup ?? 'Join with Code',
-                      variant: DenkButtonVariant.secondary,
-                      onPressed: () => JoinGroupSheet.show(context),
+                    const SizedBox(height: 24),
+                    Text(
+                      l10n?.noGroupsTitle ?? 'Welcome to Denk',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.h1.copyWith(fontSize: 28),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n?.noGroupsSubtitle ??
+                          'Create a group or join an existing one to start splitting expenses.',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+                    _DashboardActionCard(
+                      icon: Icons.group_add_rounded,
+                      title: l10n?.createGroup ?? 'Create a New Group',
+                      subtitle: 'Start tracking shared expenses',
+                      isPrimary: true,
+                      onTap: () => CreateGroupSheet.show(context),
+                    ),
+                    const SizedBox(height: 16),
+                    _DashboardActionCard(
+                      icon: Icons.key_rounded,
+                      title: l10n?.joinGroup ?? 'Join with Invite Code',
+                      subtitle: 'Enter a code from a friend',
+                      isPrimary: false,
+                      onTap: () => JoinGroupSheet.show(context),
                     ),
                   ],
                 ),
@@ -458,6 +488,124 @@ class _GroupCard extends StatelessWidget {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DashboardActionCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool isPrimary;
+  final VoidCallback onTap;
+
+  const _DashboardActionCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.isPrimary,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    final Color bgColor = isPrimary 
+        ? theme.colorScheme.primary 
+        : (isDark ? AppColors.darkSurface : AppColors.lightSurface);
+        
+    final Color textColor = isPrimary 
+        ? theme.colorScheme.onPrimary 
+        : theme.colorScheme.onSurface;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(20),
+        border: !isPrimary ? Border.all(
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          width: 1,
+        ) : null,
+        boxShadow: !isDark && isPrimary ? [
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          )
+        ] : null,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          highlightColor: isPrimary ? Colors.white.withValues(alpha: 0.1) : theme.colorScheme.primary.withValues(alpha: 0.05),
+          splashColor: isPrimary ? Colors.white.withValues(alpha: 0.2) : theme.colorScheme.primary.withValues(alpha: 0.1),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isPrimary 
+                        ? Colors.white.withValues(alpha: 0.2)
+                        : theme.colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: isPrimary ? Colors.white : theme.colorScheme.primary,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTypography.h3.copyWith(
+                          color: textColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        subtitle,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: textColor.withValues(alpha: 0.7),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: isPrimary 
+                        ? Colors.white.withValues(alpha: 0.15) 
+                        : (isDark ? AppColors.darkBg : AppColors.lightBg),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward_rounded,
+                    color: isPrimary ? Colors.white : textColor.withValues(alpha: 0.5),
+                    size: 20,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

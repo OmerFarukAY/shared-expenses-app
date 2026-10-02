@@ -42,14 +42,14 @@ abstract class AppColors {
   static const Color lightTextTertiary = Color(0xFF94A3B8); // Slate 400
 
   // Neutrals - Dark Theme
-  static const Color darkBg = Color(0xFF0B0F17); // Obsidian slate
-  static const Color darkSurface = Color(0xFF111827); // Gray 900
-  static const Color darkSurfaceSubtle = Color(0xFF1A2234);
-  static const Color darkBorder = Color(0xFF1F2937); // Gray 800
-  static const Color darkBorderSubtle = Color(0xFF18202F);
-  static const Color darkTextPrimary = Color(0xFFF8FAFC); // Slate 50
-  static const Color darkTextSecondary = Color(0xFF94A3B8); // Slate 400
-  static const Color darkTextTertiary = Color(0xFF64748B); // Slate 500
+  static const Color darkBg = Color(0xFF09090B); // Zinc 950 (Deep background)
+  static const Color darkSurface = Color(0xFF18181B); // Zinc 900 (Cards)
+  static const Color darkSurfaceSubtle = Color(0xFF27272A); // Zinc 800 (Hover/Action)
+  static const Color darkBorder = Color(0xFF27272A); // Zinc 800 (Borders)
+  static const Color darkBorderSubtle = Color(0xFF18181B);
+  static const Color darkTextPrimary = Color(0xFFFAFAFA); // Zinc 50
+  static const Color darkTextSecondary = Color(0xFFA1A1AA); // Zinc 400
+  static const Color darkTextTertiary = Color(0xFF71717A); // Zinc 500
 
   // Expense Category Color Accents (Muted & Harmonious)
   static const Color categoryFood = Color(0xFFEA580C); // Warm amber orange

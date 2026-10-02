@@ -91,7 +91,10 @@ class _OnboardingDisplayNameScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: Container(
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -137,18 +140,42 @@ class _OnboardingDisplayNameScreenState
                           : AppColors.lightTextSecondary,
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  DenkCard(
-                    padding: const EdgeInsets.all(20),
+                  const SizedBox(height: 48),
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: isDark 
+                          ? AppColors.darkSurfaceSubtle 
+                          : AppColors.lightSurface,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: isDark 
+                            ? AppColors.darkBorder 
+                            : AppColors.lightBorder,
+                        width: 1,
+                      ),
+                      boxShadow: !isDark ? [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        )
+                      ] : null,
+                    ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        Text(
+                          l10n?.chooseDisplayName ?? 'Your Display Name',
+                          style: AppTypography.h3.copyWith(
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
                         DenkTextField(
                           controller: _nameController,
                           focusNode: _focusNode,
-                          label: l10n?.chooseDisplayName ?? 'Your Display Name',
-                          hintText:
-                              l10n?.displayNameHint ?? 'e.g. Alex, Sam, Ömer',
+                          hintText: l10n?.displayNameHint ?? 'e.g. Alex, Sam, Ömer',
                           errorText: _errorText,
                           autofocus: true,
                           textInputAction: TextInputAction.done,
@@ -161,8 +188,7 @@ class _OnboardingDisplayNameScreenState
                             }
                           },
                         ),
-                        const SizedBox(height: 24),
-
+                        const SizedBox(height: 32),
                         DenkButton(
                           label: l10n?.getStarted ?? 'Get Started',
                           isLoading: _isSubmitting,
@@ -171,30 +197,40 @@ class _OnboardingDisplayNameScreenState
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 6,
-                    children: [
-                      Icon(
-                        Icons.shield_outlined,
-                        size: 15,
-                        color: isDark
-                            ? AppColors.darkTextTertiary
-                            : AppColors.lightTextTertiary,
+                  const SizedBox(height: 32),
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: isDark 
+                          ? AppColors.positive.withValues(alpha: 0.1) 
+                          : AppColors.positive.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(100),
+                      border: Border.all(
+                        color: AppColors.positive.withValues(alpha: 0.2),
                       ),
-                      Text(
-                        // @ts-ignore - Assuming l10n is generated with privacyFirstInfo
-                        l10n?.privacyFirstInfo ?? 'Privacy-First • No Email or Phone Required',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: isDark
-                              ? AppColors.darkTextTertiary
-                              : AppColors.lightTextTertiary,
-                          fontWeight: FontWeight.w500,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.shield_rounded,
+                          size: 16,
+                          color: AppColors.positive,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            l10n?.privacyFirstInfo ?? 'Privacy-First • No Email Required',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: isDark ? Colors.white : AppColors.lightTextSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -202,6 +238,7 @@ class _OnboardingDisplayNameScreenState
           ),
         ),
         ),
+      ),
       ),
     );
   }

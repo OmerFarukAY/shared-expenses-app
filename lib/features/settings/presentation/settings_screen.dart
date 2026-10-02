@@ -341,12 +341,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      barrierColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.only(top: 60),
         child: Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            color: Theme.of(context).brightness == Brightness.dark 
+                ? AppColors.darkSurface 
+                : AppColors.lightSurface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            border: Border.all(
+              color: Theme.of(context).brightness == Brightness.dark 
+                  ? AppColors.darkBorder 
+                  : AppColors.lightBorder,
+              width: 1,
+            ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -355,35 +364,44 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 12),
               Center(
                 child: Container(
-                  width: 40,
+                  width: 48,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: Text(
                   title,
-                  style: AppTypography.h2,
+                  style: AppTypography.h2.copyWith(fontSize: 24),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               Flexible(
                 child: SingleChildScrollView(
                   padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).padding.bottom + 24,
-                    left: 16,
-                    right: 16,
+                    bottom: MediaQuery.of(context).padding.bottom + 32,
+                    left: 24,
+                    right: 24,
                   ),
-                  child: DenkCard(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: children,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.02),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: children,
+                      ),
                     ),
                   ),
                 ),
@@ -1007,63 +1025,69 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: Text(l10n?.settingsTitle ?? 'Settings', style: AppTypography.h2),
+        title: Text(
+          l10n?.settingsTitle ?? 'Settings',
+          style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
+        ),
       ),
       body: _isDeleting
           ? const Center(child: DenkLoadingView())
           : SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(20, 16, 20, widget.isTab ? 116 : 16),
+              padding: EdgeInsets.fromLTRB(24, 8, 24, widget.isTab ? 116 : 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // PROFILE SECTION
-                  Text(
-                    l10n?.settingsProfile ?? 'Profile',
-                    style: AppTypography.h3,
-                  ),
-                  const SizedBox(height: 12),
-                  DenkCard(
-                    padding: const EdgeInsets.all(16),
+                  // NEW PROFILE HEADER SECTION
+                  Center(
                     child: Column(
                       children: [
+                        Container(
+                          width: 88,
+                          height: 88,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                theme.colorScheme.primary.withValues(alpha: 0.2),
+                                theme.colorScheme.primary.withValues(alpha: 0.05),
+                              ],
+                            ),
+                            border: Border.all(
+                              color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              (profile?.displayName.isNotEmpty ?? false)
+                                  ? profile!.displayName[0].toUpperCase()
+                                  : '?',
+                              style: AppTypography.h1.copyWith(
+                                color: theme.colorScheme.primary,
+                                fontSize: 32,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            CircleAvatar(
-                              radius: 24,
-                              backgroundColor: theme.colorScheme.primary
-                                  .withValues(alpha: 0.12),
-                              child: Text(
-                                (profile?.displayName.isNotEmpty ?? false)
-                                    ? profile!.displayName[0].toUpperCase()
-                                    : '?',
-                                style: AppTypography.h2.copyWith(
-                                  color: theme.colorScheme.primary,
-                                ),
-                              ),
+                            Text(
+                              profile?.displayName ?? 'Anonymous User',
+                              style: AppTypography.h2,
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    profile?.displayName ?? 'Anonymous User',
-                                    style: AppTypography.h3,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    l10n?.anonymousAccount ??
-                                        'Anonymous Firebase Account',
-                                    style: AppTypography.caption.copyWith(
-                                      color: theme.colorScheme.onSurface
-                                          .withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            const SizedBox(width: 8),
                             IconButton(
-                              icon: const Icon(Icons.edit_outlined),
+                              icon: Icon(
+                                Icons.edit_rounded, 
+                                size: 18, 
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.5)
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
                               onPressed: () {
                                 if (profile != null) {
                                   _showEditNameDialog(profile.displayName);
@@ -1072,51 +1096,58 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n?.anonymousAccount ?? 'Guest Profile',
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          ),
+                        ),
                         if (profile != null) ...[
-                          const Divider(height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'UID: ${profile.uid.substring(0, profile.uid.length > 8 ? 8 : profile.uid.length)}...',
-                                style: AppTypography.caption.copyWith(
-                                  color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.4,
-                                  ),
+                          const SizedBox(height: 12),
+                          InkWell(
+                            onTap: () {
+                              Clipboard.setData(ClipboardData(text: profile.uid));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n?.uidCopiedSnackbar ?? 'ID copied'),
+                                  duration: const Duration(seconds: 1),
                                 ),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                              InkWell(
-                                onTap: () {
-                                  Clipboard.setData(
-                                    ClipboardData(text: profile.uid),
-                                  );
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        l10n?.uidCopiedSnackbar ??
-                                            'UID copied to clipboard',
-                                      ),
-                                      duration: const Duration(seconds: 1),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.tag_rounded,
+                                    size: 14,
+                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    profile.uid.substring(0, profile.uid.length > 8 ? 8 : profile.uid.length),
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                                      fontFamily: 'monospace',
                                     ),
-                                  );
-                                },
-                                child: Text(
-                                  l10n?.copyId ?? 'Copy ID',
-                                  style: AppTypography.caption.copyWith(
-                                    color: theme.colorScheme.primary,
-                                    fontWeight: FontWeight.w600,
                                   ),
-                                ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ],
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 24),
-
+                  const SizedBox(height: 40),
                   // ACCOUNT RECOVERY & SECURITY SECTION
                   Text(
                     l10n?.accountSecurityTitle ?? 'Account Security & Recovery',
@@ -1250,93 +1281,60 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     style: AppTypography.h3,
                   ),
                   const SizedBox(height: 12),
-                  DenkCard(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 6,
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).brightness == Brightness.dark 
+                          ? AppColors.darkSurfaceSubtle 
+                          : AppColors.lightSurface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Theme.of(context).brightness == Brightness.dark 
+                            ? AppColors.darkBorder 
+                            : AppColors.lightBorder,
+                        width: 1,
+                      ),
+                      boxShadow: Theme.of(context).brightness == Brightness.light ? [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        )
+                      ] : null,
                     ),
-                    child: Material(
-                      color: Colors.transparent,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
                       child: Column(
                         children: [
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: const Icon(Icons.language_rounded),
-                            title: Text(
-                              l10n?.settingsLanguage ?? 'Language',
-                              style: AppTypography.bodyMedium,
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  langName,
-                                  style: AppTypography.bodySmall.copyWith(
-                                    color: theme.colorScheme.onSurface
-                                        .withValues(alpha: 0.5),
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                const Icon(
-                                  Icons.chevron_right_rounded,
-                                  size: 18,
-                                ),
-                              ],
-                            ),
+                          _SettingsTile(
+                            icon: Icons.language_rounded,
+                            title: l10n?.settingsLanguage ?? 'Language',
+                            value: langName,
                             onTap: _showLanguageDialog,
                           ),
-                          const Divider(height: 1),
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: const Icon(Icons.palette_outlined),
-                            title: Text(
-                              l10n?.themeTitle ?? 'Theme',
-                              style: AppTypography.bodyMedium,
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  themeName,
-                                  style: AppTypography.bodySmall.copyWith(
-                                    color: theme.colorScheme.onSurface
-                                        .withValues(alpha: 0.5),
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                const Icon(
-                                  Icons.chevron_right_rounded,
-                                  size: 18,
-                                ),
-                              ],
-                            ),
+                          Divider(
+                            height: 1, 
+                            indent: 56, 
+                            color: Theme.of(context).brightness == Brightness.dark 
+                                ? AppColors.darkBorder 
+                                : AppColors.lightBorder,
+                          ),
+                          _SettingsTile(
+                            icon: Icons.palette_rounded,
+                            title: l10n?.themeTitle ?? 'Theme',
+                            value: themeName,
                             onTap: _showThemeDialog,
                           ),
-                          const Divider(height: 1),
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: const Icon(Icons.attach_money_rounded),
-                            title: Text(
-                              (l10n as dynamic).currency ?? 'Currency',
-                              style: AppTypography.bodyMedium,
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  currencyName,
-                                  style: AppTypography.bodySmall.copyWith(
-                                    color: theme.colorScheme.onSurface
-                                        .withValues(alpha: 0.5),
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                const Icon(
-                                  Icons.chevron_right_rounded,
-                                  size: 18,
-                                ),
-                              ],
-                            ),
+                          Divider(
+                            height: 1, 
+                            indent: 56, 
+                            color: Theme.of(context).brightness == Brightness.dark 
+                                ? AppColors.darkBorder 
+                                : AppColors.lightBorder,
+                          ),
+                          _SettingsTile(
+                            icon: Icons.payments_rounded,
+                            title: (l10n as dynamic).currency ?? 'Currency',
+                            value: currencyName,
                             onTap: _showCurrencyDialog,
                           ),
                         ],
@@ -1547,6 +1545,82 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ],
               ),
             ),
+    );
+  }
+}
+
+class _SettingsTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+  final VoidCallback onTap;
+
+  const _SettingsTile({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        highlightColor: theme.colorScheme.primary.withValues(alpha: 0.05),
+        splashColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isDark 
+                      ? theme.colorScheme.primary.withValues(alpha: 0.15)
+                      : theme.colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  icon,
+                  color: theme.colorScheme.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppTypography.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    value,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 20,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
