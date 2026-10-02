@@ -267,5 +267,12 @@
   "transferOwnershipBody": "Seleziona un membro per diventare il nuovo proprietario. Rimarrai membro del gruppo.",
   "transferOwnershipSuccess": "Proprietà trasferita con successo.",
   "deleteAccountReauthRequired": "Accedi di nuovo per confermare l'eliminazione dell'account.",
-  "deleteAccountProcessing": "Eliminazione account in corso..."
+  "deleteAccountProcessing": "Eliminazione account in corso...",
+  "privacyPolicyTitle": "Informativa sulla Privacy",
+  "termsOfServiceTitle": "Termini di Servizio",
+  "webAccountDeletionTitle": "Cancellazione Account Web",
+  "webAccountDeletionSubtitle": "Richiedi la cancellazione dell'account e dei dati via web se non hai più accesso all'applicazione.",
+  "errorOpeningUrl": "Impossibile aprire il link.",
+  "legalSectionTitle": "Note Legali",
+  "openAction": "Apri"
 }

@@ -267,5 +267,12 @@
   "transferOwnershipBody": "Yeni sahip olarak bir üye seçin. Grupta üye olarak kalmaya devam edeceksiniz.",
   "transferOwnershipSuccess": "Sahiplik başarıyla devredildi.",
   "deleteAccountReauthRequired": "Hesap silme işlemini onaylamak için lütfen tekrar giriş yapın.",
-  "deleteAccountProcessing": "Hesap siliniyor..."
+  "deleteAccountProcessing": "Hesap siliniyor...",
+  "privacyPolicyTitle": "Gizlilik Politikası",
+  "termsOfServiceTitle": "Kullanım Koşulları",
+  "webAccountDeletionTitle": "Web Hesap Silme",
+  "webAccountDeletionSubtitle": "Uygulamaya erişiminiz yoksa web üzerinden hesap ve veri silme talebinde bulunun.",
+  "errorOpeningUrl": "Bağlantı açılamadı.",
+  "legalSectionTitle": "Yasal & Koşullar",
+  "openAction": "Aç"
 }

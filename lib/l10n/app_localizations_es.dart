@@ -624,4 +624,26 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get deleteAccountProcessing => 'Eliminando cuenta...';
+
+  @override
+  String get privacyPolicyTitle => 'Política de Privacidad';
+
+  @override
+  String get termsOfServiceTitle => 'Términos de Servicio';
+
+  @override
+  String get webAccountDeletionTitle => 'Eliminación de Cuenta Web';
+
+  @override
+  String get webAccountDeletionSubtitle =>
+      'Solicite la eliminación de cuenta y datos vía web si ya no tiene acceso a la aplicación.';
+
+  @override
+  String get errorOpeningUrl => 'No se pudo abrir el enlace.';
+
+  @override
+  String get legalSectionTitle => 'Legal y Cumplimiento';
+
+  @override
+  String get openAction => 'Abrir';
 }

@@ -11,7 +11,9 @@ import 'package:denk/features/auth/domain/account_deletion_service.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
 import 'package:denk/features/settings/presentation/settings_controller.dart';
+import 'package:denk/core/constants/legal_urls.dart';
 import 'package:denk/l10n/l10n.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   final bool isTab;
@@ -427,6 +429,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Future<void> _launchLegalUrl(String urlString) async {
+    final uri = Uri.parse(urlString);
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.errorOpeningUrl ??
+                  'Could not open link.',
+            ),
+            backgroundColor: AppColors.negative,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.errorOpeningUrl ??
+                  'Could not open link.',
+            ),
+            backgroundColor: AppColors.negative,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   void _showPrivacyInfoDialog() {
     final l10n = AppLocalizations.of(context);
     showDialog(
@@ -460,6 +497,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 '• ${l10n?.privacyBullet4 ?? "Authentication uses anonymous Firebase credentials."}\n'
                 '• ${l10n?.privacyBullet5 ?? "Only group members you share your invite code with can view your group expenses."}',
                 style: AppTypography.bodySmall,
+              ),
+              const SizedBox(height: 12),
+              InkWell(
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _launchLegalUrl(LegalUrls.privacyPolicy);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Text(
+                        l10n?.privacyPolicyTitle ?? 'Privacy Policy',
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.primary500,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.open_in_new_rounded,
+                        size: 14,
+                        color: AppColors.primary500,
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -1145,43 +1209,123 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const SizedBox(height: 12),
                   DenkCard(
                     padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.lock_outline_rounded,
-                              color: AppColors.positive,
-                              size: 20,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.lock_outline_rounded,
+                                color: AppColors.positive,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  l10n?.settingsPrivacyInfo ??
+                                      'Privacy Information',
+                                  style: AppTypography.bodyMedium.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: _showPrivacyInfoDialog,
+                                child: Text(l10n?.readAction ?? 'Read'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            l10n?.privacyCalloutBody ??
+                                'No email, phone, or passwords collected. Only group members can view group balances.',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                l10n?.settingsPrivacyInfo ??
-                                    'Privacy Information',
-                                style: AppTypography.bodyMedium.copyWith(
-                                  fontWeight: FontWeight.w600,
+                          ),
+                          const SizedBox(height: 12),
+                          const Divider(height: 1),
+                          const SizedBox(height: 4),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            leading: const Icon(
+                              Icons.description_outlined,
+                              size: 20,
+                              color: AppColors.primary500,
+                            ),
+                            title: Text(
+                              l10n?.privacyPolicyTitle ?? 'Privacy Policy',
+                              style: AppTypography.bodyMedium.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            trailing: const Icon(
+                              Icons.open_in_new_rounded,
+                              size: 18,
+                              color: AppColors.settled,
+                            ),
+                            onTap: () => _launchLegalUrl(LegalUrls.privacyPolicy),
+                          ),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            leading: const Icon(
+                              Icons.gavel_outlined,
+                              size: 20,
+                              color: AppColors.primary500,
+                            ),
+                            title: Text(
+                              l10n?.termsOfServiceTitle ?? 'Terms of Service',
+                              style: AppTypography.bodyMedium.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            trailing: const Icon(
+                              Icons.open_in_new_rounded,
+                              size: 18,
+                              color: AppColors.settled,
+                            ),
+                            onTap: () => _launchLegalUrl(LegalUrls.termsOfService),
+                          ),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            leading: const Icon(
+                              Icons.public_outlined,
+                              size: 20,
+                              color: AppColors.primary500,
+                            ),
+                            title: Text(
+                              l10n?.webAccountDeletionTitle ??
+                                  'Web Account Deletion',
+                              style: AppTypography.bodyMedium.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: Text(
+                              l10n?.webAccountDeletionSubtitle ??
+                                  'Request account deletion via web if you no longer have access to the app.',
+                              style: AppTypography.caption.copyWith(
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
                                 ),
                               ),
                             ),
-                            TextButton(
-                              onPressed: _showPrivacyInfoDialog,
-                              child: Text(l10n?.readAction ?? 'Read'),
+                            trailing: const Icon(
+                              Icons.open_in_new_rounded,
+                              size: 18,
+                              color: AppColors.settled,
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          l10n?.privacyCalloutBody ??
-                              'No email, phone, or passwords collected. Only group members can view group balances.',
-                          style: AppTypography.bodySmall.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.6,
-                            ),
+                            onTap: () =>
+                                _launchLegalUrl(LegalUrls.accountDeletion),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
 

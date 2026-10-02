@@ -1237,6 +1237,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Deleting account...'**
   String get deleteAccountProcessing;
+
+  /// No description provided for @privacyPolicyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicyTitle;
+
+  /// No description provided for @termsOfServiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get termsOfServiceTitle;
+
+  /// No description provided for @webAccountDeletionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Web Account Deletion'**
+  String get webAccountDeletionTitle;
+
+  /// No description provided for @webAccountDeletionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request account and data deletion via web if you no longer have access to the app.'**
+  String get webAccountDeletionSubtitle;
+
+  /// No description provided for @errorOpeningUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open link.'**
+  String get errorOpeningUrl;
+
+  /// No description provided for @legalSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal & Compliance'**
+  String get legalSectionTitle;
+
+  /// No description provided for @openAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get openAction;
 }
 
 class _AppLocalizationsDelegate

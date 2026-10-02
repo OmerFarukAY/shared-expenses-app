@@ -53,6 +53,8 @@ ios/Runner.xcworkspace/
 **/node_modules/
 firestore-debug.log
 ui-debug.log
+firebase-debug.log
+.firebase/
 
 # Firebase credential files — must NOT be committed to version control.
 # Obtain from Firebase Console and place locally.

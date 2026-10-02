@@ -619,4 +619,26 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get deleteAccountProcessing => 'Hesap siliniyor...';
+
+  @override
+  String get privacyPolicyTitle => 'Gizlilik Politikası';
+
+  @override
+  String get termsOfServiceTitle => 'Kullanım Koşulları';
+
+  @override
+  String get webAccountDeletionTitle => 'Web Hesap Silme';
+
+  @override
+  String get webAccountDeletionSubtitle =>
+      'Uygulamaya erişiminiz yoksa web üzerinden hesap ve veri silme talebinde bulunun.';
+
+  @override
+  String get errorOpeningUrl => 'Bağlantı açılamadı.';
+
+  @override
+  String get legalSectionTitle => 'Yasal & Koşullar';
+
+  @override
+  String get openAction => 'Aç';
 }

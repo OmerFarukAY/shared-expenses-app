@@ -1,5 +1,49 @@
 # Backend & Security Changelog
 
+## [Phase 18] - Privacy Policy, Terms of Service & Web Account Deletion
+**Status:** TAMAMLANDI
+**Date:** 2026-10-02
+
+### 1. Public Legal & Compliance Endpoints (Firebase Hosting)
+Configured Firebase Hosting in `firebase.json` for site `denk-262c0` (`web/` root with `cleanUrls: true`) and deployed production-ready, mobile-responsive HTML pages:
+- **`web/privacy.html` (`https://denk-262c0.web.app/privacy`)**:
+  - Truthfully discloses anonymous Firebase authentication, optional Google/Apple account linking, and Cloud Firestore collections.
+  - Documents the complete account deletion and ledger anonymization architecture implemented in Phase 17.
+  - Explicitly declares zero advertising identifiers (no IDFA, no GAID), zero third-party telemetry/trackers, zero contact book access, and zero GPS tracking.
+  - Documents support for international currencies (TRY, USD, EUR, GBP, JPY, CAD, AUD, CHF) and 5 languages (EN, TR, ES, FR, IT).
+- **`web/terms.html` (`https://denk-262c0.web.app/terms`)**:
+  - Clear shared ledger utility terms of service.
+  - Non-financial institution disclaimer: Denk is NOT a bank, payment processor, or money transmitter; does not process or hold user funds; recorded settlements represent peer balance agreements with off-platform settlement.
+- **`web/delete-account.html` (`https://denk-262c0.web.app/delete-account`)**:
+  - Complies with Google Play Data Safety and Apple App Store Review Guidelines.
+  - Outlines the instant in-app deletion process across 5 languages (EN, TR, ES, FR, IT).
+  - Provides a client-side validated public web form generating structured email deletion requests to `denk@omerfarukay.com` for users who lost their device or uninstalled the app (processed within 30 days).
+  - Clear data transparency audit table (deleted vs anonymized vs preserved).
+- **`web/index.html` (`https://denk-262c0.web.app/`)**:
+  - Central portal landing page providing quick access to all compliance documents in 5 languages.
+- **Multi-Language Architecture (`web/lang.js`, `web/styles.css`)**:
+  - Ultra-sleek, modern design powered by Plus Jakarta Sans and responsive CSS grid header.
+  - Full native 5-language switcher (English, Türkçe, Español, Français, Italiano) with client-side persistence and zero text collision.
+
+### 2. Client Integration & Deep Linking
+- Added `url_launcher: ^6.3.2` and created `lib/core/constants/legal_urls.dart`.
+- Added Android 11+ `<queries>` intents for `https`, `http`, and `mailto` in `android/app/src/main/AndroidManifest.xml`.
+- Integrated Privacy Policy, Terms of Service, and Web Account Deletion links in `SettingsScreen` within the Privacy & Data card and inside the Privacy Architecture modal.
+
+### 3. Localization Parity
+- Added 7 localized keys across all 5 supported ARB files (`app_en.arb`, `app_tr.arb`, `app_es.arb`, `app_fr.arb`, `app_it.arb`):
+  - `privacyPolicyTitle`, `termsOfServiceTitle`, `webAccountDeletionTitle`, `webAccountDeletionSubtitle`, `errorOpeningUrl`, `legalSectionTitle`, `openAction`.
+- Regenerated localization bindings with `flutter gen-l10n`.
+- Verified 100% key parity via `test/core/localization_test.dart`.
+
+### 4. Verification & Testing
+- `flutter analyze`: **0 issues found**.
+- `flutter test`: **119 / 119 tests passing** (added dedicated widget test in `settings_screen_test.dart`).
+- Firebase Hosting: All URLs tested and verified live with HTTP 200 OK.
+- `git diff --check`: Clean whitespace.
+
+---
+
 ## [Phase 17] - Account Deletion, Ownership Transfer & Data Anonymization
 **Status:** TAMAMLANDI
 **Date:** 2026-10-02

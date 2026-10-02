@@ -6,8 +6,11 @@ import 'package:firebase_auth/firebase_auth.dart' show AuthProvider, AuthCredent
 import 'package:denk/features/auth/domain/account_deletion_service.dart';
 import 'package:denk/features/auth/domain/user_profile.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
+import 'package:denk/core/constants/legal_urls.dart';
 import 'package:denk/features/settings/presentation/settings_screen.dart';
 import 'package:denk/l10n/l10n.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
 void main() {
   final now = DateTime.now();
@@ -134,6 +137,77 @@ void main() {
 
     expect(fakeController.deleteCalled, isTrue);
   });
+
+  testWidgets(
+    'SettingsScreen renders working links for Privacy Policy, Terms of Service, and Web Account Deletion',
+    (tester) async {
+      final fakeLauncher = _FakeUrlLauncherPlatform();
+      UrlLauncherPlatform.instance = fakeLauncher;
+
+      final fakeController = _MockUserProfileController(
+        UserProfile(
+          uid: 'anon_user_legal_test',
+          displayName: 'Ömer',
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            userProfileControllerProvider.overrideWith(() => fakeController),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            theme: AppTheme.light,
+            home: const SettingsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Scroll down to the Privacy & Data section
+      await tester.drag(
+        find.byType(SingleChildScrollView),
+        const Offset(0, -400),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify all 3 legal link rows exist
+      expect(find.text('Privacy Policy'), findsOneWidget);
+      expect(find.text('Terms of Service'), findsOneWidget);
+      expect(find.text('Web Account Deletion'), findsOneWidget);
+
+      // Tap Privacy Policy
+      await tester.tap(find.text('Privacy Policy'));
+      await tester.pumpAndSettle();
+      expect(fakeLauncher.launchedUrls, contains(LegalUrls.privacyPolicy));
+
+      // Tap Terms of Service
+      await tester.tap(find.text('Terms of Service'));
+      await tester.pumpAndSettle();
+      expect(fakeLauncher.launchedUrls, contains(LegalUrls.termsOfService));
+
+      // Tap Web Account Deletion
+      await tester.tap(find.text('Web Account Deletion'));
+      await tester.pumpAndSettle();
+      expect(fakeLauncher.launchedUrls, contains(LegalUrls.accountDeletion));
+    },
+  );
+}
+
+class _FakeUrlLauncherPlatform extends Fake
+    with MockPlatformInterfaceMixin
+    implements UrlLauncherPlatform {
+  final List<String> launchedUrls = [];
+
+  @override
+  Future<bool> launchUrl(String url, LaunchOptions options) async {
+    launchedUrls.add(url);
+    return true;
+  }
 }
 
 class _MockUserProfileController extends AsyncNotifier<UserProfile?>

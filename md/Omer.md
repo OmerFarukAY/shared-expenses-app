@@ -638,16 +638,41 @@ flowchart TD
 
 ---
 
-### Phase 18 — Privacy Policy, Terms & Web Deletion Form (Phase 1 Priority 3 - Blocker)
+### Phase 18 — Privacy Policy, Terms & Web Deletion Form (Phase 1 Priority 3 - Blocker) — TAMAMLANDI
 * **Goal**: Provide publicly accessible, store-compliant legal documentation accurately describing Denk's data collection and deletion practices.
-* **Scope & Tasks**:
-  1. Author production-ready static HTML documents:
-     - `web/privacy.html`: Truthful data disclosure (anonymous UID, display name, user-entered transaction records, App Check device tokens; zero advertising IDs, zero location, zero contact book access).
-     - `web/terms.html`: Terms of Service for shared ledger utility.
-     - `web/delete-account.html`: Public web deletion request form matching Google Play Data Safety requirements.
-  2. Deploy static web assets to Firebase Hosting (`denk-262c0.web.app/privacy.html`, `terms.html`, `delete-account.html`).
-  3. Integrate `url_launcher` in `SettingsScreen` to open verified live URLs in external Safari/Chrome browser.
-  4. Update `docs/privacy.md` and in-app privacy information dialog to ensure 100% terminology parity.
+* **Status**: TAMAMLANDI
+* **Key Implementation Details**:
+  1. **Production-Ready Web Documents**:
+     - `web/privacy.html`: Truthful disclosure of anonymous Firebase authentication, optional Google/Apple account linking, Cloud Firestore data model, sole/multi-member deletion lifecycle, ledger anonymization, zero advertising IDs (no IDFA/GAID), zero marketing trackers, zero contact book access, and zero GPS tracking. Covers supported global currencies (TRY, USD, EUR, GBP, JPY, CAD, etc.) and locales.
+     - `web/terms.html`: Comprehensive Terms of Service explicitly clarifying that Denk is a ledger calculation utility and **NOT a bank, payment processor, or money transmitter**. Outlines acceptable use, off-platform settlement nature, and user responsibilities.
+     - `web/delete-account.html`: Public web account and data deletion request portal compliant with Google Play Data Safety policy and Apple App Store Review Guidelines. Explains immediate in-app deletion steps across 5 languages and provides a web submission form generating formal verification requests to `denk@omerfarukay.com` (30-day processing window).
+     - `web/index.html`, `web/styles.css` & `web/lang.js`: Ultra-sleek, modern, dark/light-mode enabled portal with full native 5-language switcher (English, Türkçe, Español, Français, Italiano) and responsive CSS grid layout.
+  2. **Firebase Hosting Deployment**:
+     - Configured `hosting` in `firebase.json` with `cleanUrls: true` and deployed to Firebase project `denk-262c0`.
+     - Live deployed and verified endpoints:
+       - `https://denk-262c0.web.app/` (HTTP 200)
+       - `https://denk-262c0.web.app/privacy` (HTTP 200)
+       - `https://denk-262c0.web.app/terms` (HTTP 200)
+       - `https://denk-262c0.web.app/delete-account` (HTTP 200)
+  3. **In-App Integration & URL Launching**:
+     - Added `url_launcher: ^6.3.2` and created `lib/core/constants/legal_urls.dart`.
+     - Added Android 11+ `<queries>` intents for `https`, `http`, and `mailto` in `android/app/src/main/AndroidManifest.xml`.
+     - Integrated working legal rows in `SettingsScreen` under Privacy & Data, plus a direct link inside the privacy information modal.
+  4. **5-Language Localization Parity**:
+     - Added 7 keys (`privacyPolicyTitle`, `termsOfServiceTitle`, `webAccountDeletionTitle`, `webAccountDeletionSubtitle`, `errorOpeningUrl`, `legalSectionTitle`, `openAction`) across `app_en.arb`, `app_tr.arb`, `app_es.arb`, `app_fr.arb`, and `app_it.arb`.
+     - Verified 100% key parity across all 5 languages via `test/core/localization_test.dart`.
+  5. **Documentation Synchronization**:
+     - Updated `docs/privacy.md` to match current Phase 16–18 architecture.
+  6. **Automated Test Coverage**:
+     - Added automated widget test verifying Privacy Policy, Terms of Service, and Web Account Deletion link triggers via `UrlLauncherPlatform`.
+     - Expanded test suite to 119 passing tests.
+
+* **Verification Gates**:
+  - `flutter analyze`: Passed (0 issues found).
+  - `flutter test`: Passed (all 119 tests passing).
+  - `localization_test.dart`: Passed (100% key parity across EN, TR, ES, FR, IT).
+  - Firebase Hosting Live Verification: All 4 URLs returning HTTP 200 OK.
+  - `git diff --check`: Passed (clean whitespace).
 
 ---
 

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Denk — Private, Effortless Shared Expenses</title>
+  <meta name="description" content="Denk is a modern, privacy-focused group expense tracker. Split bills, track shared balances, and settle debts with zero ads, zero trackers, and anonymous authentication.">
+  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <script src="lang.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand">
+        <img src="assets/logo.png" alt="Denk Logo" class="brand-logo">
+        <span class="brand-name">Denk</span>
+      </a>
+      <div class="header-actions">
+        <ul class="nav-links">
+          <li><a href="privacy.html" class="nav-link" id="nav-privacy">Privacy Policy</a></li>
+          <li><a href="terms.html" class="nav-link" id="nav-terms">Terms of Service</a></li>
+          <li><a href="delete-account.html" class="nav-link" id="nav-delete">Delete Account</a></li>
+        </ul>
+        <div class="lang-picker">
+          <svg class="globe-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <select id="lang-selector" onchange="setLanguage(this.value)" aria-label="Select Language">
+            <option value="en">English</option>
+            <option value="tr">Türkçe</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="it">Italiano</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- 1. ENGLISH CONTENT -->
+    <div id="content-en" class="lang-content">
+      <section class="hero">
+        <span class="badge">Simple &bull; Private &bull; Fair</span>
+        <h1 class="hero-title">Effortless Shared Expenses,<br>Zero Tracking.</h1>
+        <p class="hero-meta" style="max-width: 580px; margin: 0 auto;">
+          Split costs with friends, roommates, and travel groups. No emails, no phone numbers, no advertisements, and no tracking.
+        </p>
+      </section>
+
+      <div class="cards-grid">
+        <a href="privacy.html" class="feature-card">
+          <div class="feature-card-icon">&infin;</div>
+          <h2 class="feature-card-title">Privacy Policy</h2>
+          <p class="feature-card-desc">
+            Understand how Denk protects your data with anonymous authentication, data minimization, and zero advertising.
+          </p>
+        </a>
+
+        <a href="terms.html" class="feature-card">
+          <div class="feature-card-icon">&para;</div>
+          <h2 class="feature-card-title">Terms of Service</h2>
+          <p class="feature-card-desc">
+            Clear terms of use, group ledger rules, accounting disclaimers, and developer liability limitations.
+          </p>
+        </a>
+
+        <a href="delete-account.html" class="feature-card">
+          <div class="feature-card-icon">&times;</div>
+          <h2 class="feature-card-title">Account Deletion</h2>
+          <p class="feature-card-desc">
+            Instant in-app deletion guide or submit a web-based data erasure request pursuant to store policies.
+          </p>
+        </a>
+      </div>
+
+      <article class="content-card prose">
+        <h2>Why Denk?</h2>
+        <p>Managing group expenses should never require handing over your personal address book or being tracked by advertisers. Denk was designed from scratch with the following guarantees:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Denk Guarantee</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Onboarding</strong></td>
+                <td>100% Anonymous by default. No email, phone number, or password required.</td>
+              </tr>
+              <tr>
+                <td><strong>Recovery</strong></td>
+                <td>Optional account linking with Apple ID or Google to preserve groups across devices.</td>
+              </tr>
+              <tr>
+                <td><strong>Data Sovereignty</strong></td>
+                <td>Full account deletion support with intelligent ledger anonymization.</td>
+              </tr>
+              <tr>
+                <td><strong>International</strong></td>
+                <td>Multi-currency support (TRY, USD, EUR, GBP, JPY, CAD, etc.) &amp; 5 languages (EN, TR, ES, FR, IT).</td>
+              </tr>
+              <tr>
+                <td><strong>Zero Telemetry</strong></td>
+                <td>Zero advertising IDs, zero ad SDKs, zero location tracking, zero contacts access.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-success" style="text-align: center; padding: 24px;">
+          <h3 style="margin-top: 0;">Ready to keep balances fair?</h3>
+          <p style="margin-bottom: 0;">Available on iOS and Android &bull; Developer: Ömer Faruk Ay</p>
+        </div>
+      </article>
+    </div>
+
+    <!-- 2. TURKISH CONTENT -->
+    <div id="content-tr" class="lang-content" style="display: none;">
+      <section class="hero">
+        <span class="badge">Sade &bull; Gizlilik Odaklı &bull; Adil</span>
+        <h1 class="hero-title">Zahmetsiz Ortak Harcama,<br>Sıfır Takip.</h1>
+        <p class="hero-meta" style="max-width: 580px; margin: 0 auto;">
+          Arkadaşlarınızla, ev arkadaşlarınızla ve seyahat gruplarınızla harcamaları bölüşün. E-posta yok, telefon numarası yok, reklam yok, takip yok.
+        </p>
+      </section>
+
+      <div class="cards-grid">
+        <a href="privacy.html" class="feature-card">
+          <div class="feature-card-icon">&infin;</div>
+          <h2 class="feature-card-title">Gizlilik Politikası</h2>
+          <p class="feature-card-desc">
+            Denk'in anonim oturum, veri minimizasyonu ve sıfır reklam garantisiyle verilerinizi nasıl koruduğunu inceleyin.
+          </p>
+        </a>
+
+        <a href="terms.html" class="feature-card">
+          <div class="feature-card-icon">&para;</div>
+          <h2 class="feature-card-title">Kullanım Koşulları</h2>
+          <p class="feature-card-desc">
+            Açık kullanım kuralları, finansal olmayan araç beyanı, sorumluluk sınırlamaları ve kullanıcı yükümlülükleri.
+          </p>
+        </a>
+
+        <a href="delete-account.html" class="feature-card">
+          <div class="feature-card-icon">&times;</div>
+          <h2 class="feature-card-title">Hesap Silme</h2>
+          <p class="feature-card-desc">
+            Uygulama içinden anında silme rehberi veya mağaza politikalarına uygun web hesap ve veri silme talep formu.
+          </p>
+        </a>
+      </div>
+
+      <article class="content-card prose">
+        <h2>Neden Denk?</h2>
+        <p>Grup harcamalarını yönetmek asla rehberinizi teslim etmenizi veya reklamcılar tarafından izlenmenizi gerektirmemelidir. Denk, ilk günden itibaren şu ilkelerle inşa edilmiştir:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Özellik</th>
+                <th>Denk Güvencesi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Kullanmaya Başlama</strong></td>
+                <td>Varsayılan olarak %100 Anonim. E-posta, telefon numarası veya şifre gerekmez.</td>
+              </tr>
+              <tr>
+                <td><strong>Hesap Kurtarma</strong></td>
+                <td>Gruplarınızı farklı cihazlarda kurtarmak için isteğe bağlı Apple veya Google bağlama.</td>
+              </tr>
+              <tr>
+                <td><strong>Veri Egemenliği</strong></td>
+                <td>Matematiksel bakiye bütünlüğünü koruyan akıllı anonimleştirme ile hesap silme.</td>
+              </tr>
+              <tr>
+                <td><strong>Uluslararası</strong></td>
+                <td>Çoklu para birimi desteği (TRY, USD, EUR, GBP, JPY vb.) ve 5 dil (TR, EN, ES, FR, IT).</td>
+              </tr>
+              <tr>
+                <td><strong>Sıfır Telemetri</strong></td>
+                <td>Sıfır reklam kimliği, sıfır reklam SDK'sı, sıfır konum takibi, sıfır rehber izni.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-success" style="text-align: center; padding: 24px;">
+          <h3 style="margin-top: 0;">Hesaplar Denk, kafalar rahat!</h3>
+          <p style="margin-bottom: 0;">iOS ve Android'de &bull; Geliştirici: Ömer Faruk Ay</p>
+        </div>
+      </article>
+    </div>
+
+    <!-- 3. SPANISH CONTENT -->
+    <div id="content-es" class="lang-content" style="display: none;">
+      <section class="hero">
+        <span class="badge">Sencillo &bull; Privado &bull; Justo</span>
+        <h1 class="hero-title">Gastos Compartidos Sin Esfuerzo,<br>Cero Rastreo.</h1>
+        <p class="hero-meta" style="max-width: 580px; margin: 0 auto;">
+          Divida cuentas con amigos, compañeros de piso y grupos de viaje. Sin correos, sin teléfonos, sin publicidad y sin rastreo.
+        </p>
+      </section>
+
+      <div class="cards-grid">
+        <a href="privacy.html" class="feature-card">
+          <div class="feature-card-icon">&infin;</div>
+          <h2 class="feature-card-title">Política de Privacidad</h2>
+          <p class="feature-card-desc">
+            Descubra cómo Denk protege su información con autenticación anónima, minimización de datos y cero publicidad.
+          </p>
+        </a>
+
+        <a href="terms.html" class="feature-card">
+          <div class="feature-card-icon">&para;</div>
+          <h2 class="feature-card-title">Términos de Servicio</h2>
+          <p class="feature-card-desc">
+            Condiciones de uso claras, normas de contabilidad grupal y limitación de responsabilidad del desarrollador.
+          </p>
+        </a>
+
+        <a href="delete-account.html" class="feature-card">
+          <div class="feature-card-icon">&times;</div>
+          <h2 class="feature-card-title">Eliminación de Cuenta</h2>
+          <p class="feature-card-desc">
+            Instrucciones para eliminar su cuenta al instante desde la app o mediante formulario web.
+          </p>
+        </a>
+      </div>
+
+      <article class="content-card prose">
+        <h2>¿Por qué elegir Denk?</h2>
+        <p>Administrar cuentas de grupo nunca debería implicar ceder sus contactos ni ser rastreado con fines comerciales. Denk ofrece garantías claras:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Característica</th>
+                <th>Garantía Denk</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Acceso Inicial</strong></td>
+                <td>100% Anónimo por defecto. No se requiere email, teléfono ni contraseña.</td>
+              </tr>
+              <tr>
+                <td><strong>Recuperación</strong></td>
+                <td>Vinculación voluntaria con Google o Apple ID para respaldar sus datos.</td>
+              </tr>
+              <tr>
+                <td><strong>Soberanía de Datos</strong></td>
+                <td>Eliminación completa con anonimización inteligente de balances.</td>
+              </tr>
+              <tr>
+                <td><strong>Multidivisa y Multilingüe</strong></td>
+                <td>Soporte para múltiples divisas y 5 idiomas (ES, EN, TR, FR, IT).</td>
+              </tr>
+              <tr>
+                <td><strong>Sin Telemetría</strong></td>
+                <td>Cero anuncios, cero SDKs de rastreo publicitario y sin acceso a contactos.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-success" style="text-align: center; padding: 24px;">
+          <h3 style="margin-top: 0;">Cuentas claras, amistades tranquilas.</h3>
+          <p style="margin-bottom: 0;">Disponible en iOS y Android &bull; Desarrollador: Ömer Faruk Ay</p>
+        </div>
+      </article>
+    </div>
+
+    <!-- 4. FRENCH CONTENT -->
+    <div id="content-fr" class="lang-content" style="display: none;">
+      <section class="hero">
+        <span class="badge">Simple &bull; Privé &bull; Équitable</span>
+        <h1 class="hero-title">Dépenses Partagées Sans Effort,<br>Zéro Traçage.</h1>
+        <p class="hero-meta" style="max-width: 580px; margin: 0 auto;">
+          Partagez les frais entre amis, colocataires et groupes de voyage. Sans e-mail, sans téléphone, sans publicité et sans traçage.
+        </p>
+      </section>
+
+      <div class="cards-grid">
+        <a href="privacy.html" class="feature-card">
+          <div class="feature-card-icon">&infin;</div>
+          <h2 class="feature-card-title">Politique de Confidentialité</h2>
+          <p class="feature-card-desc">
+            Comprenez comment Denk protège vos données grâce à l'authentification anonyme et la minimisation des données.
+          </p>
+        </a>
+
+        <a href="terms.html" class="feature-card">
+          <div class="feature-card-icon">&para;</div>
+          <h2 class="feature-card-title">Conditions d'Utilisation</h2>
+          <p class="feature-card-desc">
+            Règles d'utilisation transparentes, mention non-bancaire et limitations de responsabilité.
+          </p>
+        </a>
+
+        <a href="delete-account.html" class="feature-card">
+          <div class="feature-card-icon">&times;</div>
+          <h2 class="feature-card-title">Suppression de Compte</h2>
+          <p class="feature-card-desc">
+            Guide de suppression instantanée dans l'application ou formulaire de demande web.
+          </p>
+        </a>
+      </div>
+
+      <article class="content-card prose">
+        <h2>Pourquoi Denk ?</h2>
+        <p>Gérer les dépenses collectives ne devrait jamais nécessiter de céder votre carnet d'adresses. Denk a été pensé avec ces engagements :</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Fonctionnalité</th>
+                <th>Engagement Denk</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Démarrage</strong></td>
+                <td>100 % anonyme par défaut. Aucun e-mail ni mot de passe requis.</td>
+              </tr>
+              <tr>
+                <td><strong>Restauration</strong></td>
+                <td>Liaison optionnelle avec Apple ou Google pour sauvegarder vos groupes.</td>
+              </tr>
+              <tr>
+                <td><strong>Souveraineté</strong></td>
+                <td>Suppression définitive de compte avec anonymisation intelligente des soldes.</td>
+              </tr>
+              <tr>
+                <td><strong>International</strong></td>
+                <td>Prise en charge multi-devises et 5 langues (FR, EN, TR, ES, IT).</td>
+              </tr>
+              <tr>
+                <td><strong>Zéro Télémétrie</strong></td>
+                <td>Zéro identifiant publicitaire, aucun accès aux contacts, aucun traçage GPS.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-success" style="text-align: center; padding: 24px;">
+          <h3 style="margin-top: 0;">Les bons comptes font les bons amis.</h3>
+          <p style="margin-bottom: 0;">Disponible sur iOS et Android &bull; Développeur : Ömer Faruk Ay</p>
+        </div>
+      </article>
+    </div>
+
+    <!-- 5. ITALIAN CONTENT -->
+    <div id="content-it" class="lang-content" style="display: none;">
+      <section class="hero">
+        <span class="badge">Semplice &bull; Privato &bull; Equo</span>
+        <h1 class="hero-title">Spese Condivise Senza Sforzo,<br>Zero Tracciamento.</h1>
+        <p class="hero-meta" style="max-width: 580px; margin: 0 auto;">
+          Dividi i costi con amici, coinquilini e compagni di viaggio. Niente email, niente numeri di telefono, niente pubblicità e niente tracciamento.
+        </p>
+      </section>
+
+      <div class="cards-grid">
+        <a href="privacy.html" class="feature-card">
+          <div class="feature-card-icon">&infin;</div>
+          <h2 class="feature-card-title">Informativa sulla Privacy</h2>
+          <p class="feature-card-desc">
+            Scopri come Denk protegge i tuoi dati con autenticazione anonima, minimizzazione dei dati e zero pubblicità.
+          </p>
+        </a>
+
+        <a href="terms.html" class="feature-card">
+          <div class="feature-card-icon">&para;</div>
+          <h2 class="feature-card-title">Termini di Servizio</h2>
+          <p class="feature-card-desc">
+            Condizioni d'uso chiare, clausole di non-intermediazione finanziaria e limitazione di responsabilità.
+          </p>
+        </a>
+
+        <a href="delete-account.html" class="feature-card">
+          <div class="feature-card-icon">&times;</div>
+          <h2 class="feature-card-title">Eliminazione Account</h2>
+          <p class="feature-card-desc">
+            Guida alla cancellazione istantanea nell'app o invio di richiesta tramite modulo web.
+          </p>
+        </a>
+      </div>
+
+      <article class="content-card prose">
+        <h2>Perché scegliere Denk?</h2>
+        <p>Gestire le spese di gruppo non dovrebbe mai richiedere l'accesso alla rubrica o il tracciamento dei tuoi comportamenti. Denk offre garanzie precise:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Funzionalità</th>
+                <th>Garanzia Denk</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Accesso Iniziale</strong></td>
+                <td>100% anonimo per impostazione predefinita. Nessuna email o password richiesta.</td>
+              </tr>
+              <tr>
+                <td><strong>Recupero</strong></td>
+                <td>Collegamento facoltativo con Apple o Google per salvare i gruppi.</td>
+              </tr>
+              <tr>
+                <td><strong>Controllo Dati</strong></td>
+                <td>Cancellazione totale dell'account con anonimizzazione matematica dei saldi.</td>
+              </tr>
+              <tr>
+                <td><strong>Internazionale</strong></td>
+                <td>Supporto multivaluta e 5 lingue (IT, EN, TR, ES, FR).</td>
+              </tr>
+              <tr>
+                <td><strong>Zero Telemetria</strong></td>
+                <td>Nessun ID pubblicitario, nessun tracciamento GPS, nessun accesso ai contatti.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-success" style="text-align: center; padding: 24px;">
+          <h3 style="margin-top: 0;">Conti pari, zero pensieri.</h3>
+          <p style="margin-bottom: 0;">Disponibile per iOS e Android &bull; Sviluppatore: Ömer Faruk Ay</p>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p id="foot-copy">&copy; 2026 Denk &bull; Developer: Ömer Faruk Ay</p>
+      <ul class="footer-links">
+        <li><a href="privacy.html" id="foot-privacy">Privacy Policy</a></li>
+        <li><a href="terms.html" id="foot-terms">Terms of Service</a></li>
+        <li><a href="delete-account.html" id="foot-delete">Delete Account</a></li>
+      </ul>
+    </div>
+  </footer>
+</body>
+</html>

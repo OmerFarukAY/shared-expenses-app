@@ -624,4 +624,26 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get deleteAccountProcessing => 'Eliminazione account in corso...';
+
+  @override
+  String get privacyPolicyTitle => 'Informativa sulla Privacy';
+
+  @override
+  String get termsOfServiceTitle => 'Termini di Servizio';
+
+  @override
+  String get webAccountDeletionTitle => 'Cancellazione Account Web';
+
+  @override
+  String get webAccountDeletionSubtitle =>
+      'Richiedi la cancellazione dell\'account e dei dati via web se non hai più accesso all\'applicazione.';
+
+  @override
+  String get errorOpeningUrl => 'Impossibile aprire il link.';
+
+  @override
+  String get legalSectionTitle => 'Note Legali';
+
+  @override
+  String get openAction => 'Apri';
 }

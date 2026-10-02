@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Denk</title>
+  <meta name="description" content="Privacy Policy for Denk shared expenses application. Truthful disclosure of anonymous authentication, Firestore data, account deletion, and zero tracking.">
+  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <script src="lang.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand">
+        <img src="assets/logo.png" alt="Denk Logo" class="brand-logo">
+        <span class="brand-name">Denk</span>
+      </a>
+      <div class="header-actions">
+        <ul class="nav-links">
+          <li><a href="privacy.html" class="nav-link active" id="nav-privacy">Privacy Policy</a></li>
+          <li><a href="terms.html" class="nav-link" id="nav-terms">Terms of Service</a></li>
+          <li><a href="delete-account.html" class="nav-link" id="nav-delete">Delete Account</a></li>
+        </ul>
+        <div class="lang-picker">
+          <svg class="globe-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <select id="lang-selector" onchange="setLanguage(this.value)" aria-label="Select Language">
+            <option value="en">English</option>
+            <option value="tr">Türkçe</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="it">Italiano</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- 1. ENGLISH CONTENT -->
+    <div id="content-en" class="lang-content">
+      <section class="hero">
+        <span class="badge">Legal &amp; Privacy</span>
+        <h1 class="hero-title">Privacy Policy</h1>
+        <p class="hero-meta">Effective Date: October 2, 2026 &bull; Application: Denk (iOS &amp; Android) &bull; Developer: Ömer Faruk Ay</p>
+      </section>
+
+      <article class="content-card prose">
+        <div class="callout callout-success">
+          <strong>Privacy by Design:</strong> Denk is built on a data-minimized architecture. We do not require your email, phone number, or real name to use the app. We do not run ads, sell personal information, or track your GPS location.
+        </div>
+
+        <h2>1. Overview and Core Philosophy</h2>
+        <p>Denk ("we", "us", "our", or "the Application") is an expense-sharing and balance calculation utility developed and operated by independent developer Ömer Faruk Ay ("Developer"). This Privacy Policy transparently explains how Denk collects, uses, stores, and protects information when you use our mobile application and related web services.</p>
+        <p>Our guiding principle is strict data minimization: <strong>we collect only the bare minimum technical data necessary to calculate shared group balances accurately and securely.</strong></p>
+
+        <h2>2. Information We Process and Store</h2>
+        <p>Denk stores data in Google Cloud Firestore using server-enforced security rules. The specific data categories processed are:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Data Category</th>
+                <th>Specific Fields</th>
+                <th>Purpose &amp; Processing</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>User Identifier (UID)</strong></td>
+                <td>Random anonymous string or linked provider UID</td>
+                <td>Authenticates requests and attributes expense contributions without requiring your real identity.</td>
+              </tr>
+              <tr>
+                <td><strong>Display Name</strong></td>
+                <td>User-chosen nickname (e.g., "Alex", "Ömer")</td>
+                <td>Displayed to fellow group members so peers can identify who paid for or participated in an expense. Editable anytime.</td>
+              </tr>
+              <tr>
+                <td><strong>Account Linking (Optional)</strong></td>
+                <td>Google or Apple authentication token</td>
+                <td>Allows optional backup and recovery across devices. External passwords are never seen or stored by Denk.</td>
+              </tr>
+              <tr>
+                <td><strong>Group Information</strong></td>
+                <td>Title, description, default currency, invite code</td>
+                <td>Enables organizing shared expenses. Invite codes (e.g., <code>DNK-XXXXXX</code>) allow voluntary member joining.</td>
+              </tr>
+              <tr>
+                <td><strong>Expense Records</strong></td>
+                <td>Integer minor currency amounts, category, notes, payers, split allocations, date</td>
+                <td>Calculates exact balances. All monetary figures are stored as integers (e.g. cents) to prevent rounding inaccuracies.</td>
+              </tr>
+              <tr>
+                <td><strong>Settlement Records</strong></td>
+                <td>Payer UID, recipient UID, amount, completion timestamp</td>
+                <td>Immutable transaction records confirming debt settlement between two members.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>3. Authentication: Anonymous by Default &amp; Optional Linking</h2>
+        <p>When you first launch Denk, an account is created using <strong>Firebase Anonymous Authentication</strong>. This assigns your installation a unique, random User ID (UID) without requiring:</p>
+        <ul>
+          <li>No email address or telephone number.</li>
+          <li>No passwords.</li>
+          <li>No social media profile permissions.</li>
+        </ul>
+        <p><strong>Optional Account Linking:</strong> To safeguard your groups and balances against device loss or replacement, you may optionally link your account via <em>Sign in with Apple</em> or <em>Google Sign-In</em> from the Settings screen. When linked:</p>
+        <ul>
+          <li>Your existing anonymous UID is preserved—requiring zero data migrations.</li>
+          <li>Firebase Authentication securely manages the authentication token.</li>
+          <li>Denk never receives, processes, or stores your Google or Apple credentials.</li>
+        </ul>
+
+        <h2>4. What We Do NOT Collect</h2>
+        <p>To ensure full compliance with Apple App Store Review Guidelines and Google Play Data Safety policies, we explicitly declare:</p>
+        <ul>
+          <li><strong>No Advertising:</strong> Denk contains zero advertisements, zero advertising SDKs, and does not collect or transmit Apple IDFA or Google Advertising ID (GAID).</li>
+          <li><strong>No Third-Party Analytics / Trackers:</strong> We do not integrate third-party marketing or tracking SDKs (no Facebook Pixel, no cross-app behavioral tracking).</li>
+          <li><strong>No Contact Book Access:</strong> We never request access to your device contacts or phonebook. Group members join exclusively through voluntary invite codes.</li>
+          <li><strong>No Location Data:</strong> We never access fine or coarse GPS device location.</li>
+          <li><strong>No Camera or Microphone:</strong> Denk does not request camera or audio permissions.</li>
+        </ul>
+
+        <h2>5. Supported Currencies and Languages</h2>
+        <p>Denk is built for international groups and travelers:</p>
+        <ul>
+          <li><strong>Currencies:</strong> Turkish Lira (TRY &lrm;₺), US Dollar (USD $), Euro (EUR €), British Pound (GBP £), Japanese Yen (JPY ¥), Canadian Dollar (CAD), Australian Dollar (AUD), Swiss Franc (CHF), and other global currencies.</li>
+          <li><strong>Locales:</strong> Native localization in English (EN), Turkish (TR), Spanish (ES), French (FR), and Italian (IT).</li>
+        </ul>
+
+        <h2>6. Security and Infrastructure</h2>
+        <p>Denk relies on enterprise-grade cloud security provided by Google Cloud Platform / Firebase:</p>
+        <ul>
+          <li><strong>Encryption in Transit:</strong> All communications between the app and our database use TLS 1.3 encryption.</li>
+          <li><strong>Encryption at Rest:</strong> Cloud Firestore documents are encrypted at rest using AES-256 standards.</li>
+          <li><strong>App Check Protection:</strong> API traffic is attested using Firebase App Check (Apple DeviceCheck / App Attest on iOS and Google Play Integrity on Android) to protect against unauthorized bots and scrapers.</li>
+        </ul>
+
+        <h2>7. Account Deletion, Ownership Transfer &amp; Anonymization</h2>
+        <p>You have full sovereignty over your data and can delete your account at any time:</p>
+        <h3>In-App Deletion (Immediate)</h3>
+        <p>Go to <strong>Settings &rarr; Privacy &amp; Data &rarr; Delete Account</strong>. When you confirm deletion:</p>
+        <ol>
+          <li><strong>Sole-Owned Groups:</strong> If you are the creator and sole member of a group, the group, its expenses, settlements, and invite codes are permanently deleted.</li>
+          <li><strong>Multi-Member Groups &amp; Ownership Transfer:</strong> If you own a group with other active members, you are guided to transfer ownership to another member before deletion.</li>
+          <li><strong>Anonymization of Financial History:</strong> In shared groups where you participated, your member profile is anonymized: your display name is replaced with <code>"Deleted User"</code> and a departure timestamp is recorded. Financial amounts, split allocations, and settlement totals are strictly preserved so other group members' balances and ledgers remain mathematically correct.</li>
+          <li><strong>User Profile Purge:</strong> Your user document (<code>users/{uid}</code>), associated subcollections (<code>user_groups</code>, <code>join_requests</code>), and Firebase Authentication credential are permanently deleted immediately.</li>
+        </ol>
+
+        <h3>Web Deletion Request (External)</h3>
+        <p>If you uninstalled Denk or no longer have access to your mobile device, you can submit an account deletion request via our public <a href="delete-account.html">Web Account Deletion Portal</a> or by emailing <a href="mailto:denk@omerfarukay.com">denk@omerfarukay.com</a>. We process verified web deletion requests within 30 days pursuant to Google Play Data Safety policies and GDPR regulations.</p>
+
+        <h2>8. Legal Disclaimer &amp; Developer Protection</h2>
+        <p>Denk is provided by the Developer on an "AS IS" and "AS AVAILABLE" basis without warranty of any kind. Denk is an informational ledger calculation utility and is not a financial, accounting, or tax advisory service. The Developer assumes no liability for disputes arising from erroneous user-entered figures or peer settlements.</p>
+
+        <h2>9. User Rights (GDPR, CCPA &amp; KVKK)</h2>
+        <p>Depending on your jurisdiction, you have rights to access, rectify, delete, and restrict processing of your personal data.</p>
+
+        <h2>10. Contact Information</h2>
+        <p>For questions or privacy inquiries, please contact:</p>
+        <p>
+          <strong>Developer:</strong> Ömer Faruk Ay<br>
+          <strong>Official Contact Email:</strong> <a href="mailto:denk@omerfarukay.com">denk@omerfarukay.com</a><br>
+          <strong>Application:</strong> Denk Shared Expenses
+        </p>
+      </article>
+    </div>
+
+    <!-- 2. TURKISH CONTENT -->
+    <div id="content-tr" class="lang-content" style="display: none;">
+      <section class="hero">
+        <span class="badge">Yasal &amp; Gizlilik</span>
+        <h1 class="hero-title">Gizlilik Politikası</h1>
+        <p class="hero-meta">Yürürlük Tarihi: 2 Ekim 2026 &bull; Uygulama: Denk (iOS &amp; Android) &bull; Geliştirici: Ömer Faruk Ay</p>
+      </section>
+
+      <article class="content-card prose">
+        <div class="callout callout-success">
+          <strong>Tasarım İtibarıyla Gizlilik:</strong> Denk, veri minimizasyonu ilkesiyle inşa edilmiştir. Uygulamayı kullanmak için e-posta, telefon numarası veya gerçek isim gerekmez. Reklam yayınlamaz, kişisel verileri satmaz veya GPS konumunuzu takip etmeyiz.
+        </div>
+
+        <h2>1. Genel Bakış ve Temel Felsefe</h2>
+        <p>Denk ("biz", "uygulama"), bağımsız geliştirici Ömer Faruk Ay ("Geliştirici") tarafından geliştirilen ve işletilen bir harcama paylaşımı ve bakiye hesaplama aracıdır. Bu Gizlilik Politikası, Denk mobil uygulamasını ve ilişkili web hizmetlerini kullandığınızda verilerinizin nasıl işlendiğini, saklandığını ve korunduğunu açıklar.</p>
+        <p>Temel ilkemiz veri minimizasyonudur: <strong>Yalnızca ortak grup bakiyelerini hatasız ve güvenli bir şekilde hesaplamak için gereken en asgari teknik veriyi işleriz.</strong></p>
+
+        <h2>2. İşlenen ve Saklanan Veriler</h2>
+        <p>Denk verileri Google Cloud Firestore üzerinde güvenli sunucu güvenlik kurallarıyla saklar:</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Veri Kategorisi</th>
+                <th>İlgili Alanlar</th>
+                <th>Amaç ve İşleme Biçimi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Kullanıcı Kimliği (UID)</strong></td>
+                <td>Rastgele anonim metin veya bağlı sağlayıcı UID'si</td>
+                <td>Gerçek kimliğinizi talep etmeksizin istekleri doğrulamak ve harcamaları ilişkilendirmek için kullanılır.</td>
+              </tr>
+              <tr>
+                <td><strong>Görünen İsim</strong></td>
+                <td>Kullanıcının seçtiği takma ad (örn. "Alex", "Ömer")</td>
+                <td>Harcamayı kimin yaptığını veya kimlerin dahil olduğunu grup üyelerinin görebilmesi için kullanılır. İstenildiği an değiştirilebilir.</td>
+              </tr>
+              <tr>
+                <td><strong>Hesap Bağlama (İsteğe Bağlı)</strong></td>
+                <td>Google veya Apple kimlik doğrulama belirteci</td>
+                <td>Cihaz değiştiğinde grupları geri yükleyebilmek için isteğe bağlı sunulur. Şifreler asla Denk tarafından görülmez veya tutulmaz.</td>
+              </tr>
+              <tr>
+                <td><strong>Grup Bilgileri</strong></td>
+                <td>Grup başlığı, açıklama, varsayılan para birimi, davet kodu</td>
+                <td>Ortak harcamaları organize etmek için kullanılır. Davet kodları (örn. <code>DNK-XXXXXX</code>) gönüllü katılım sağlar.</td>
+              </tr>
+              <tr>
+                <td><strong>Harcama Kayıtları</strong></td>
+                <td>Tamsayı alt birim tutarlar, kategori, notlar, ödeyenler, bölüşüm oranları, tarih</td>
+                <td>Net bakiyeleri hesaplamak için kullanılır. Yuvarlama hatası olmaması için tutarlar kuruş/sent cinsinden tamsayı olarak tutulur.</td>
+              </tr>
+              <tr>
+                <td><strong>Borç Takas Kayıtları (Settlement)</strong></td>
+                <td>Ödeyen UID, alan UID, tutar, tamamlanma zamanı</td>
+                <td>İki üye arasındaki borç kapatma mutabakatını doğrulayan değiştirilemez muhasebe kayıtlarıdır.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>3. Kimlik Doğrulama: Anonim Başlangıç &amp; İsteğe Bağlı Hesap Bağlama</h2>
+        <p>Denk'i ilk açtığınızda hesabınız <strong>Firebase Anonim Kimlik Doğrulama</strong> ile oluşturulur. Bu işlem cihazınıza rastgele bir Kullanıcı Kimliği (UID) atar ve sizden şunları ASLA istemez:</p>
+        <ul>
+          <li>E-posta adresi veya telefon numarası yok.</li>
+          <li>Şifre yok.</li>
+          <li>Sosyal medya profil erişim izinleri yok.</li>
+        </ul>
+        <p><strong>İsteğe Bağlı Hesap Kurtarma:</strong> Telefonunuzu değiştirmeniz veya kaybetmeniz durumunda gruplarınızı kaybetmemek için Ayarlar ekranından <em>Apple ile Giriş Yap</em> veya <em>Google ile Bağla</em> seçeneğini kullanabilirsiniz. Bu yapıldığında:</p>
+        <ul>
+          <li>Mevcut anonim UID'niz korunur; hiçbir veri taşıma gerekmez.</li>
+          <li>Oturum belirteci doğrudan Firebase Auth güvencesindedir.</li>
+          <li>Denk, Apple veya Google şifrelerinizi asla görmez veya kaydetmez.</li>
+        </ul>
+
+        <h2>4. Asla Toplamadığımız Veriler</h2>
+        <p>Apple App Store ve Google Play Veri Güvenliği kuralları uyarınca açıkça beyan ederiz:</p>
+        <ul>
+          <li><strong>Reklam Yok:</strong> Denk içinde reklam veya reklam SDK'sı bulunmaz; Apple IDFA veya Google Reklam Kimliği (GAID) toplanmaz ve iletilmez.</li>
+          <li><strong>Üçüncü Taraf İzleyici Yok:</strong> Pazarlama veya davranış takip SDK'ları (Facebook Pixel, analitik izleyiciler vb.) entegre edilmemiştir.</li>
+          <li><strong>Rehber Erişimi Yok:</strong> Telefon rehberinize asla erişilmez. Grup üyeleri yalnızca gönüllü davet kodlarıyla katılır.</li>
+          <li><strong>Konum / GPS Erişimi Yok:</strong> Hassas veya yaklaşık GPS konumu asla istenmez.</li>
+          <li><strong>Kamera / Mikrofon Erişimi Yok:</strong> Kamera veya ses izinleri talep edilmez.</li>
+        </ul>
+
+        <h2>5. Desteklenen Para Birimleri ve Diller</h2>
+        <p>Denk uluslararası gruplar ve seyahatler için tasarlanmıştır:</p>
+        <ul>
+          <li><strong>Para Birimleri:</strong> Türk Lirası (TRY &lrm;₺), ABD Doları (USD $), Euro (EUR €), İngiliz Sterlini (GBP £), Japon Yeni (JPY ¥), Kanada Doları (CAD), Avustralya Doları (AUD), İsviçre Frangı (CHF) ve diğer birimler.</li>
+          <li><strong>Diller:</strong> İngilizce (EN), Türkçe (TR), İspanyolca (ES), Fransızca (FR) ve İtalyanca (IT) dillerinde tam arayüz desteği.</li>
+        </ul>
+
+        <h2>6. Güvenlik ve Altyapı</h2>
+        <p>Denk, Google Cloud Platform / Firebase kurumsal bulut güvenliğini kullanır:</p>
+        <ul>
+          <li><strong>Aktarımda Şifreleme:</strong> Tüm ağ trafiği TLS 1.3 ile şifrelenir.</li>
+          <li><strong>Durağan Veri Şifreleme:</strong> Cloud Firestore belgeleri AES-256 standardında şifrelenir.</li>
+          <li><strong>App Check Koruması:</strong> API trafiği Firebase App Check (iOS'ta DeviceCheck/App Attest, Android'de Play Integrity) ile kötü amaçlı botlara karşı korunur.</li>
+        </ul>
+
+        <h2>7. Hesap Silme, Sahiplik Devri ve Anonimleştirme</h2>
+        <p>Verileriniz üzerinde tam kontrol sahibisiniz ve hesabınızı dilediğiniz an silebilirsiniz:</p>
+        <h3>Uygulama İçi Silme (Anında)</h3>
+        <p><strong>Ayarlar &rarr; Gizlilik ve Veri &rarr; Hesabı Sil</strong> adımlarını takip edin. Onayladığınızda:</p>
+        <ol>
+          <li><strong>Tek Üyeli Gruplar:</strong> Tek üyesi olduğunuz gruplar, tüm harcamaları, mutabakatları ve davet kodlarıyla birlikte kalıcı olarak silinir.</li>
+          <li><strong>Çok Üyeli Gruplarda Sahiplik Devri:</strong> Başka üyeleri olan bir grubun sahibiyseniz, silme işleminden önce sahipliği bir arkadaşınıza devretmeniz istenir.</li>
+          <li><strong>Finansal Geçmişin Anonimleştirilmesi:</strong> Bulunduğunuz ortak gruplarda üye kaydınız anonimleştirilir; görünen adınız <code>"Deleted User"</code> (Silinmiş Kullanıcı) olarak değiştirilir ve ayrılma tarihi işlenir. Arkadaşlarınızın grup bakiyelerinin ve muhasebe toplamlarının bozulmaması için geçmiş harcama ve bölüşüm tutarları korunur.</li>
+          <li><strong>Kişisel Profilin Temizlenmesi:</strong> Kullanıcı dokümanınız (<code>users/{uid}</code>), alt koleksiyonlar ve Firebase Auth kimliğiniz derhal tamamen silinir.</li>
+        </ol>
+
+        <h3>Web Üzerinden Silme Talebi (Harici)</h3>
+        <p>Uygulamayı sildiyseniz veya cihazınıza erişiminiz yoksa, genel <a href="delete-account.html">Web Hesap Silme Portalı</a> üzerinden veya <a href="mailto:denk@omerfarukay.com">denk@omerfarukay.com</a> adresine e-posta göndererek hesap silme talebi iletebilirsiniz. Doğrulanan talepler en geç 30 gün içinde tamamlanır.</p>
+
+        <h2>8. Hukuki Sorumluluk Sınırı &amp; Geliştirici Güvencesi</h2>
+        <p>Denk, Geliştirici tarafından "olduğu gibi" (AS IS) ve "mevcut olduğu şekilde" (AS AVAILABLE) sağlanmaktadır. Denk bir finans, muhasebe veya vergi danışmanlığı hizmeti değildir. Kullanıcıların girdiği hatalı tutarlardan veya aralarındaki harcama anlaşmazlıklarından Geliştirici sorumlu tutulamaz.</p>
+
+        <h2>9. Kullanıcı Hakları (KVKK &amp; GDPR)</h2>
+        <p>Kişisel verilerinizle ilgili olarak erişim, düzeltme ve silinmesini talep etme haklarına sahipsiniz.</p>
+
+        <h2>10. İletişim Bilgileri</h2>
+        <p>Gizlilikle ilgili tüm sorularınız için:</p>
+        <p>
+          <strong>Geliştirici:</strong> Ömer Faruk Ay<br>
+          <strong>Resmi İletişim E-postası:</strong> <a href="mailto:denk@omerfarukay.com">denk@omerfarukay.com</a><br>
+          <strong>Uygulama:</strong> Denk Shared Expenses
+        </p>
+      </article>
+    </div>
+
+    <!-- 3. SPANISH CONTENT -->
+    <div id="content-es" class="lang-content" style="display: none;">
+      <section class="hero">
+        <span class="badge">Legal y Privacidad</span>
+        <h1 class="hero-title">Política de Privacidad</h1>
+        <p class="hero-meta">Fecha de entrada en vigor: 2 de octubre de 2026 &bull; Aplicación: Denk (iOS y Android) &bull; Desarrollador: Ömer Faruk Ay</p>
+      </section>
+
+      <article class="content-card prose">
+        <div class="callout callout-success">
+          <strong>Privacidad por Diseño:</strong> Denk está diseñado bajo el principio de minimización de datos. No requerimos correo electrónico, teléfono ni nombre real. No mostramos anuncios, no vendemos datos ni rastreamos su ubicación GPS.
+        </div>
+
+        <h2>1. Resumen y Filosofía Principal</h2>
+        <p>Denk ("nosotros", "la Aplicación") es una herramienta de registro de gastos compartidos y cálculo de saldos desarrollada por el desarrollador independiente Ömer Faruk Ay ("Desarrollador"). Solo recopilamos los datos técnicos mínimos necesarios para calcular balances con precisión y seguridad.</p>
+
+        <h2>2. Datos que Procesamos</h2>
+        <p>Almacenamos datos en Cloud Firestore de Google con reglas estrictas:</p>
+        <ul>
+          <li><strong>Identificador de Usuario (UID):</strong> Cadena anónima generada por Firebase Auth.</li>
+          <li><strong>Nombre visible:</strong> Apodo elegido por el usuario (editable en cualquier momento).</li>
+          <li><strong>Vinculación opcional:</strong> Respaldo voluntario mediante cuenta de Google o Apple ID.</li>
+          <li><strong>Grupos y Gastos:</strong> Títulos, importes monetarios enteros (céntimos), categorías y repartos entre miembros.</li>
+        </ul>
+
+        <h2>3. Lo que NO Recopilamos</h2>
+        <ul>
+          <li>Sin publicidad ni identificadores publicitarios (IDFA o GAID).</li>
+          <li>Sin rastreadores ni SDK de marketing de terceros.</li>
+          <li>Sin acceso a la agenda de contactos del dispositivo.</li>
+          <li>Sin acceso a la ubicación GPS.</li>
+        </ul>
+
+        <h2>4. Eliminación de Cuenta y Anonimización</h2>
+        <p>Puede eliminar su cuenta en cualquier momento desde <strong>Ajustes &rarr; Privacidad y Datos &rarr; Eliminar Cuenta</strong> o a través del <a href="delete-account.html">Portal Web de Eliminación</a>. Al eliminarla, sus datos personales se destruyen y su nombre en grupos compartidos se anonimiza como <code>"Deleted User"</code>, preservando los importes contables para no alterar los balances de los demás participantes.</p>
+
+        <h2>5. Contacto</h2>
+        <p>
+          <strong>Desarrollador:</strong> Ömer Faruk Ay<br>
+          <strong>Correo electrónico oficial:</strong> <a href="mailto:denk@omerfarukay.com">denk@omerfarukay.com</a>
+        </p>
+      </article>
+    </div>
+
+    <!-- 4. FRENCH CONTENT -->
+    <div id="content-fr" class="lang-content" style="display: none;">
+      <section class="hero">
+        <span class="badge">Mentions Légales &amp; Confidentialité</span>
+        <h1 class="hero-title">Politique de Confidentialité</h1>
+        <p class="hero-meta">Date d'effet : 2 octobre 2026 &bull; Application : Denk (iOS &amp; Android) &bull; Développeur : Ömer Faruk Ay</p>
+      </section>
+
+      <article class="content-card prose">
+        <div class="callout callout-success">
+          <strong>Confidentialité dès la conception :</strong> Denk repose sur une stricte minimisation des données. Aucun e-mail, numéro de téléphone ou mot de passe n'est requis. Zéro publicité, zéro traçage GPS et aucune vente de données.
+        </div>
+
+        <h2>1. Vue d'ensemble</h2>
+        <p>Denk est une application de calcul de dépenses partagées conçue par le développeur indépendant Ömer Faruk Ay. Notre principe fondamental est de ne collecter que les données techniques indispensables au calcul équitable des soldes.</p>
+
+        <h2>2. Données traitées</h2>
+        <ul>
+          <li><strong>Identifiant utilisateur (UID) :</strong> Clé anonyme Firebase sans identité réelle requise.</li>
+          <li><strong>Nom affiché :</strong> Pseudo librement choisi par l'utilisateur.</li>
+          <li><strong>Liaison optionnelle :</strong> Connexion avec Google ou Apple pour sauvegarder vos groupes sur un nouvel appareil.</li>
+          <li><strong>Dépenses et Soldes :</strong> Montants entiers (centimes), catégories, payeurs et répartitions.</li>
+        </ul>
+
+        <h2>3. Ce que nous ne collectons PAS</h2>
+        <ul>
+          <li>Aucune publicité ni identifiant publicitaire (IDFA/GAID).</li>
+          <li>Aucun traceur tiers ni pixel marketing.</li>
+          <li>Aucun accès au carnet de contacts.</li>
+          <li>Aucune géolocalisation GPS.</li>
+        </ul>
+
+        <h2>4. Suppression de compte et anonymisation</h2>
+        <p>Supprimez votre compte à tout moment depuis <strong>Paramètres &rarr; Confidentialité &amp; Données &rarr; Supprimer le compte</strong> ou via le <a href="delete-account.html">portail web</a>. Votre nom dans les groupes partagés devient <code>"Deleted User"</code> afin de préserver l'exactitude des calculs de vos pairs.</p>
+
+        <h2>5. Contact</h2>
+        <p>
+          <strong>Développeur :</strong> Ömer Faruk Ay<br>
+          <strong>E-mail officiel :</strong> <a href="mailto:denk@omerfarukay.com">denk@omerfarukay.com</a>
+        </p>
+      </article>
+    </div>
+
+    <!-- 5. ITALIAN CONTENT -->
+    <div id="content-it" class="lang-content" style="display: none;">
+      <section class="hero">
+        <span class="badge">Note Legali &amp; Privacy</span>
+        <h1 class="hero-title">Informativa sulla Privacy</h1>
+        <p class="hero-meta">Data di efficacia: 2 ottobre 2026 &bull; Applicazione: Denk (iOS &amp; Android) &bull; Sviluppatore: Ömer Faruk Ay</p>
+      </section>
+
+      <article class="content-card prose">
+        <div class="callout callout-success">
+          <strong>Privacy fin dalla progettazione:</strong> Denk applica una rigorosa minimizzazione dei dati. Non sono richiesti e-mail, telefono o password. Nessuna pubblicità, nessun tracciamento GPS e nessuna cessione di dati.
+        </div>
+
+        <h2>1. Panoramica</h2>
+        <p>Denk è un'applicazione per la suddivisione delle spese di gruppo sviluppata dallo sviluppatore indipendente Ömer Faruk Ay. Raccogliamo esclusivamente i dati tecnici minimi necessari per calcolare i saldi di gruppo in modo accurato e sicuro.</p>
+
+        <h2>2. Dati trattati</h2>
+        <ul>
+          <li><strong>Identificatore Utente (UID):</strong> Stringa anonima generata da Firebase Auth.</li>
+          <li><strong>Nome visualizzato:</strong> Pseudonimo scelto dall'utente, modificabile in qualsiasi momento.</li>
+          <li><strong>Collegamento facoltativo:</strong> Backup tramite account Google o Apple ID.</li>
+          <li><strong>Spese e Saldi:</strong> Importi monetari interi (centesimi), pagatori, quote e date.</li>
+        </ul>
+
+        <h2>3. Cosa NON raccogliamo</h2>
+        <ul>
+          <li>Nessuna pubblicità o identificatore pubblicitario (IDFA o GAID).</li>
+          <li>Nessun tracker di terze parti o SDK di marketing.</li>
+          <li>Nessun accesso alla rubrica dei contatti.</li>
+          <li>Nessuna localizzazione GPS.</li>
+        </ul>
+
+        <h2>4. Cancellazione dell'Account e Anonimizzazione</h2>
+        <p>Puoi cancellare il tuo account da <strong>Impostazioni &rarr; Privacy e Dati &rarr; Elimina Account</strong> o tramite il <a href="delete-account.html">portale web</a>. Il tuo profilo viene eliminato e il tuo nome nei gruppi condivisi viene sostituito con <code>"Deleted User"</code> per non alterare i saldi dei tuoi compagni.</p>
+
+        <h2>5. Contatti</h2>
+        <p>
+          <strong>Sviluppatore:</strong> Ömer Faruk Ay<br>
+          <strong>Email di contatto:</strong> <a href="mailto:denk@omerfarukay.com">denk@omerfarukay.com</a>
+        </p>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p id="foot-copy">&copy; 2026 Denk &bull; Developer: Ömer Faruk Ay</p>
+      <ul class="footer-links">
+        <li><a href="privacy.html" id="foot-privacy">Privacy Policy</a></li>
+        <li><a href="terms.html" id="foot-terms">Terms of Service</a></li>
+        <li><a href="delete-account.html" id="foot-delete">Delete Account</a></li>
+      </ul>
+    </div>
+  </footer>
+</body>
+</html>

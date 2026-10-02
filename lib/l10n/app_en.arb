@@ -267,5 +267,12 @@
   "transferOwnershipBody": "Select a member to become the new owner. You will remain a member of the group.",
   "transferOwnershipSuccess": "Ownership transferred successfully.",
   "deleteAccountReauthRequired": "Please sign in again to confirm account deletion.",
-  "deleteAccountProcessing": "Deleting account..."
+  "deleteAccountProcessing": "Deleting account...",
+  "privacyPolicyTitle": "Privacy Policy",
+  "termsOfServiceTitle": "Terms of Service",
+  "webAccountDeletionTitle": "Web Account Deletion",
+  "webAccountDeletionSubtitle": "Request account and data deletion via web if you no longer have access to the app.",
+  "errorOpeningUrl": "Could not open link.",
+  "legalSectionTitle": "Legal & Compliance",
+  "openAction": "Open"
 }
