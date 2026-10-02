@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart' show AuthProvider, AuthCredential;
+import 'package:firebase_auth/firebase_auth.dart' show AuthProvider, AuthCredential, FirebaseAuth;
 import 'package:denk/core/errors/app_exception.dart';
 import 'package:denk/features/auth/data/auth_repository.dart';
 import 'package:denk/features/auth/domain/user_profile.dart';
@@ -41,6 +41,9 @@ class UserProfileController extends AsyncNotifier<UserProfile?> {
       final docStream = FirebaseFirestore.instance.collection('users').doc(uid).snapshots();
       final sub = docStream.listen((snapshot) {
         if (!snapshot.exists && state.value != null) {
+          // Instantly kick the user out if their Firestore document is deleted.
+          // This usually happens when deleted from Firebase Auth via extensions.
+          FirebaseAuth.instance.signOut();
           ref.invalidateSelf();
         }
       });
@@ -48,7 +51,6 @@ class UserProfileController extends AsyncNotifier<UserProfile?> {
     }
 
     try {
-      await repo.ensureAnonymousUser();
       return await repo.fetchUserProfile();
     } catch (e) {
       debugPrint('UserProfileController build warning: $e');
@@ -70,7 +72,6 @@ class UserProfileController extends AsyncNotifier<UserProfile?> {
       );
     }
 
-    state = const AsyncValue.loading();
     try {
       final repo = ref.read(authRepositoryProvider);
       final uid = await repo.ensureAnonymousUser();

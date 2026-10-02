@@ -83,6 +83,7 @@ class DenkAuthGate extends ConsumerWidget {
     final profileAsync = ref.watch(userProfileControllerProvider);
 
     return profileAsync.when(
+      skipLoadingOnReload: true,
       data: (profile) {
         FlutterNativeSplash.remove();
         if (profile == null || profile.displayName.trim().isEmpty) {

@@ -179,7 +179,7 @@ void main() {
         expect(find.text('Settings'), findsOneWidget);
         expect(find.text('Ömer'), findsOneWidget);
         expect(find.text('Anonymous Firebase Account'), findsOneWidget);
-        expect(find.text('Copy ID'), findsOneWidget);
+        expect(find.byIcon(Icons.copy_rounded), findsOneWidget);
         expect(find.text('Language'), findsOneWidget);
         expect(find.text('Theme'), findsOneWidget);
         expect(find.text('Privacy Information'), findsOneWidget);

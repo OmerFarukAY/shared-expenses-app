@@ -88,13 +88,28 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   String? get currentEmail => _firebaseAuth.currentUser?.email;
 
+  bool _isEnsuringAuth = false;
+
   @override
   Future<String> ensureAnonymousUser() async {
+    while (_isEnsuringAuth) {
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+    _isEnsuringAuth = true;
     try {
-      final currentUser = _firebaseAuth.currentUser;
+      var currentUser = _firebaseAuth.currentUser;
       if (currentUser != null) {
-        return currentUser.uid;
+        try {
+          // Force token refresh to ensure the account hasn't been deleted on the backend.
+          await currentUser.getIdToken(true);
+          return currentUser.uid;
+        } catch (e) {
+          debugPrint('ensureAnonymousUser: existing session invalid, signing out. Error: $e');
+          await _firebaseAuth.signOut();
+          currentUser = null;
+        }
       }
+      
       final userCredential = await _firebaseAuth.signInAnonymously();
       final user = userCredential.user;
       if (user == null) {
@@ -108,6 +123,8 @@ class FirebaseAuthRepository implements AuthRepository {
       if (e is AppException) rethrow;
       debugPrint('ensureAnonymousUser error: $e');
       throw AppException.fromFirebase(e);
+    } finally {
+      _isEnsuringAuth = false;
     }
   }
 

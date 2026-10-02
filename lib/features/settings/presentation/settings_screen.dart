@@ -405,9 +405,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: children,
+                      child: Material(
+                        type: MaterialType.transparency,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: children,
+                        ),
                       ),
                     ),
                   ),
@@ -1431,79 +1434,86 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           const SizedBox(height: 12),
                           const Divider(height: 1),
                           const SizedBox(height: 4),
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            dense: true,
-                            leading: const Icon(
-                              Icons.description_outlined,
-                              size: 20,
-                              color: AppColors.primary500,
-                            ),
-                            title: Text(
-                              l10n?.privacyPolicyTitle ?? 'Privacy Policy',
-                              style: AppTypography.bodyMedium.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            trailing: const Icon(
-                              Icons.open_in_new_rounded,
-                              size: 18,
-                              color: AppColors.settled,
-                            ),
-                            onTap: () => _launchLegalUrl(LegalUrls.privacyPolicy),
-                          ),
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            dense: true,
-                            leading: const Icon(
-                              Icons.gavel_outlined,
-                              size: 20,
-                              color: AppColors.primary500,
-                            ),
-                            title: Text(
-                              l10n?.termsOfServiceTitle ?? 'Terms of Service',
-                              style: AppTypography.bodyMedium.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            trailing: const Icon(
-                              Icons.open_in_new_rounded,
-                              size: 18,
-                              color: AppColors.settled,
-                            ),
-                            onTap: () => _launchLegalUrl(LegalUrls.termsOfService),
-                          ),
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            dense: true,
-                            leading: const Icon(
-                              Icons.public_outlined,
-                              size: 20,
-                              color: AppColors.primary500,
-                            ),
-                            title: Text(
-                              l10n?.webAccountDeletionTitle ??
-                                  'Web Account Deletion',
-                              style: AppTypography.bodyMedium.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            subtitle: Text(
-                              l10n?.webAccountDeletionSubtitle ??
-                                  'Request account deletion via web if you no longer have access to the app.',
-                              style: AppTypography.caption.copyWith(
-                                color: theme.colorScheme.onSurface.withValues(
-                                  alpha: 0.6,
+                          Material(
+                            type: MaterialType.transparency,
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  dense: true,
+                                  leading: const Icon(
+                                    Icons.description_outlined,
+                                    size: 20,
+                                    color: AppColors.primary500,
+                                  ),
+                                  title: Text(
+                                    l10n?.privacyPolicyTitle ?? 'Privacy Policy',
+                                    style: AppTypography.bodyMedium.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  trailing: const Icon(
+                                    Icons.open_in_new_rounded,
+                                    size: 18,
+                                    color: AppColors.settled,
+                                  ),
+                                  onTap: () => _launchLegalUrl(LegalUrls.privacyPolicy),
                                 ),
-                              ),
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  dense: true,
+                                  leading: const Icon(
+                                    Icons.gavel_outlined,
+                                    size: 20,
+                                    color: AppColors.primary500,
+                                  ),
+                                  title: Text(
+                                    l10n?.termsOfServiceTitle ?? 'Terms of Service',
+                                    style: AppTypography.bodyMedium.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  trailing: const Icon(
+                                    Icons.open_in_new_rounded,
+                                    size: 18,
+                                    color: AppColors.settled,
+                                  ),
+                                  onTap: () => _launchLegalUrl(LegalUrls.termsOfService),
+                                ),
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  dense: true,
+                                  leading: const Icon(
+                                    Icons.public_outlined,
+                                    size: 20,
+                                    color: AppColors.primary500,
+                                  ),
+                                  title: Text(
+                                    l10n?.webAccountDeletionTitle ??
+                                        'Web Account Deletion',
+                                    style: AppTypography.bodyMedium.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    l10n?.webAccountDeletionSubtitle ??
+                                        'Request account deletion via web if you no longer have access to the app.',
+                                    style: AppTypography.caption.copyWith(
+                                      color: theme.colorScheme.onSurface.withValues(
+                                        alpha: 0.6,
+                                      ),
+                                    ),
+                                  ),
+                                  trailing: const Icon(
+                                    Icons.open_in_new_rounded,
+                                    size: 18,
+                                    color: AppColors.settled,
+                                  ),
+                                  onTap: () =>
+                                      _launchLegalUrl(LegalUrls.accountDeletion),
+                                ),
+                              ],
                             ),
-                            trailing: const Icon(
-                              Icons.open_in_new_rounded,
-                              size: 18,
-                              color: AppColors.settled,
-                            ),
-                            onTap: () =>
-                                _launchLegalUrl(LegalUrls.accountDeletion),
                           ),
                         ],
                       ),

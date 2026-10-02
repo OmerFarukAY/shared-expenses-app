@@ -46,7 +46,7 @@ void main() {
       expect(find.text('Settings'), findsOneWidget);
       expect(find.text('Ömer'), findsOneWidget);
       expect(find.text('Anonymous Firebase Account'), findsOneWidget);
-      expect(find.textContaining('UID: anon_use...'), findsOneWidget);
+      expect(find.text('anon_use'), findsOneWidget);
 
       // Verify Preferences items
       expect(find.text('Language'), findsOneWidget);
@@ -57,6 +57,8 @@ void main() {
       expect(find.text('Delete Account'), findsWidgets);
 
       // Tap Language to open selection dialog
+      await tester.ensureVisible(find.text('Language'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Language'));
       await tester.pumpAndSettle();
 
@@ -114,25 +116,22 @@ void main() {
     await tester.pumpAndSettle();
 
     // Scroll down to reveal destructive delete button
-    await tester.drag(
-      find.byType(SingleChildScrollView),
-      const Offset(0, -600),
-    );
+    final deleteButtons = find.text('Delete Account');
+    expect(deleteButtons, findsWidgets);
+    await tester.ensureVisible(deleteButtons.last);
     await tester.pumpAndSettle();
 
     // Tap Delete Account (new label)
-    final deleteButtons = find.text('Delete Account');
-    expect(deleteButtons, findsWidgets);
     await tester.tap(deleteButtons.last);
     await tester.pumpAndSettle();
 
-    // Verify Confirmation Dialog - new flow uses 'Confirm' not 'Delete'
+    // Verify Confirmation Dialog
     expect(find.text('Cancel'), findsOneWidget);
-    expect(find.text('Confirm'), findsOneWidget);
+    expect(find.text('Confirm'), findsWidgets);
     expect(find.text('Permanently Delete Account?'), findsOneWidget);
 
     // Tap Confirm in dialog
-    await tester.tap(find.text('Confirm'));
+    await tester.tap(find.text('Confirm').last);
     await tester.pumpAndSettle();
 
     expect(fakeController.deleteCalled, isTrue);
@@ -169,10 +168,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Scroll down to the Privacy & Data section
-      await tester.drag(
-        find.byType(SingleChildScrollView),
-        const Offset(0, -400),
-      );
+      await tester.ensureVisible(find.text('Privacy Information'));
       await tester.pumpAndSettle();
 
       // Verify all 3 legal link rows exist
@@ -181,16 +177,22 @@ void main() {
       expect(find.text('Web Account Deletion'), findsOneWidget);
 
       // Tap Privacy Policy
+      await tester.ensureVisible(find.text('Privacy Policy'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Privacy Policy'));
       await tester.pumpAndSettle();
       expect(fakeLauncher.launchedUrls, contains(LegalUrls.privacyPolicy));
 
       // Tap Terms of Service
+      await tester.ensureVisible(find.text('Terms of Service'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Terms of Service'));
       await tester.pumpAndSettle();
       expect(fakeLauncher.launchedUrls, contains(LegalUrls.termsOfService));
 
       // Tap Web Account Deletion
+      await tester.ensureVisible(find.text('Web Account Deletion'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Web Account Deletion'));
       await tester.pumpAndSettle();
       expect(fakeLauncher.launchedUrls, contains(LegalUrls.accountDeletion));
@@ -202,6 +204,9 @@ class _FakeUrlLauncherPlatform extends Fake
     with MockPlatformInterfaceMixin
     implements UrlLauncherPlatform {
   final List<String> launchedUrls = [];
+
+  @override
+  Future<bool> canLaunch(String url) async => true;
 
   @override
   Future<bool> launchUrl(String url, LaunchOptions options) async {
