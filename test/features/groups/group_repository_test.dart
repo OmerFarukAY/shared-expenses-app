@@ -464,5 +464,99 @@ void main() {
       final inviteDoc = await fakeFirestore.collection('invites').doc(group.inviteCode).get();
       expect(inviteDoc.exists, isFalse);
     });
+
+    group('watchUserGroups (Optimized Reads & In-Memory Cache)', () {
+      test('denormalized user_groups allows reading group without fetching /groups doc', () async {
+        final group = await repository.createGroup(
+          name: 'Fast Group',
+          defaultCurrency: 'USD',
+          creator: creator,
+        );
+
+        // Verify denormalized fields in user_groups
+        final userGroupDoc = await fakeFirestore
+            .collection('users')
+            .doc(creator.uid)
+            .collection('user_groups')
+            .doc(group.id)
+            .get();
+        expect(userGroupDoc.data()?['name'], 'Fast Group');
+        expect(userGroupDoc.data()?['defaultCurrency'], 'USD');
+
+        // Intentionally delete the /groups doc to prove watchUserGroups does NOT read /groups
+        await fakeFirestore.collection('groups').doc(group.id).delete();
+        repository.clearCache();
+
+        final groups = await repository.watchUserGroups(creator.uid).first;
+        expect(groups.length, 1);
+        expect(groups.first.id, group.id);
+        expect(groups.first.name, 'Fast Group');
+        expect(groups.first.defaultCurrency, 'USD');
+      });
+
+      test('populates cache and serves subsequent requests from cache', () async {
+        repository.clearCache();
+        final group = await repository.createGroup(
+          name: 'Cached Group',
+          defaultCurrency: 'EUR',
+          creator: creator,
+        );
+
+        expect(repository.groupCache.containsKey(group.id), isTrue);
+        expect(repository.groupCache[group.id]?.name, 'Cached Group');
+
+        final groups = await repository.watchUserGroups(creator.uid).first;
+        expect(groups.length, 1);
+        expect(groups.first.name, 'Cached Group');
+      });
+
+      test('legacy records without denormalized fields fallback to parallel read and populate cache', () async {
+        repository.clearCache();
+        const legacyGroupId = 'legacy_group_123';
+
+        // 1. Write legacy group doc in /groups
+        await fakeFirestore.collection('groups').doc(legacyGroupId).set({
+          'id': legacyGroupId,
+          'name': 'Legacy Trip',
+          'defaultCurrency': 'GBP',
+          'inviteCode': 'DNK-LEGACY',
+          'createdBy': creator.uid,
+          'createdAt': DateTime.now(),
+          'updatedAt': DateTime.now(),
+          'memberCount': 1,
+          'memberUids': [creator.uid],
+          'active': true,
+        });
+
+        // 2. Write minimal legacy user_group doc (only groupId & joinedAt)
+        await fakeFirestore
+            .collection('users')
+            .doc(creator.uid)
+            .collection('user_groups')
+            .doc(legacyGroupId)
+            .set({
+              'groupId': legacyGroupId,
+              'joinedAt': DateTime.now(),
+            });
+
+        final groups = await repository.watchUserGroups(creator.uid).first;
+        expect(groups.any((g) => g.id == legacyGroupId && g.name == 'Legacy Trip'), isTrue);
+        expect(repository.groupCache.containsKey(legacyGroupId), isTrue);
+      });
+
+      test('deleteGroup and leaveGroup evict group from cache', () async {
+        final group = await repository.createGroup(
+          name: 'Eviction Group',
+          defaultCurrency: 'TRY',
+          creator: creator,
+        );
+
+        expect(repository.groupCache.containsKey(group.id), isTrue);
+
+        await repository.deleteGroup(group.id);
+        expect(repository.groupCache.containsKey(group.id), isFalse);
+      });
+    });
   });
 }
+

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'package:denk/core/constants/currencies.dart';
 import 'package:denk/core/theme/app_colors.dart';
+import 'package:denk/core/theme/app_haptics.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
 import 'package:native_liquid_glass/native_liquid_glass.dart';
@@ -123,6 +124,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
             .read(settlementControllerProvider.notifier)
             .recordSettlement(record);
         if (mounted) {
+          AppHaptics.medium();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -928,6 +930,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                                   ),
                                                 );
                                                 if (confirmed != true) return;
+                                                AppHaptics.heavy();
                                                 await repo.removeMember(groupId: widget.group.id, uid: member.uid);
                                               } else if (value == 'leave') {
                                                 if (!GroupBalanceCalculator.canMemberLeave(uid: member.uid, expenses: expenses, members: members, defaultCurrency: widget.group.defaultCurrency, settlements: settlements)) {
@@ -959,6 +962,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                                   ),
                                                 );
                                                 if (confirmed != true) return;
+                                                AppHaptics.heavy();
                                                 await repo.leaveGroup(groupId: widget.group.id, uid: member.uid);
                                                 if (context.mounted) Navigator.of(context).pop();
                                               } else if (value == 'delete_group') {
@@ -987,6 +991,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                                   ),
                                                 );
                                                 if (confirmed != true) return;
+                                                AppHaptics.heavy();
                                                 await repo.deleteGroup(widget.group.id);
                                                 ref.read(selectedGroupIdProvider.notifier).state = null;
                                                 if (context.mounted) Navigator.of(context).pop();

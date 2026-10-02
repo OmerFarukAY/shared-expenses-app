@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:denk/core/constants/currencies.dart';
 import 'package:denk/core/theme/app_colors.dart';
+import 'package:denk/core/theme/app_haptics.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
@@ -334,6 +335,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         await ref.read(expenseControllerProvider.notifier).addExpense(expense);
       }
       if (mounted) {
+        AppHaptics.medium();
         if (removedCount > 0) {
            ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(l10n?.expenseZeroShareRemoved(removedCount) ?? '$removedCount participant(s) with 0 share removed.')),
@@ -577,6 +579,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                             .toList(),
                         onChanged: (val) {
                           if (val != null) {
+                            AppHaptics.selection();
                             setState(() => _currency = val);
                           }
                         },
@@ -646,7 +649,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                     final cat = ExpenseCategory.values[idx];
                     final isSelected = cat == _category;
                     return InkWell(
-                      onTap: () => setState(() => _category = cat),
+                      onTap: () {
+                        AppHaptics.selection();
+                        setState(() => _category = cat);
+                      },
                       borderRadius: BorderRadius.circular(20),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 150),

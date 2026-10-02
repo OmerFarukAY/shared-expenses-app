@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:denk/app.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
@@ -28,6 +29,20 @@ void main() async {
           ? const AndroidDebugProvider()
           : const AndroidPlayIntegrityProvider(),
     );
+
+    // Firebase Crashlytics initialization:
+    // 1. Pass all uncaught framework errors to Crashlytics
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+
+    // 2. Pass uncaught asynchronous errors to Crashlytics
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+
+    // 3. Disable telemetry in debug mode; collect only fatal/critical errors in release
+    await FirebaseCrashlytics.instance
+        .setCrashlyticsCollectionEnabled(!kDebugMode);
   } catch (e) {
     debugPrint('Firebase initialization notice: $e');
     FlutterNativeSplash.remove();

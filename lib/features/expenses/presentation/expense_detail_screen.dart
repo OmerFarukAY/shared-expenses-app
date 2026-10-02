@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:denk/core/constants/currencies.dart';
 import 'package:denk/core/theme/app_colors.dart';
+import 'package:denk/core/theme/app_haptics.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
@@ -65,6 +66,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
     );
 
     if (confirm == true && mounted) {
+      AppHaptics.heavy();
       setState(() => _isDeleting = true);
       try {
         await ref

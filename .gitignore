@@ -68,3 +68,6 @@ android/app/google-services.json
 *.keystore
 **/key.properties
 **/android/key.properties
+.kotlin/
+android/.kotlin/
+

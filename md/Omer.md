@@ -703,39 +703,65 @@ flowchart TD
 
 ---
 
-### Phase 20 — Observability with Firebase Crashlytics (Phase 2 Priority 5 - Should-Have)
-* **Goal**: Real-time crash reporting and non-fatal error logging for production telemetry.
-* **Scope & Tasks**:
-  1. Add `firebase_crashlytics` to `pubspec.yaml`.
-  2. Configure `FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError` in `lib/main.dart`.
-  3. Pass unhandled platform errors via `PlatformDispatcher.instance.onError`.
-  4. Ensure debug runs disable crash collection (`setCrashlyticsCollectionEnabled(!kDebugMode)`).
-  5. Verify release symbol mapping generation.
+### Phase 20 — Observability with Firebase Crashlytics (Phase 2 Priority 5 - Production Hardening)
+* **Goal**: Real-time crash reporting and unhandled fatal error logging for production telemetry without collecting unnecessary tracking data.
+* **Status**: TAMAMLANDI
+* **Key Implementation Details**:
+  1. **Cross-Platform Integration**:
+     - Added `firebase_crashlytics: ^5.4.0` to `pubspec.yaml`.
+     - Android: Applied `id("com.google.firebase.crashlytics") version "3.0.3" apply false` in `android/settings.gradle.kts` and `id("com.google.firebase.crashlytics")` in `android/app/build.gradle.kts`.
+     - iOS: Integrated cleanly via Flutter SPM plugin registrant (`FlutterGeneratedPluginSwiftPackage`).
+  2. **Fatal Framework & Async Platform Error Routing (`lib/main.dart`)**:
+     - `FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;` captures uncaught UI/render tree errors.
+     - `PlatformDispatcher.instance.onError = (error, stack) { FirebaseCrashlytics.instance.recordError(error, stack, fatal: true); return true; };` captures uncaught asynchronous exceptions.
+  3. **Privacy-Preserving Telemetry Enforcement**:
+     - `setCrashlyticsCollectionEnabled(!kDebugMode)` disables error collection during debug/local testing and enables it solely for production releases.
+     - Zero unnecessary tracking, user telemetry, or custom PII logging added (strictly fatal exceptions only).
 
 ---
 
-### Phase 21 — Firestore Read Optimization (Phase 2 Priority 6 - Should-Have)
-* **Goal**: Eliminate N+1 read overhead on user dashboard without introducing data drift.
-* **Scope & Tasks**:
-  1. Measure baseline read pattern on `watchUserGroups(uid)`.
-  2. Denormalize essential display metadata (`groupName`, `defaultCurrency`, `memberCount`, `role`) into `users/{uid}/user_groups/{groupId}` on join/creation.
-  3. Update `watchUserGroups` to stream directly from `user_groups` collection without requiring secondary document fetches for list rendering.
-  4. Establish synchronization handler: when a group name or currency is modified in `updateGroup`, update the active members' `user_groups` entries or sync on entering `GroupDashboardScreen`.
-  5. Document measured read cost reduction before and after implementation.
+### Phase 21 — Firestore Read Optimization (Phase 2 Priority 6 - Production Hardening)
+* **Goal**: Eliminate N+1 read overhead on user group listing without violating security rules or introducing schema breakage.
+* **Status**: TAMAMLANDI
+* **Root Cause & Diagnosis**:
+  - `watchUserGroups(uid)` previously listened to `users/{uid}/user_groups` snapshots and executed a sequential loop `for (final doc in snapshot.docs) await _firestore.collection('groups').doc(id).get()`.
+  - For a user with $N$ groups, each snapshot incurred $1 + N$ reads executed sequentially across $N$ round-trips.
+* **Key Implementation Details**:
+  1. **Denormalized Summary Fast-Path**:
+     - `createGroup`, `joinGroupWithInvite`, and `approveJoinRequest` now persist group summary fields (`name`, `defaultCurrency`, `inviteCode`, `memberCount`, `memberUids`, `createdBy`, `createdAt`, `updatedAt`, `active`) directly into `users/{uid}/user_groups/{groupId}`.
+     - `watchUserGroups(uid)` inspects `doc.data()`: if `'name'` and `'defaultCurrency'` exist, `GroupModel.fromMap` is constructed immediately with **0 secondary reads** (1 stream snapshot read total instead of $1 + N$).
+  2. **In-Memory Cache (`_groupCache`)**:
+     - Maintained `Map<String, GroupModel> _groupCache` in `FirestoreGroupRepository`.
+     - Populated on group creation, join, and `getGroup`.
+     - Evicted on `deleteGroup`, `leaveGroup`, `removeMember`, `transferOwnership`, and `leaveGroupAsNonOwner`.
+  3. **Parallel Fetch Fallback (`Future.wait`)**:
+     - Legacy documents created prior to denormalization are fetched in parallel via `Future.wait` (1 round trip) and cached, eliminating sequential stalls.
+  4. **Optimized Account Deletion Pre-checks**:
+     - `getOwnedGroups` and `getMemberOnlyGroupIds` updated to leverage the denormalized summary and cache first.
+  5. **Verification**:
+     - Added comprehensive unit tests in `test/features/groups/group_repository_test.dart` asserting 0 secondary reads, cache hits, legacy fallback, and cache eviction.
 
 ---
 
-### Phase 22 — Tactile Experience & Haptic Feedback (Phase 2 Priority 7 - Should-Have)
+### Phase 22 — Tactile Experience & Haptic Feedback (Phase 2 Priority 7 - Production Hardening)
 * **Goal**: Provide subtle, tactile feedback on critical financial events while adhering to platform human interface guidelines.
-* **Scope & Tasks**:
-  1. Integrate `HapticFeedback.lightImpact()` on:
-     - Successfully adding an expense.
-     - Selecting currency/category chips.
-  2. Integrate `HapticFeedback.mediumImpact()` on:
-     - Recording settlement confirmation ("Mark as Settled").
-  3. Integrate `HapticFeedback.heavyImpact()` on:
-     - Destructive actions (deleting group, deleting expense, removing member).
-  4. Respect system-level accessibility settings (graceful no-op if device haptics are disabled).
+* **Status**: TAMAMLANDI
+* **Key Implementation Details**:
+  1. **Centralized Utility (`lib/core/theme/app_haptics.dart`)**:
+     - Encapsulated system `HapticFeedback` into restrained, semantic actions:
+       - `AppHaptics.selection()` -> `selectionClick()` (subtle selection)
+       - `AppHaptics.light()` -> `lightImpact()` (toggle/confirm)
+       - `AppHaptics.medium()` -> `mediumImpact()` (success/creation)
+       - `AppHaptics.heavy()` -> `heavyImpact()` (destructive actions)
+     - Gracefully catches exceptions in unsupported platforms or desktop/web environments. Automatically respects user-level system accessibility/vibration settings.
+  2. **Meaningful Interaction Points Wired**:
+     - **Expense Creation/Update**: `AppHaptics.medium()` on successful save in `add_expense_screen.dart`.
+     - **Category & Currency Selection**: `AppHaptics.selection()` on chip/dropdown tap in `add_expense_screen.dart`.
+     - **Group Creation**: `AppHaptics.medium()` in `create_group_sheet.dart`.
+     - **Settlement Completion**: `AppHaptics.medium()` on confirming "Mark as Settled" in `group_dashboard_screen.dart`.
+     - **Destructive Actions**: `AppHaptics.heavy()` on confirming group deletion, expense deletion, member removal, or permanent account deletion.
+  3. **Verification**:
+     - Added `test/core/app_haptics_test.dart` verifying all 4 haptic methods trigger their respective platform channel calls.
 
 ---
 

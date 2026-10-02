@@ -76,6 +76,13 @@ abstract class GroupRepository {
 class FirestoreGroupRepository implements GroupRepository {
   final FirebaseFirestore _firestore;
   static const _uuid = Uuid();
+  final Map<String, GroupModel> _groupCache = {};
+
+  @visibleForTesting
+  Map<String, GroupModel> get groupCache => _groupCache;
+
+  @visibleForTesting
+  void clearCache() => _groupCache.clear();
 
   FirestoreGroupRepository({FirebaseFirestore? firestore})
     : _firestore = firestore ?? FirebaseFirestore.instance;
@@ -88,18 +95,39 @@ class FirestoreGroupRepository implements GroupRepository {
         .collection('user_groups')
         .snapshots()
         .asyncMap((snapshot) async {
-          final List<GroupModel> groups = [];
-          for (final doc in snapshot.docs) {
+          if (snapshot.docs.isEmpty) return const <GroupModel>[];
+
+          final groupFutures = snapshot.docs.map((doc) async {
+            final data = doc.data();
             final groupId = doc.id;
+
+            // 1. Fast path: Document contains denormalized summary (0 secondary reads)
+            if (data.containsKey('name') && data.containsKey('defaultCurrency')) {
+              final model = GroupModel.fromMap(data, groupId);
+              _groupCache[groupId] = model;
+              return model;
+            }
+
+            // 2. Cache hit: In-memory cache already holds the latest model (0 secondary reads)
+            if (_groupCache.containsKey(groupId)) {
+              return _groupCache[groupId]!;
+            }
+
+            // 3. Fallback: Parallel fetch for legacy documents without denormalization
             final groupDoc = await _firestore
                 .collection('groups')
                 .doc(groupId)
                 .get();
             if (groupDoc.exists && groupDoc.data() != null) {
-              groups.add(GroupModel.fromMap(groupDoc.data()!, groupDoc.id));
+              final model = GroupModel.fromMap(groupDoc.data()!, groupDoc.id);
+              _groupCache[groupId] = model;
+              return model;
             }
-          }
-          return groups;
+            return null;
+          });
+
+          final results = await Future.wait(groupFutures);
+          return results.whereType<GroupModel>().toList();
         });
   }
 
@@ -108,7 +136,9 @@ class FirestoreGroupRepository implements GroupRepository {
     try {
       final doc = await _firestore.collection('groups').doc(groupId).get();
       if (!doc.exists || doc.data() == null) return null;
-      return GroupModel.fromMap(doc.data()!, doc.id);
+      final model = GroupModel.fromMap(doc.data()!, doc.id);
+      _groupCache[groupId] = model;
+      return model;
     } catch (e) {
       throw AppException.fromFirebase(e);
     }
@@ -178,13 +208,14 @@ class FirestoreGroupRepository implements GroupRepository {
       final memberRef = groupRef.collection('members').doc(creator.uid);
       batch.set(memberRef, creatorMember.toMap());
 
-      // 3. Link group in user's user_groups subcollection
+      // 3. Link group in user's user_groups subcollection with denormalized summary
       final userGroupRef = _firestore
           .collection('users')
           .doc(creator.uid)
           .collection('user_groups')
           .doc(groupId);
       batch.set(userGroupRef, {
+        ...newGroup.toMap(),
         'groupId': groupId,
         'joinedAt': Timestamp.fromDate(now),
       });
@@ -202,6 +233,7 @@ class FirestoreGroupRepository implements GroupRepository {
       });
 
       await batch.commit();
+      _groupCache[newGroup.id] = newGroup;
       return newGroup;
     } catch (e) {
       throw AppException.fromFirebase(e);
@@ -299,13 +331,20 @@ class FirestoreGroupRepository implements GroupRepository {
       // 1. Add member record
       batch.set(memberRef, newMember.toMap());
 
-      // 2. Add to user's user_groups
+      final updatedGroupModel = group.copyWith(
+        memberCount: group.memberCount + 1,
+        memberUids: [...group.memberUids, user.uid],
+        updatedAt: now,
+      );
+
+      // 2. Add to user's user_groups with denormalized summary
       final userGroupRef = _firestore
           .collection('users')
           .doc(user.uid)
           .collection('user_groups')
           .doc(group.id);
       batch.set(userGroupRef, {
+        ...updatedGroupModel.toMap(),
         'groupId': group.id,
         'joinedAt': Timestamp.fromDate(now),
       });
@@ -319,6 +358,7 @@ class FirestoreGroupRepository implements GroupRepository {
       });
 
       await batch.commit();
+      _groupCache[group.id] = updatedGroupModel;
     } catch (e) {
       throw AppException.fromFirebase(e);
     }
@@ -478,14 +518,28 @@ class FirestoreGroupRepository implements GroupRepository {
         'updatedAt': Timestamp.fromDate(now),
       });
 
-      // 4. Update user's user_groups/{groupId}
+      // Fetch current group data to denormalize into user's user_groups
+      final groupDoc = await _firestore.collection('groups').doc(groupId).get();
+      final groupData = groupDoc.data() ?? {};
+      final existingUids = (groupData['memberUids'] as List<dynamic>? ?? [])
+          .map((e) => e.toString())
+          .toList();
+      final updatedUids = [...existingUids, request.uid];
+      final currentCount = (groupData['memberCount'] as num?)?.toInt() ?? updatedUids.length;
+
+      // 4. Update user's user_groups/{groupId} with denormalized summary
       final userGroupRef = _firestore
           .collection('users')
           .doc(request.uid)
           .collection('user_groups')
           .doc(groupId);
       batch.set(userGroupRef, {
+        ...groupData,
+        'id': groupId,
         'groupId': groupId,
+        'memberCount': currentCount + 1,
+        'memberUids': updatedUids,
+        'updatedAt': Timestamp.fromDate(now),
         'joinedAt': Timestamp.fromDate(now),
       });
 
@@ -503,6 +557,7 @@ class FirestoreGroupRepository implements GroupRepository {
       });
 
       await batch.commit();
+      _groupCache.remove(groupId);
     } catch (e) {
       throw AppException.fromFirebase(e);
     }
@@ -624,6 +679,7 @@ class FirestoreGroupRepository implements GroupRepository {
       });
 
       await batch.commit();
+      _groupCache.remove(groupId);
     } catch (e) {
       throw AppException.fromFirebase(e);
     }
@@ -664,6 +720,7 @@ class FirestoreGroupRepository implements GroupRepository {
       });
 
       await batch.commit();
+      _groupCache.remove(groupId);
     } catch (e) {
       throw AppException.fromFirebase(e);
     }
@@ -747,6 +804,7 @@ class FirestoreGroupRepository implements GroupRepository {
 
       // Finally delete the group document itself
       await groupRef.delete();
+      _groupCache.remove(groupId);
     } catch (e) {
       throw AppException.fromFirebase(e);
     }
@@ -762,9 +820,26 @@ class FirestoreGroupRepository implements GroupRepository {
           .get();
       final List<GroupModel> result = [];
       for (final doc in userGroupsSnap.docs) {
+        final data = doc.data();
+        if (data.containsKey('name') && data.containsKey('defaultCurrency')) {
+          final group = GroupModel.fromMap(data, doc.id);
+          _groupCache[doc.id] = group;
+          if (group.createdBy == uid) {
+            result.add(group);
+          }
+          continue;
+        }
+        if (_groupCache.containsKey(doc.id)) {
+          final group = _groupCache[doc.id]!;
+          if (group.createdBy == uid) {
+            result.add(group);
+          }
+          continue;
+        }
         final groupDoc = await _firestore.collection('groups').doc(doc.id).get();
         if (groupDoc.exists && groupDoc.data() != null) {
           final group = GroupModel.fromMap(groupDoc.data()!, groupDoc.id);
+          _groupCache[doc.id] = group;
           if (group.createdBy == uid) {
             result.add(group);
           }
@@ -786,9 +861,26 @@ class FirestoreGroupRepository implements GroupRepository {
           .get();
       final List<String> result = [];
       for (final doc in userGroupsSnap.docs) {
+        final data = doc.data();
+        if (data.containsKey('name') && data.containsKey('defaultCurrency')) {
+          final group = GroupModel.fromMap(data, doc.id);
+          _groupCache[doc.id] = group;
+          if (group.createdBy != uid) {
+            result.add(group.id);
+          }
+          continue;
+        }
+        if (_groupCache.containsKey(doc.id)) {
+          final group = _groupCache[doc.id]!;
+          if (group.createdBy != uid) {
+            result.add(group.id);
+          }
+          continue;
+        }
         final groupDoc = await _firestore.collection('groups').doc(doc.id).get();
         if (groupDoc.exists && groupDoc.data() != null) {
           final group = GroupModel.fromMap(groupDoc.data()!, groupDoc.id);
+          _groupCache[doc.id] = group;
           if (group.createdBy != uid) {
             result.add(group.id);
           }
@@ -833,6 +925,7 @@ class FirestoreGroupRepository implements GroupRepository {
       });
 
       await batch.commit();
+      _groupCache.remove(groupId);
     } catch (e) {
       throw AppException.fromFirebase(e);
     }
@@ -891,6 +984,7 @@ class FirestoreGroupRepository implements GroupRepository {
       });
 
       await batch.commit();
+      _groupCache.remove(groupId);
     } catch (e) {
       throw AppException.fromFirebase(e);
     }

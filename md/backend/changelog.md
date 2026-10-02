@@ -1,5 +1,44 @@
 # Backend & Security Changelog
 
+## [Phase 20-22] - Production Hardening (Crashlytics, Firestore Read Optimization, Haptics)
+**Status:** TAMAMLANDI
+**Date:** 2026-10-02
+
+### 1. Firebase Crashlytics Cross-Platform Integration (Phase 20)
+- Added `firebase_crashlytics: ^5.4.0` dependency.
+- Android: Added Gradle plugin `com.google.firebase.crashlytics` (`3.0.3`) in `android/settings.gradle.kts` and `android/app/build.gradle.kts`.
+- iOS: Registered plugin via Swift Package Manager (`FlutterGeneratedPluginSwiftPackage`).
+- Initialized in `lib/main.dart`:
+  - `FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;` (uncaught UI/render tree exceptions).
+  - `PlatformDispatcher.instance.onError = (error, stack) { FirebaseCrashlytics.instance.recordError(error, stack, fatal: true); return true; };` (uncaught asynchronous errors).
+  - Enforced zero-telemetry policy: `setCrashlyticsCollectionEnabled(!kDebugMode)` disables local/debug collection, enabling crash capture strictly for production release builds. No user tracking or non-fatal analytics collected.
+
+### 2. Firestore Read Optimization & N+1 Read Elimination (Phase 21)
+- Root Cause: `watchUserGroups(uid)` previously iterated sequentially through `users/{uid}/user_groups` snapshots, performing $N$ sequential round-trip `get()` reads to `/groups/{groupId}` ($1 + N$ reads per snapshot).
+- Solution:
+  - **Denormalized Summary**: `createGroup`, `joinGroupWithInvite`, and `approveJoinRequest` write essential group display fields (`name`, `defaultCurrency`, `inviteCode`, `memberCount`, `memberUids`, `createdBy`, `createdAt`, `updatedAt`, `active`) into `users/{uid}/user_groups/{groupId}`.
+  - **Fast-Path**: If `doc.data()` contains `name` and `defaultCurrency`, `GroupModel.fromMap` is constructed immediately with **0 secondary reads** (reducing read amplification from $1 + N$ to 1).
+  - **In-Memory Cache**: `FirestoreGroupRepository` maintains `_groupCache` populated on create/join/get, and cleanly evicted on `deleteGroup`, `leaveGroup`, `removeMember`, `transferOwnership`, and `leaveGroupAsNonOwner`.
+  - **Parallel Read Fallback**: For legacy records without denormalized summaries, fetches execute in parallel via `Future.wait` (1 round trip instead of $N$).
+  - **Pre-check Optimization**: `getOwnedGroups` and `getMemberOnlyGroupIds` updated to leverage denormalized data and cache first.
+- Verification: Added 4 unit tests in `test/features/groups/group_repository_test.dart` verifying 0 secondary reads, cache hit behavior, legacy fallback, and cache eviction.
+
+### 3. Restrained Haptic Feedback Architecture (Phase 22)
+- Created centralized utility `lib/core/theme/app_haptics.dart` with 4 semantic methods:
+  - `AppHaptics.selection()` -> `selectionClick()` (subtle chip/currency picker taps)
+  - `AppHaptics.light()` -> `lightImpact()` (toggles, non-blocking confirmations)
+  - `AppHaptics.medium()` -> `mediumImpact()` (positive actions: expense saved, settlement recorded, group created)
+  - `AppHaptics.heavy()` -> `heavyImpact()` (destructive actions: delete expense, delete group, leave group, remove member, delete account)
+- Platform & Accessibility: Automatically respects iOS and Android system-level vibration/haptics toggle; gracefully handles unsupported platforms.
+- Verification: Added `test/core/app_haptics_test.dart` asserting proper platform channel calls.
+
+### 4. Quality Gates & Release Verification
+- `flutter analyze`: **0 issues found**.
+- `flutter test`: **127 / 127 tests passing**.
+- Android Release Build: `flutter build appbundle --release` compiling clean AAB with Crashlytics and ProGuard rules.
+
+---
+
 ## [Phase 19] - Android Production Signing & Release Build
 **Status:** TAMAMLANDI
 **Date:** 2026-10-02

@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart'
     show GoogleAuthProvider, AppleAuthProvider;
 import 'package:denk/core/errors/app_exception.dart';
 import 'package:denk/core/theme/app_colors.dart';
+import 'package:denk/core/theme/app_haptics.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/auth/domain/account_deletion_service.dart';
@@ -570,6 +571,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
 
     if (initialConfirm != true || !mounted) return;
+    AppHaptics.heavy();
 
     // Step 2: Check for ownership blocks
     List<OwnedGroupBlock> blocks;

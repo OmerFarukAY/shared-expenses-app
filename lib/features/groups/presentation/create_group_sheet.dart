@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:denk/core/constants/currencies.dart';
+import 'package:denk/core/theme/app_haptics.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
@@ -75,6 +76,7 @@ class _CreateGroupSheetState extends ConsumerState<CreateGroupSheet> {
       );
 
       ref.read(selectedGroupIdProvider.notifier).state = newGroup.id;
+      AppHaptics.medium();
 
       if (mounted) {
         Navigator.of(context).pop();
