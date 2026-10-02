@@ -32,6 +32,8 @@ final linkedProvidersProvider = StreamProvider<List<String>>((ref) {
 
 /// Async state controller for the user's minimal profile.
 class UserProfileController extends AsyncNotifier<UserProfile?> {
+  bool _isDeletingFullAccount = false;
+
   @override
   Future<UserProfile?> build() async {
     final uid = ref.watch(authStateProvider).value;
@@ -40,7 +42,7 @@ class UserProfileController extends AsyncNotifier<UserProfile?> {
     if (uid != null) {
       final docStream = FirebaseFirestore.instance.collection('users').doc(uid).snapshots();
       final sub = docStream.listen((snapshot) {
-        if (!snapshot.exists && state.value != null) {
+        if (!snapshot.exists && state.value != null && !_isDeletingFullAccount) {
           // Instantly kick the user out if their Firestore document is deleted.
           // This usually happens when deleted from Firebase Auth via extensions.
           FirebaseAuth.instance.signOut();
@@ -209,6 +211,7 @@ class UserProfileController extends AsyncNotifier<UserProfile?> {
   /// Throws [AuthReauthRequiredException] if re-authentication is needed.
   Future<void> deleteAccountFull() async {
     state = const AsyncValue.loading();
+    _isDeletingFullAccount = true;
     try {
       final repo = ref.read(authRepositoryProvider);
       final groupRepo = FirestoreGroupRepository();
@@ -223,6 +226,8 @@ class UserProfileController extends AsyncNotifier<UserProfile?> {
     } catch (e, st) {
       state = AsyncValue.error(e, st);
       rethrow;
+    } finally {
+      _isDeletingFullAccount = false;
     }
   }
 }
