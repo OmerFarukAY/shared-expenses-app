@@ -63,7 +63,7 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Stream<String?> get authStateChanges =>
-      _firebaseAuth.authStateChanges().map((user) => user?.uid);
+      _firebaseAuth.userChanges().map((user) => user?.uid);
 
   @override
   Stream<List<String>> get linkedProvidersChanges =>
@@ -115,7 +115,7 @@ class FirebaseAuthRepository implements AuthRepository {
   Future<UserProfile?> fetchUserProfile() async {
     final uid = currentUid;
     if (uid == null) {
-      return _readCachedProfile();
+      return null;
     }
 
     try {
@@ -131,6 +131,7 @@ class FirebaseAuthRepository implements AuthRepository {
           await saveUserProfile(cached);
           return cached;
         }
+        return null; // Explicitly return null if doc doesn't exist and cache is missing/mismatched
       }
     } catch (e) {
       debugPrint(
@@ -138,8 +139,12 @@ class FirebaseAuthRepository implements AuthRepository {
       );
     }
 
-    // Fallback to local cache if network is unavailable or document is pending
-    return _readCachedProfile();
+    // Fallback to local cache if network is unavailable
+    final cached = await _readCachedProfile();
+    if (cached != null && cached.uid == uid) {
+      return cached;
+    }
+    return null;
   }
 
   @override

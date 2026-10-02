@@ -77,12 +77,20 @@ service cloud.firestore {
     // ===============================================================
 
     // Helper functions
-    function isAuthenticated() {
+    function isAuthUser() {
       return request.auth != null;
     }
 
+    function hasValidUserDoc() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isAuthenticated() {
+      return isAuthUser() && hasValidUserDoc();
+    }
+
     function isOwner(uid) {
-      return isAuthenticated() && request.auth.uid == uid;
+      return isAuthUser() && request.auth.uid == uid;
     }
 
     function isGroupMember(groupId) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart' show AuthProvider, AuthCredential;
@@ -32,7 +34,19 @@ final linkedProvidersProvider = StreamProvider<List<String>>((ref) {
 class UserProfileController extends AsyncNotifier<UserProfile?> {
   @override
   Future<UserProfile?> build() async {
+    final uid = ref.watch(authStateProvider).value;
     final repo = ref.watch(authRepositoryProvider);
+
+    if (uid != null) {
+      final docStream = FirebaseFirestore.instance.collection('users').doc(uid).snapshots();
+      final sub = docStream.listen((snapshot) {
+        if (!snapshot.exists && state.value != null) {
+          ref.invalidateSelf();
+        }
+      });
+      ref.onDispose(() => sub.cancel());
+    }
+
     try {
       await repo.ensureAnonymousUser();
       return await repo.fetchUserProfile();
