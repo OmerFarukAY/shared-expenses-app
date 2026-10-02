@@ -1229,7 +1229,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               DenkButton(
                                 label: l10n?.linkWithApple ??
                                     'Sign in with Apple',
-                                variant: DenkButtonVariant.secondary,
+                                variant: DenkButtonVariant.apple,
                                 icon: Icons.apple,
                                 isLoading: _isLinking &&
                                     _activeLinkingProvider == 'apple.com',

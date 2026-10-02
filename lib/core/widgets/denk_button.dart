@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:denk/core/theme/app_colors.dart';
 
-enum DenkButtonVariant { primary, secondary, destructive, text }
+enum DenkButtonVariant { primary, secondary, destructive, text, apple }
 
 class DenkButton extends StatefulWidget {
   final String label;
@@ -71,6 +71,10 @@ class _DenkButtonState extends State<DenkButton> {
       case DenkButtonVariant.text:
         bgColor = Colors.transparent;
         fgColor = isDark ? AppColors.primary500 : AppColors.primary700;
+        break;
+      case DenkButtonVariant.apple:
+        bgColor = isDark ? Colors.white : Colors.black;
+        fgColor = isDark ? Colors.black : Colors.white;
         break;
     }
 

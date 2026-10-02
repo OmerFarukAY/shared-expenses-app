@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:native_liquid_glass/native_liquid_glass.dart';
+import 'package:denk/core/theme/app_colors.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
@@ -61,7 +62,23 @@ class GroupsListScreen extends ConsumerWidget {
           ],
         ],
       ),
-      body: groupsAsync.when(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: Theme.of(context).brightness == Brightness.dark
+                ? [
+                    AppColors.darkBg,
+                    AppColors.darkSurfaceSubtle.withValues(alpha: 0.3),
+                  ]
+                : [
+                    AppColors.lightBg,
+                    const Color(0xFFF8FAFC),
+                  ],
+          ),
+        ),
+        child: groupsAsync.when(
         data: (groups) {
           if (groups.isEmpty && pendingRequests.isEmpty) {
             return Center(
@@ -196,6 +213,7 @@ class GroupsListScreen extends ConsumerWidget {
             message: err.toString(),
             onRetry: () => ref.refresh(userGroupsStreamProvider),
           ),
+        ),
         ),
       ),
     );
@@ -339,8 +357,18 @@ class _GroupCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        theme.colorScheme.primary.withValues(alpha: 0.2),
+                        theme.colorScheme.primary.withValues(alpha: 0.05),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    ),
                   ),
                   child: Icon(
                     Icons.groups_rounded,

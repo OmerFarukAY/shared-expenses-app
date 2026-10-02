@@ -91,10 +91,28 @@ class _OnboardingDisplayNameScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDark
+                ? [
+                    AppColors.darkBg,
+                    AppColors.darkSurfaceSubtle.withValues(alpha: 0.5),
+                    AppColors.darkBg,
+                  ]
+                : [
+                    AppColors.lightBg,
+                    const Color(0xFFF1F5F9),
+                    AppColors.lightBg,
+                  ],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
@@ -182,6 +200,7 @@ class _OnboardingDisplayNameScreenState
               ),
             ),
           ),
+        ),
         ),
       ),
     );
