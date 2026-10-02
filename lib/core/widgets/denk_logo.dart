@@ -26,21 +26,11 @@ class DenkLogo extends StatelessWidget {
 
     if (!showBackground) {
       if (isDark) {
-        return Container(
+        return Image.asset(
+          'assets/branding/logo_no_bg.png',
           width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(size * 0.28),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(size * 0.28),
-            child: Image.asset(
-              'assets/branding/logo_beyaz_arkaplan.png',
-              width: size,
-              fit: BoxFit.contain,
-            ),
-          ),
+          fit: BoxFit.contain,
+          color: Colors.white,
         );
       }
       return Image.asset(
@@ -55,16 +45,16 @@ class DenkLogo extends StatelessWidget {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.darkSurfaceSubtle,
           borderRadius: BorderRadius.circular(size * 0.28),
-          border: Border.all(color: AppColors.primary700.withValues(alpha: 0.4), width: 1.5),
+          border: Border.all(color: AppColors.darkBorder, width: 1.5),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(size * 0.28),
+        child: Center(
           child: Image.asset(
-            'assets/branding/logo_beyaz_arkaplan.png',
-            width: size,
+            'assets/branding/logo_no_bg.png',
+            width: size * 0.6,
             fit: BoxFit.contain,
+            color: Colors.white,
           ),
         ),
       );

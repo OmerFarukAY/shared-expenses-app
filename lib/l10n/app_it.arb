@@ -277,5 +277,7 @@
   "legalSectionTitle": "Note Legali",
   "openAction": "Apri",
   "privacyFirstInfo": "Privacy al Primo Posto • Nessuna Email o Telefono",
-  "changeCurrency": "Cambia Valuta"
+  "changeCurrency": "Cambia Valuta",
+  "dashboardCreateGroupSubtitle": "Inizia a tracciare le spese condivise",
+  "dashboardJoinGroupSubtitle": "Inserisci il codice di un amico"
 }

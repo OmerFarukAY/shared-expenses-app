@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Denk — Private, Effortless Shared Expenses</title>
@@ -8,8 +6,85 @@
   <link rel="stylesheet" href="styles.css?v=3">
   <link rel="icon" type="image/png" href="assets/icon.png">
   <script src="lang.js"></script>
+  <style id="splash-screen-style">
+    html {
+      height: 100%
+    }
+
+    body {
+      margin: 0;
+      min-height: 100%;
+      background-color: #FFFFFF;
+          background-size: 100% 100%;
+    }
+
+    .center {
+      margin: 0;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      -ms-transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%);
+    }
+
+    .contain {
+      display:block;
+      width:100%; height:100%;
+      object-fit: contain;
+    }
+
+    .stretch {
+      display:block;
+      width:100%; height:100%;
+    }
+
+    .cover {
+      display:block;
+      width:100%; height:100%;
+      object-fit: cover;
+    }
+
+    .bottom {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      -ms-transform: translate(-50%, 0);
+      transform: translate(-50%, 0);
+    }
+
+    .bottomLeft {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+    }
+
+    .bottomRight {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #09090b;
+          }
+    }
+  </style>
+  <script id="splash-screen-script">
+    function removeSplashFromWeb() {
+      document.getElementById("splash")?.remove();
+      document.getElementById("splash-branding")?.remove();
+      document.body.style.background = "transparent";
+    }
+  </script>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
 </head>
 <body>
+  <picture id="splash">
+      <source srcset="splash/img/light-1x.png 1x, splash/img/light-2x.png 2x, splash/img/light-3x.png 3x, splash/img/light-4x.png 4x" media="(prefers-color-scheme: light)">
+      <source srcset="splash/img/dark-1x.png 1x, splash/img/dark-2x.png 2x, splash/img/dark-3x.png 3x, splash/img/dark-4x.png 4x" media="(prefers-color-scheme: dark)">
+      <img class="center" aria-hidden="true" src="splash/img/light-1x.png" alt="">
+  </picture>
   <header class="site-header">
     <div class="container header-inner">
       <a href="index.html" class="brand">
@@ -23,7 +98,7 @@
           <li><a href="delete-account.html" class="nav-link" id="nav-delete">Delete Account</a></li>
         </ul>
         <div class="lang-picker">
-          <svg class="globe-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="globe-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="2" y1="12" x2="22" y2="12"></line>
             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path>
@@ -44,7 +119,7 @@
     <!-- 1. ENGLISH CONTENT -->
     <div id="content-en" class="lang-content">
       <section class="hero">
-        <span class="badge">Simple &bull; Private &bull; Fair</span>
+        <span class="badge">Simple • Private • Fair</span>
         <h1 class="hero-title">Effortless Shared Expenses,<br>Zero Tracking.</h1>
         <p class="hero-meta" style="max-width: 580px; margin: 0 auto;">
           Split costs with friends, roommates, and travel groups. No emails, no phone numbers, no advertisements, and no tracking.
@@ -53,7 +128,7 @@
 
       <div class="cards-grid">
         <a href="privacy.html" class="feature-card">
-          <div class="feature-card-icon">&infin;</div>
+          <div class="feature-card-icon">∞</div>
           <h2 class="feature-card-title">Privacy Policy</h2>
           <p class="feature-card-desc">
             Understand how Denk protects your data with anonymous authentication, data minimization, and zero advertising.
@@ -61,7 +136,7 @@
         </a>
 
         <a href="terms.html" class="feature-card">
-          <div class="feature-card-icon">&para;</div>
+          <div class="feature-card-icon">¶</div>
           <h2 class="feature-card-title">Terms of Service</h2>
           <p class="feature-card-desc">
             Clear terms of use, group ledger rules, accounting disclaimers, and developer liability limitations.
@@ -69,7 +144,7 @@
         </a>
 
         <a href="delete-account.html" class="feature-card">
-          <div class="feature-card-icon">&times;</div>
+          <div class="feature-card-icon">×</div>
           <h2 class="feature-card-title">Account Deletion</h2>
           <p class="feature-card-desc">
             Instant in-app deletion guide or submit a web-based data erasure request pursuant to store policies.
@@ -116,7 +191,7 @@
 
         <div class="callout callout-success" style="text-align: center; padding: 24px;">
           <h3 style="margin-top: 0;">Ready to keep balances fair?</h3>
-          <p style="margin-bottom: 0;">Available on iOS and Android &bull; Developer: Ömer Faruk Ay</p>
+          <p style="margin-bottom: 0;">Available on iOS and Android • Developer: Ömer Faruk Ay</p>
         </div>
       </article>
     </div>
@@ -124,7 +199,7 @@
     <!-- 2. TURKISH CONTENT -->
     <div id="content-tr" class="lang-content" style="display: none;">
       <section class="hero">
-        <span class="badge">Sade &bull; Gizlilik Odaklı &bull; Adil</span>
+        <span class="badge">Sade • Gizlilik Odaklı • Adil</span>
         <h1 class="hero-title">Zahmetsiz Ortak Harcama,<br>Sıfır Takip.</h1>
         <p class="hero-meta" style="max-width: 580px; margin: 0 auto;">
           Arkadaşlarınızla, ev arkadaşlarınızla ve seyahat gruplarınızla harcamaları bölüşün. E-posta yok, telefon numarası yok, reklam yok, takip yok.
@@ -133,7 +208,7 @@
 
       <div class="cards-grid">
         <a href="privacy.html" class="feature-card">
-          <div class="feature-card-icon">&infin;</div>
+          <div class="feature-card-icon">∞</div>
           <h2 class="feature-card-title">Gizlilik Politikası</h2>
           <p class="feature-card-desc">
             Denk'in anonim oturum, veri minimizasyonu ve sıfır reklam garantisiyle verilerinizi nasıl koruduğunu inceleyin.
@@ -141,7 +216,7 @@
         </a>
 
         <a href="terms.html" class="feature-card">
-          <div class="feature-card-icon">&para;</div>
+          <div class="feature-card-icon">¶</div>
           <h2 class="feature-card-title">Kullanım Koşulları</h2>
           <p class="feature-card-desc">
             Açık kullanım kuralları, finansal olmayan araç beyanı, sorumluluk sınırlamaları ve kullanıcı yükümlülükleri.
@@ -149,7 +224,7 @@
         </a>
 
         <a href="delete-account.html" class="feature-card">
-          <div class="feature-card-icon">&times;</div>
+          <div class="feature-card-icon">×</div>
           <h2 class="feature-card-title">Hesap Silme</h2>
           <p class="feature-card-desc">
             Uygulama içinden anında silme rehberi veya mağaza politikalarına uygun web hesap ve veri silme talep formu.
@@ -196,7 +271,7 @@
 
         <div class="callout callout-success" style="text-align: center; padding: 24px;">
           <h3 style="margin-top: 0;">Hesaplar Denk, kafalar rahat!</h3>
-          <p style="margin-bottom: 0;">iOS ve Android'de &bull; Geliştirici: Ömer Faruk Ay</p>
+          <p style="margin-bottom: 0;">iOS ve Android'de • Geliştirici: Ömer Faruk Ay</p>
         </div>
       </article>
     </div>
@@ -204,7 +279,7 @@
     <!-- 3. SPANISH CONTENT -->
     <div id="content-es" class="lang-content" style="display: none;">
       <section class="hero">
-        <span class="badge">Sencillo &bull; Privado &bull; Justo</span>
+        <span class="badge">Sencillo • Privado • Justo</span>
         <h1 class="hero-title">Gastos Compartidos Sin Esfuerzo,<br>Cero Rastreo.</h1>
         <p class="hero-meta" style="max-width: 580px; margin: 0 auto;">
           Divida cuentas con amigos, compañeros de piso y grupos de viaje. Sin correos, sin teléfonos, sin publicidad y sin rastreo.
@@ -213,7 +288,7 @@
 
       <div class="cards-grid">
         <a href="privacy.html" class="feature-card">
-          <div class="feature-card-icon">&infin;</div>
+          <div class="feature-card-icon">∞</div>
           <h2 class="feature-card-title">Política de Privacidad</h2>
           <p class="feature-card-desc">
             Descubra cómo Denk protege su información con autenticación anónima, minimización de datos y cero publicidad.
@@ -221,7 +296,7 @@
         </a>
 
         <a href="terms.html" class="feature-card">
-          <div class="feature-card-icon">&para;</div>
+          <div class="feature-card-icon">¶</div>
           <h2 class="feature-card-title">Términos de Servicio</h2>
           <p class="feature-card-desc">
             Condiciones de uso claras, normas de contabilidad grupal y limitación de responsabilidad del desarrollador.
@@ -229,7 +304,7 @@
         </a>
 
         <a href="delete-account.html" class="feature-card">
-          <div class="feature-card-icon">&times;</div>
+          <div class="feature-card-icon">×</div>
           <h2 class="feature-card-title">Eliminación de Cuenta</h2>
           <p class="feature-card-desc">
             Instrucciones para eliminar su cuenta al instante desde la app o mediante formulario web.
@@ -276,7 +351,7 @@
 
         <div class="callout callout-success" style="text-align: center; padding: 24px;">
           <h3 style="margin-top: 0;">Cuentas claras, amistades tranquilas.</h3>
-          <p style="margin-bottom: 0;">Disponible en iOS y Android &bull; Desarrollador: Ömer Faruk Ay</p>
+          <p style="margin-bottom: 0;">Disponible en iOS y Android • Desarrollador: Ömer Faruk Ay</p>
         </div>
       </article>
     </div>
@@ -284,7 +359,7 @@
     <!-- 4. FRENCH CONTENT -->
     <div id="content-fr" class="lang-content" style="display: none;">
       <section class="hero">
-        <span class="badge">Simple &bull; Privé &bull; Équitable</span>
+        <span class="badge">Simple • Privé • Équitable</span>
         <h1 class="hero-title">Dépenses Partagées Sans Effort,<br>Zéro Traçage.</h1>
         <p class="hero-meta" style="max-width: 580px; margin: 0 auto;">
           Partagez les frais entre amis, colocataires et groupes de voyage. Sans e-mail, sans téléphone, sans publicité et sans traçage.
@@ -293,7 +368,7 @@
 
       <div class="cards-grid">
         <a href="privacy.html" class="feature-card">
-          <div class="feature-card-icon">&infin;</div>
+          <div class="feature-card-icon">∞</div>
           <h2 class="feature-card-title">Politique de Confidentialité</h2>
           <p class="feature-card-desc">
             Comprenez comment Denk protège vos données grâce à l'authentification anonyme et la minimisation des données.
@@ -301,7 +376,7 @@
         </a>
 
         <a href="terms.html" class="feature-card">
-          <div class="feature-card-icon">&para;</div>
+          <div class="feature-card-icon">¶</div>
           <h2 class="feature-card-title">Conditions d'Utilisation</h2>
           <p class="feature-card-desc">
             Règles d'utilisation transparentes, mention non-bancaire et limitations de responsabilité.
@@ -309,7 +384,7 @@
         </a>
 
         <a href="delete-account.html" class="feature-card">
-          <div class="feature-card-icon">&times;</div>
+          <div class="feature-card-icon">×</div>
           <h2 class="feature-card-title">Suppression de Compte</h2>
           <p class="feature-card-desc">
             Guide de suppression instantanée dans l'application ou formulaire de demande web.
@@ -356,7 +431,7 @@
 
         <div class="callout callout-success" style="text-align: center; padding: 24px;">
           <h3 style="margin-top: 0;">Les bons comptes font les bons amis.</h3>
-          <p style="margin-bottom: 0;">Disponible sur iOS et Android &bull; Développeur : Ömer Faruk Ay</p>
+          <p style="margin-bottom: 0;">Disponible sur iOS et Android • Développeur : Ömer Faruk Ay</p>
         </div>
       </article>
     </div>
@@ -364,7 +439,7 @@
     <!-- 5. ITALIAN CONTENT -->
     <div id="content-it" class="lang-content" style="display: none;">
       <section class="hero">
-        <span class="badge">Semplice &bull; Privato &bull; Equo</span>
+        <span class="badge">Semplice • Privato • Equo</span>
         <h1 class="hero-title">Spese Condivise Senza Sforzo,<br>Zero Tracciamento.</h1>
         <p class="hero-meta" style="max-width: 580px; margin: 0 auto;">
           Dividi i costi con amici, coinquilini e compagni di viaggio. Niente email, niente numeri di telefono, niente pubblicità e niente tracciamento.
@@ -373,7 +448,7 @@
 
       <div class="cards-grid">
         <a href="privacy.html" class="feature-card">
-          <div class="feature-card-icon">&infin;</div>
+          <div class="feature-card-icon">∞</div>
           <h2 class="feature-card-title">Informativa sulla Privacy</h2>
           <p class="feature-card-desc">
             Scopri come Denk protegge i tuoi dati con autenticazione anonima, minimizzazione dei dati e zero pubblicità.
@@ -381,7 +456,7 @@
         </a>
 
         <a href="terms.html" class="feature-card">
-          <div class="feature-card-icon">&para;</div>
+          <div class="feature-card-icon">¶</div>
           <h2 class="feature-card-title">Termini di Servizio</h2>
           <p class="feature-card-desc">
             Condizioni d'uso chiare, clausole di non-intermediazione finanziaria e limitazione di responsabilità.
@@ -389,7 +464,7 @@
         </a>
 
         <a href="delete-account.html" class="feature-card">
-          <div class="feature-card-icon">&times;</div>
+          <div class="feature-card-icon">×</div>
           <h2 class="feature-card-title">Eliminazione Account</h2>
           <p class="feature-card-desc">
             Guida alla cancellazione istantanea nell'app o invio di richiesta tramite modulo web.
@@ -436,7 +511,7 @@
 
         <div class="callout callout-success" style="text-align: center; padding: 24px;">
           <h3 style="margin-top: 0;">Conti pari, zero pensieri.</h3>
-          <p style="margin-bottom: 0;">Disponibile per iOS e Android &bull; Sviluppatore: Ömer Faruk Ay</p>
+          <p style="margin-bottom: 0;">Disponibile per iOS e Android • Sviluppatore: Ömer Faruk Ay</p>
         </div>
       </article>
     </div>
@@ -444,7 +519,7 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p id="foot-copy">&copy; 2026 Denk &bull; Developer: Ömer Faruk Ay</p>
+      <p id="foot-copy">© 2026 Denk • Developer: Ömer Faruk Ay</p>
       <ul class="footer-links">
         <li><a href="privacy.html" id="foot-privacy">Privacy Policy</a></li>
         <li><a href="terms.html" id="foot-terms">Terms of Service</a></li>
@@ -452,5 +527,6 @@
       </ul>
     </div>
   </footer>
-</body>
-</html>
+
+
+</body></html>

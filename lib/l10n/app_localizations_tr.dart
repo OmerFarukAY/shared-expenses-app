@@ -652,4 +652,11 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get changeCurrency => 'Para Birimini Değiştir';
+
+  @override
+  String get dashboardCreateGroupSubtitle =>
+      'Ortak harcamaları takip etmeye başla';
+
+  @override
+  String get dashboardJoinGroupSubtitle => 'Bir arkadaştan gelen kodu gir';
 }

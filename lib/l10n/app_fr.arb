@@ -277,5 +277,7 @@
   "legalSectionTitle": "Mentions Légales",
   "openAction": "Ouvrir",
   "privacyFirstInfo": "Priorité Confidentialité • Pas d'Email ni de Téléphone",
-  "changeCurrency": "Changer de Devise"
+  "changeCurrency": "Changer de Devise",
+  "dashboardCreateGroupSubtitle": "Commencez à suivre les dépenses partagées",
+  "dashboardJoinGroupSubtitle": "Entrez le code d'un ami"
 }

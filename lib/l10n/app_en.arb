@@ -277,5 +277,7 @@
   "legalSectionTitle": "Legal & Compliance",
   "openAction": "Open",
   "privacyFirstInfo": "Privacy-First • No Email or Phone Required",
-  "changeCurrency": "Change Currency"
+  "changeCurrency": "Change Currency",
+  "dashboardCreateGroupSubtitle": "Start tracking shared expenses",
+  "dashboardJoinGroupSubtitle": "Enter a code from a friend"
 }

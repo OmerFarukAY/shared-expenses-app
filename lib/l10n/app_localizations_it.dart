@@ -657,4 +657,11 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get changeCurrency => 'Cambia Valuta';
+
+  @override
+  String get dashboardCreateGroupSubtitle =>
+      'Inizia a tracciare le spese condivise';
+
+  @override
+  String get dashboardJoinGroupSubtitle => 'Inserisci il codice di un amico';
 }

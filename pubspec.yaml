@@ -113,7 +113,11 @@ flutter_launcher_icons:
 
 flutter_native_splash:
   color: "#FFFFFF"
+  color_dark: "#09090b" # Zinc 950
   image: "assets/branding/splash_logo_1024.png"
+  image_dark: "assets/branding/splash_logo_1024.png" # Assuming it uses the same or we could create a dark version if needed, but wait: we just need dark background.
   android_12:
     image: "assets/branding/splash_logo_1024.png"
+    image_dark: "assets/branding/splash_logo_1024.png"
     color: "#FFFFFF"
+    color_dark: "#09090b"

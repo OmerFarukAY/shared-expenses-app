@@ -91,7 +91,6 @@ class DenkAuthGate extends ConsumerWidget {
         return const MainNavigationScreen();
       },
       loading: () => const Scaffold(
-        backgroundColor: Colors.white,
         body: Center(child: DenkLoadingView()),
       ),
       error: (err, _) {

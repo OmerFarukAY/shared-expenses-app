@@ -277,5 +277,7 @@
   "legalSectionTitle": "Yasal & Koşullar",
   "openAction": "Aç",
   "privacyFirstInfo": "Gizlilik Odaklı • E-posta veya Telefon Gerekmez",
-  "changeCurrency": "Para Birimini Değiştir"
+  "changeCurrency": "Para Birimini Değiştir",
+  "dashboardCreateGroupSubtitle": "Ortak harcamaları takip etmeye başla",
+  "dashboardJoinGroupSubtitle": "Bir arkadaştan gelen kodu gir"
 }

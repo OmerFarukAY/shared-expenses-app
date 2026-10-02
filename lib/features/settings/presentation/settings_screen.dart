@@ -28,6 +28,8 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _isDeleting = false;
   bool _isLinking = false;
+  bool _isUpdatingName = false;
+  bool _isUidCopied = false;
   String? _activeLinkingProvider;
 
   Future<void> _handleLinkGoogle() async {
@@ -313,6 +315,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               final newName = controller.text.trim();
               if (newName.length >= 2 && newName.length <= 50) {
                 Navigator.of(ctx).pop();
+                if (mounted) setState(() => _isUpdatingName = true);
                 try {
                   await ref
                       .read(userProfileControllerProvider.notifier)
@@ -322,6 +325,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ScaffoldMessenger.of(
                       context,
                     ).showSnackBar(SnackBar(content: Text(e.toString())));
+                  }
+                } finally {
+                  if (mounted) {
+                    setState(() => _isUpdatingName = false);
                   }
                 }
               }
@@ -1019,24 +1026,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final currencyName = profile?.preferredCurrency ?? 'TRY';
 
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: !widget.isTab,
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: Text(
-          l10n?.settingsTitle ?? 'Settings',
-          style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
-        ),
-      ),
       body: _isDeleting
           ? const Center(child: DenkLoadingView())
-          : SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(24, 8, 24, widget.isTab ? 116 : 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+          : CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  automaticallyImplyLeading: !widget.isTab,
+                  centerTitle: true,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  scrolledUnderElevation: 0,
+                  floating: true,
+                  snap: false,
+                  pinned: false,
+                  title: Text(
+                    l10n?.settingsTitle ?? 'Settings',
+                    style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(24, 8, 24, widget.isTab ? 116 : 32),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
                   // NEW PROFILE HEADER SECTION
                   Center(
                     child: Column(
@@ -1080,20 +1093,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               style: AppTypography.h2,
                             ),
                             const SizedBox(width: 8),
-                            IconButton(
-                              icon: Icon(
-                                Icons.edit_rounded, 
-                                size: 18, 
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.5)
-                              ),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
-                              onPressed: () {
-                                if (profile != null) {
-                                  _showEditNameDialog(profile.displayName);
-                                }
-                              },
-                            ),
+                            _isUpdatingName
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : IconButton(
+                                    icon: Icon(
+                                      Icons.edit_rounded, 
+                                      size: 18, 
+                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5)
+                                    ),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                                    onPressed: () {
+                                      if (profile != null) {
+                                        _showEditNameDialog(profile.displayName);
+                                      }
+                                    },
+                                  ),
                           ],
                         ),
                         const SizedBox(height: 4),
@@ -1108,19 +1127,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           InkWell(
                             onTap: () {
                               Clipboard.setData(ClipboardData(text: profile.uid));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(l10n?.uidCopiedSnackbar ?? 'ID copied'),
-                                  duration: const Duration(seconds: 1),
-                                ),
-                              );
+                              setState(() => _isUidCopied = true);
+                              Future.delayed(const Duration(seconds: 2), () {
+                                if (mounted) {
+                                  setState(() => _isUidCopied = false);
+                                }
+                              });
                             },
                             borderRadius: BorderRadius.circular(20),
-                            child: Container(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
+                                color: _isUidCopied
+                                    ? AppColors.positive.withValues(alpha: 0.1)
+                                    : theme.colorScheme.onSurface.withValues(alpha: 0.05),
                                 borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: _isUidCopied
+                                      ? AppColors.positive.withValues(alpha: 0.3)
+                                      : Colors.transparent,
+                                  width: 1,
+                                ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -1128,15 +1156,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   Icon(
                                     Icons.tag_rounded,
                                     size: 14,
-                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                    color: _isUidCopied ? AppColors.positive : theme.colorScheme.onSurface.withValues(alpha: 0.5),
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
                                     profile.uid.substring(0, profile.uid.length > 8 ? 8 : profile.uid.length),
                                     style: AppTypography.labelSmall.copyWith(
-                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                                      color: _isUidCopied ? AppColors.positive : theme.colorScheme.onSurface.withValues(alpha: 0.7),
                                       fontFamily: 'monospace',
+                                      fontWeight: _isUidCopied ? FontWeight.w600 : FontWeight.w400,
                                     ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Icon(
+                                    _isUidCopied ? Icons.check_circle_rounded : Icons.copy_rounded,
+                                    size: 14,
+                                    color: _isUidCopied ? AppColors.positive : theme.colorScheme.onSurface.withValues(alpha: 0.4),
                                   ),
                                 ],
                               ),
@@ -1545,6 +1580,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ],
               ),
             ),
+          ),
+        ],
+      ),
     );
   }
 }

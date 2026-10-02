@@ -92,7 +92,7 @@ class UserProfileController extends AsyncNotifier<UserProfile?> {
       );
     }
 
-    state = const AsyncValue.loading();
+    // Removed global loading state to prevent auth gate from unmounting the app
     try {
       final repo = ref.read(authRepositoryProvider);
       await repo.updateDisplayName(trimmed);

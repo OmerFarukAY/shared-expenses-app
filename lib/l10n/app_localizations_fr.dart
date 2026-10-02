@@ -658,4 +658,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get changeCurrency => 'Changer de Devise';
+
+  @override
+  String get dashboardCreateGroupSubtitle =>
+      'Commencez à suivre les dépenses partagées';
+
+  @override
+  String get dashboardJoinGroupSubtitle => 'Entrez le code d\'un ami';
 }

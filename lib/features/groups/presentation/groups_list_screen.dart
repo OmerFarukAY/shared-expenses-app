@@ -119,7 +119,7 @@ class GroupsListScreen extends ConsumerWidget {
                     _DashboardActionCard(
                       icon: Icons.group_add_rounded,
                       title: l10n?.createGroup ?? 'Create a New Group',
-                      subtitle: 'Start tracking shared expenses',
+                      subtitle: l10n?.dashboardCreateGroupSubtitle ?? 'Start tracking shared expenses',
                       isPrimary: true,
                       onTap: () => CreateGroupSheet.show(context),
                     ),
@@ -127,7 +127,7 @@ class GroupsListScreen extends ConsumerWidget {
                     _DashboardActionCard(
                       icon: Icons.key_rounded,
                       title: l10n?.joinGroup ?? 'Join with Invite Code',
-                      subtitle: 'Enter a code from a friend',
+                      subtitle: l10n?.dashboardJoinGroupSubtitle ?? 'Enter a code from a friend',
                       isPrimary: false,
                       onTap: () => JoinGroupSheet.show(context),
                     ),

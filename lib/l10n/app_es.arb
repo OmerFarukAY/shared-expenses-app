@@ -277,5 +277,7 @@
   "legalSectionTitle": "Legal y Cumplimiento",
   "openAction": "Abrir",
   "privacyFirstInfo": "Privacidad Primero • Sin Correo ni Teléfono",
-  "changeCurrency": "Cambiar Moneda"
+  "changeCurrency": "Cambiar Moneda",
+  "dashboardCreateGroupSubtitle": "Empieza a registrar gastos compartidos",
+  "dashboardJoinGroupSubtitle": "Ingresa el código de un amigo"
 }

@@ -1297,6 +1297,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Change Currency'**
   String get changeCurrency;
+
+  /// No description provided for @dashboardCreateGroupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start tracking shared expenses'**
+  String get dashboardCreateGroupSubtitle;
+
+  /// No description provided for @dashboardJoinGroupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a code from a friend'**
+  String get dashboardJoinGroupSubtitle;
 }
 
 class _AppLocalizationsDelegate
