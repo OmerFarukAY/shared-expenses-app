@@ -275,5 +275,7 @@
   "webAccountDeletionSubtitle": "Uygulamaya erişiminiz yoksa web üzerinden hesap ve veri silme talebinde bulunun.",
   "errorOpeningUrl": "Bağlantı açılamadı.",
   "legalSectionTitle": "Yasal & Koşullar",
-  "openAction": "Aç"
+  "openAction": "Aç",
+  "privacyFirstInfo": "Gizlilik Odaklı • E-posta veya Telefon Gerekmez",
+  "changeCurrency": "Para Birimini Değiştir"
 }

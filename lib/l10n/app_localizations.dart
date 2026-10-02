@@ -1285,6 +1285,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open'**
   String get openAction;
+
+  /// No description provided for @privacyFirstInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy-First • No Email or Phone Required'**
+  String get privacyFirstInfo;
+
+  /// No description provided for @changeCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Currency'**
+  String get changeCurrency;
 }
 
 class _AppLocalizationsDelegate

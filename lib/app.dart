@@ -41,6 +41,13 @@ class DenkApp extends ConsumerWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: appThemeMode,
+      builder: (context, child) {
+        return GestureDetector(
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          behavior: HitTestBehavior.opaque,
+          child: child!,
+        );
+      },
       onGenerateRoute: (settings) {
         if (settings.name != null &&
             (settings.name!.startsWith('/link') ||

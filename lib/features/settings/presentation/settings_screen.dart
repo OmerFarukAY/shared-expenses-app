@@ -13,6 +13,7 @@ import 'package:denk/features/auth/presentation/auth_controller.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
 import 'package:denk/features/settings/presentation/settings_controller.dart';
 import 'package:denk/core/constants/legal_urls.dart';
+import 'package:denk/core/constants/currencies.dart';
 import 'package:denk/l10n/l10n.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -332,6 +333,68 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  void _showSelectionSheet({
+    required String title,
+    required List<Widget> children,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.only(top: 60),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 12),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  title,
+                  style: AppTypography.h2,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).padding.bottom + 24,
+                    left: 16,
+                    right: 16,
+                  ),
+                  child: DenkCard(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: children,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showLanguageDialog() {
     final currentLocale = ref.read(appLocaleProvider);
     final l10n = AppLocalizations.of(context);
@@ -345,38 +408,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       {'code': 'it', 'name': 'Italiano'},
     ];
 
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(
-          l10n?.settingsLanguage ?? 'Language',
-          style: AppTypography.h3,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: languages.map((lang) {
-            final code = lang['code'];
-            final name = lang['name']!;
-            final isSelected = currentLocale?.languageCode == code;
+    _showSelectionSheet(
+      title: l10n?.settingsLanguage ?? 'Language',
+      children: languages.map((lang) {
+        final code = lang['code'];
+        final name = lang['name']!;
+        final isSelected = currentLocale?.languageCode == code;
 
-            return ListTile(
-              title: Text(name, style: AppTypography.bodyMedium),
-              trailing: isSelected
-                  ? Icon(
-                      Icons.check_rounded,
-                      color: Theme.of(context).colorScheme.primary,
-                    )
-                  : null,
-              onTap: () {
-                ref.read(appLocaleProvider.notifier).setLocale(
-                  code != null ? Locale(code) : null,
-                );
-                Navigator.of(ctx).pop();
-              },
+        return ListTile(
+          title: Text(name, style: AppTypography.bodyMedium),
+          trailing: isSelected
+              ? Icon(
+                  Icons.check_circle_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                )
+              : null,
+          onTap: () {
+            ref.read(appLocaleProvider.notifier).setLocale(
+              code != null ? Locale(code) : null,
             );
-          }).toList(),
-        ),
-      ),
+            Navigator.of(context).pop();
+          },
+        );
+      }).toList(),
     );
   }
 
@@ -384,70 +438,101 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final currentMode = ref.read(appThemeModeProvider);
     final l10n = AppLocalizations.of(context);
 
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n?.themeTitle ?? 'Theme', style: AppTypography.h3),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: Text(
-                l10n?.themeSystem ?? 'System Default',
-                style: AppTypography.bodyMedium,
-              ),
-              trailing: currentMode == ThemeMode.system
-                  ? Icon(
-                      Icons.check_rounded,
-                      color: Theme.of(context).colorScheme.primary,
-                    )
-                  : null,
-              onTap: () {
-                ref
-                    .read(appThemeModeProvider.notifier)
-                    .setThemeMode(ThemeMode.system);
-                Navigator.of(ctx).pop();
-              },
-            ),
-            ListTile(
-              title: Text(
-                l10n?.themeLight ?? 'Light',
-                style: AppTypography.bodyMedium,
-              ),
-              trailing: currentMode == ThemeMode.light
-                  ? Icon(
-                      Icons.check_rounded,
-                      color: Theme.of(context).colorScheme.primary,
-                    )
-                  : null,
-              onTap: () {
-                ref
-                    .read(appThemeModeProvider.notifier)
-                    .setThemeMode(ThemeMode.light);
-                Navigator.of(ctx).pop();
-              },
-            ),
-            ListTile(
-              title: Text(
-                l10n?.themeDark ?? 'Dark',
-                style: AppTypography.bodyMedium,
-              ),
-              trailing: currentMode == ThemeMode.dark
-                  ? Icon(
-                      Icons.check_rounded,
-                      color: Theme.of(context).colorScheme.primary,
-                    )
-                  : null,
-              onTap: () {
-                ref
-                    .read(appThemeModeProvider.notifier)
-                    .setThemeMode(ThemeMode.dark);
-                Navigator.of(ctx).pop();
-              },
-            ),
-          ],
+    _showSelectionSheet(
+      title: l10n?.themeTitle ?? 'Theme',
+      children: [
+        ListTile(
+          title: Text(
+            l10n?.themeSystem ?? 'System Default',
+            style: AppTypography.bodyMedium,
+          ),
+          trailing: currentMode == ThemeMode.system
+              ? Icon(
+                  Icons.check_circle_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                )
+              : null,
+          onTap: () {
+            ref.read(appThemeModeProvider.notifier).setThemeMode(ThemeMode.system);
+            Navigator.of(context).pop();
+          },
         ),
-      ),
+        ListTile(
+          title: Text(
+            l10n?.themeLight ?? 'Light',
+            style: AppTypography.bodyMedium,
+          ),
+          trailing: currentMode == ThemeMode.light
+              ? Icon(
+                  Icons.check_circle_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                )
+              : null,
+          onTap: () {
+            ref.read(appThemeModeProvider.notifier).setThemeMode(ThemeMode.light);
+            Navigator.of(context).pop();
+          },
+        ),
+        ListTile(
+          title: Text(
+            l10n?.themeDark ?? 'Dark',
+            style: AppTypography.bodyMedium,
+          ),
+          trailing: currentMode == ThemeMode.dark
+              ? Icon(
+                  Icons.check_circle_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                )
+              : null,
+          onTap: () {
+            ref.read(appThemeModeProvider.notifier).setThemeMode(ThemeMode.dark);
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
+    );
+  }
+
+  void _showCurrencyDialog() {
+    final profile = ref.read(userProfileControllerProvider).value;
+    if (profile == null) return;
+    
+    final l10n = AppLocalizations.of(context);
+
+    _showSelectionSheet(
+      title: (l10n as dynamic).changeCurrency ?? 'Change Currency',
+      children: Currency.supportedCurrencies.map((curr) {
+        final isSelected = profile.preferredCurrency == curr.code;
+
+        return ListTile(
+          title: Text('${curr.code} (${curr.symbol}) — ${curr.name}', style: AppTypography.bodyMedium),
+          trailing: isSelected
+              ? Icon(
+                  Icons.check_circle_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                )
+              : null,
+          onTap: () async {
+            try {
+              await ref.read(userProfileControllerProvider.notifier).setDisplayName(
+                profile.displayName,
+                preferredCurrency: curr.code,
+                languageCode: profile.languageCode,
+              );
+              if (mounted) Navigator.of(context).pop();
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(e.toString()),
+                    backgroundColor: AppColors.negative,
+                  ),
+                );
+              }
+            }
+          },
+        );
+      }).toList(),
     );
   }
 
@@ -913,9 +998,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ? (l10n?.themeDark ?? 'Dark')
         : (l10n?.themeSystem ?? 'System');
 
+    final currencyName = profile?.preferredCurrency ?? 'TRY';
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: !widget.isTab,
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: Text(l10n?.settingsTitle ?? 'Settings', style: AppTypography.h2),
       ),
       body: _isDeleting
@@ -1113,7 +1204,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 label: l10n?.linkWithGoogle ??
                                     'Link with Google',
                                 variant: DenkButtonVariant.secondary,
-                                icon: Icons.account_circle_outlined,
+                                customIcon: Image.asset(
+                                  'assets/branding/google_logo.png',
+                                  width: 18,
+                                  height: 18,
+                                ),
                                 isLoading: _isLinking &&
                                     _activeLinkingProvider == 'google.com',
                                 onPressed:
@@ -1216,6 +1311,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               ],
                             ),
                             onTap: _showThemeDialog,
+                          ),
+                          const Divider(height: 1),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.attach_money_rounded),
+                            title: Text(
+                              (l10n as dynamic).currency ?? 'Currency',
+                              style: AppTypography.bodyMedium,
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  currencyName,
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.5),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 18,
+                                ),
+                              ],
+                            ),
+                            onTap: _showCurrencyDialog,
                           ),
                         ],
                       ),

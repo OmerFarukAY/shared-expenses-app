@@ -650,4 +650,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get openAction => 'Abrir';
+
+  @override
+  String get privacyFirstInfo => 'Privacidad Primero • Sin Correo ni Teléfono';
+
+  @override
+  String get changeCurrency => 'Cambiar Moneda';
 }

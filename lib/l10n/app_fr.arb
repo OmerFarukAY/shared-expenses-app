@@ -275,5 +275,7 @@
   "webAccountDeletionSubtitle": "Demandez la suppression de votre compte et de vos données sur le web si vous n'avez plus accès à l'application.",
   "errorOpeningUrl": "Impossible d'ouvrir le lien.",
   "legalSectionTitle": "Mentions Légales",
-  "openAction": "Ouvrir"
+  "openAction": "Ouvrir",
+  "privacyFirstInfo": "Priorité Confidentialité • Pas d'Email ni de Téléphone",
+  "changeCurrency": "Changer de Devise"
 }

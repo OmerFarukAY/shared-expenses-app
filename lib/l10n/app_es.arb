@@ -275,5 +275,7 @@
   "webAccountDeletionSubtitle": "Solicite la eliminación de cuenta y datos vía web si ya no tiene acceso a la aplicación.",
   "errorOpeningUrl": "No se pudo abrir el enlace.",
   "legalSectionTitle": "Legal y Cumplimiento",
-  "openAction": "Abrir"
+  "openAction": "Abrir",
+  "privacyFirstInfo": "Privacidad Primero • Sin Correo ni Teléfono",
+  "changeCurrency": "Cambiar Moneda"
 }

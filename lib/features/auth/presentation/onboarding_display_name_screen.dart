@@ -19,20 +19,12 @@ class _OnboardingDisplayNameScreenState
     extends ConsumerState<OnboardingDisplayNameScreen> {
   final TextEditingController _nameController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  Currency? _selectedCurrency;
   String? _errorText;
   bool _isSubmitting = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_selectedCurrency == null) {
-      final locale = Localizations.localeOf(context);
-      _selectedCurrency = Currency.getDefaultCurrencyForLocale(
-        locale.languageCode,
-        locale.countryCode,
-      );
-    }
   }
 
   @override
@@ -61,12 +53,18 @@ class _OnboardingDisplayNameScreenState
     });
 
     try {
-      final currentLocale = Localizations.localeOf(context).languageCode;
+      final locale = Localizations.localeOf(context);
+      final currentLocale = locale.languageCode;
+      final defaultCurrency = Currency.getDefaultCurrencyForLocale(
+        locale.languageCode,
+        locale.countryCode,
+      );
+      
       await ref
           .read(userProfileControllerProvider.notifier)
           .setDisplayName(
             name,
-            preferredCurrency: _selectedCurrency!.code,
+            preferredCurrency: defaultCurrency.code,
             languageCode: currentLocale,
           );
     } catch (e) {
@@ -145,50 +143,8 @@ class _OnboardingDisplayNameScreenState
                             }
                           },
                         ),
-                        const SizedBox(height: 20),
-                        Text(
-                          l10n?.groupCurrencyLabel ?? 'Default Currency',
-                          style: AppTypography.labelMedium.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardTheme.color,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.outline,
-                              width: 1,
-                            ),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<Currency>(
-                              value: _selectedCurrency,
-                              isExpanded: true,
-                              items: Currency.supportedCurrencies
-                                  .map(
-                                    (curr) => DropdownMenuItem(
-                                      value: curr,
-                                      child: Text(
-                                        '${curr.code} (${curr.symbol}) — ${curr.name}',
-                                        style: AppTypography.bodyMedium,
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (newCurr) {
-                                if (newCurr != null) {
-                                  setState(() {
-                                    _selectedCurrency = newCurr;
-                                  });
-                                }
-                              },
-                            ),
-                          ),
-                        ),
                         const SizedBox(height: 24),
+
                         DenkButton(
                           label: l10n?.getStarted ?? 'Get Started',
                           isLoading: _isSubmitting,
@@ -211,7 +167,8 @@ class _OnboardingDisplayNameScreenState
                             : AppColors.lightTextTertiary,
                       ),
                       Text(
-                        'Privacy-First • No Email or Phone Required',
+                        // @ts-ignore - Assuming l10n is generated with privacyFirstInfo
+                        l10n?.privacyFirstInfo ?? 'Privacy-First • No Email or Phone Required',
                         style: AppTypography.labelSmall.copyWith(
                           color: isDark
                               ? AppColors.darkTextTertiary

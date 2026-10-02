@@ -645,4 +645,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openAction => 'Open';
+
+  @override
+  String get privacyFirstInfo => 'Privacy-First • No Email or Phone Required';
+
+  @override
+  String get changeCurrency => 'Change Currency';
 }

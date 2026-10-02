@@ -9,6 +9,7 @@ class DenkButton extends StatefulWidget {
   final DenkButtonVariant variant;
   final bool isLoading;
   final IconData? icon;
+  final Widget? customIcon;
   final double? width;
   final double height;
 
@@ -19,6 +20,7 @@ class DenkButton extends StatefulWidget {
     this.variant = DenkButtonVariant.primary,
     this.isLoading = false,
     this.icon,
+    this.customIcon,
     this.width,
     this.height = 48,
   });
@@ -85,7 +87,10 @@ class _DenkButtonState extends State<DenkButton> {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (widget.icon != null) ...[
+              if (widget.customIcon != null) ...[
+                widget.customIcon!,
+                const SizedBox(width: 8),
+              ] else if (widget.icon != null) ...[
                 Icon(widget.icon, size: 18, color: fgColor),
                 const SizedBox(width: 8),
               ],

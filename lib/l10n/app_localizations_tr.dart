@@ -645,4 +645,11 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get openAction => 'Aç';
+
+  @override
+  String get privacyFirstInfo =>
+      'Gizlilik Odaklı • E-posta veya Telefon Gerekmez';
+
+  @override
+  String get changeCurrency => 'Para Birimini Değiştir';
 }

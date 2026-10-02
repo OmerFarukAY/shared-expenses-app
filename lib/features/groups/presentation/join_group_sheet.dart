@@ -129,15 +129,18 @@ class _JoinGroupSheetState extends ConsumerState<JoinGroupSheet> {
     final l10n = AppLocalizations.of(context);
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 24,
-        bottom: bottomInset + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 24,
+          bottom: bottomInset + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
@@ -277,6 +280,6 @@ class _JoinGroupSheetState extends ConsumerState<JoinGroupSheet> {
           ],
         ],
       ),
-    );
+    ));
   }
 }

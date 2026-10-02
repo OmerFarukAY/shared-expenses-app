@@ -275,5 +275,7 @@
   "webAccountDeletionSubtitle": "Request account and data deletion via web if you no longer have access to the app.",
   "errorOpeningUrl": "Could not open link.",
   "legalSectionTitle": "Legal & Compliance",
-  "openAction": "Open"
+  "openAction": "Open",
+  "privacyFirstInfo": "Privacy-First • No Email or Phone Required",
+  "changeCurrency": "Change Currency"
 }

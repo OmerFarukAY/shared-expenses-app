@@ -651,4 +651,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get openAction => 'Ouvrir';
+
+  @override
+  String get privacyFirstInfo =>
+      'Priorité Confidentialité • Pas d\'Email ni de Téléphone';
+
+  @override
+  String get changeCurrency => 'Changer de Devise';
 }

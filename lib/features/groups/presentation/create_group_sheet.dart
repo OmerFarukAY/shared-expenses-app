@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:denk/core/constants/currencies.dart';
+
 import 'package:denk/core/theme/app_haptics.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
@@ -26,20 +26,12 @@ class CreateGroupSheet extends ConsumerStatefulWidget {
 class _CreateGroupSheetState extends ConsumerState<CreateGroupSheet> {
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
-  Currency? _selectedCurrency;
   String? _errorText;
   bool _isLoading = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_selectedCurrency == null) {
-      final locale = Localizations.localeOf(context);
-      _selectedCurrency = Currency.getDefaultCurrencyForLocale(
-        locale.languageCode,
-        locale.countryCode,
-      );
-    }
   }
 
   @override
@@ -71,7 +63,7 @@ class _CreateGroupSheetState extends ConsumerState<CreateGroupSheet> {
       final newGroup = await repo.createGroup(
         name: name,
         description: _descController.text.trim(),
-        defaultCurrency: (_selectedCurrency ?? Currency.tryCurrency).code,
+        defaultCurrency: user.preferredCurrency,
         creator: user,
       );
 
@@ -101,13 +93,16 @@ class _CreateGroupSheetState extends ConsumerState<CreateGroupSheet> {
     final l10n = AppLocalizations.of(context);
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 24,
-        bottom: bottomInset + 24,
-      ),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 24,
+          bottom: bottomInset + 24,
+        ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -143,53 +138,14 @@ class _CreateGroupSheetState extends ConsumerState<CreateGroupSheet> {
             },
           ),
           const SizedBox(height: 16),
-          Text(
-            l10n?.groupCurrencyLabel ?? 'Currency',
-            style: AppTypography.labelMedium.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardTheme.color,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline,
-                width: 1,
-              ),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<Currency>(
-                value: _selectedCurrency ?? Currency.tryCurrency,
-                isExpanded: true,
-                items: Currency.supportedCurrencies
-                    .map(
-                      (curr) => DropdownMenuItem(
-                        value: curr,
-                        child: Text(
-                          '${curr.code} (${curr.symbol}) — ${curr.name}',
-                          style: AppTypography.bodyMedium,
-                        ),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (newCurr) {
-                  if (newCurr != null) {
-                    setState(() => _selectedCurrency = newCurr);
-                  }
-                },
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
+
           DenkButton(
             label: l10n?.commonSave ?? 'Create Group',
             isLoading: _isLoading,
             onPressed: _submit,
           ),
         ],
+      ),
       ),
     );
   }
