@@ -580,6 +580,10 @@ class AppLocalizationsIt extends AppLocalizations {
       'Impossibile collegare l\'account. Riprova.';
 
   @override
+  String get appleAccountRequired =>
+      'Accedi con un account Apple nelle impostazioni del dispositivo per continuare.';
+
+  @override
   String get deleteAccountTitle => 'Elimina Account';
 
   @override

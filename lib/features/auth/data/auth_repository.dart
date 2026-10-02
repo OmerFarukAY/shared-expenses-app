@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -261,6 +262,8 @@ class FirebaseAuthRepository implements AuthRepository {
       await _syncLinkedProfileName();
     } on FirebaseAuthException catch (e) {
       throw _mapFirebaseAuthException(e);
+    } on PlatformException catch (e) {
+      throw _mapPlatformException(e);
     } catch (e) {
       if (e is AppException) rethrow;
       throw AppException.fromFirebase(e);
@@ -283,6 +286,8 @@ class FirebaseAuthRepository implements AuthRepository {
       await _syncLinkedProfileName();
     } on FirebaseAuthException catch (e) {
       throw _mapFirebaseAuthException(e);
+    } on PlatformException catch (e) {
+      throw _mapPlatformException(e);
     } catch (e) {
       if (e is AppException) rethrow;
       throw AppException.fromFirebase(e);
@@ -369,14 +374,27 @@ class FirebaseAuthRepository implements AuthRepository {
 
   AppException _mapFirebaseAuthException(FirebaseAuthException e) {
     final code = e.code.toLowerCase();
+    final message = (e.message ?? '').toLowerCase();
+    final combined = '$code $message';
 
     // Cancellation cases
     if (code == 'canceled' ||
         code == 'sign_in_canceled' ||
         code == 'web-context-cancelled' ||
         code == 'user-cancelled' ||
-        code == '1001') {
+        code == '1001' ||
+        combined.contains('1001') ||
+        combined.contains('canceled') ||
+        combined.contains('cancelled') ||
+        combined.contains('authorizationerror error 1001')) {
       return AuthCancelledException(originalError: e);
+    }
+
+    // Missing Apple Account on device or simulator
+    if (combined.contains('authorizationerror error 1000') ||
+        combined.contains('authorizationerror') ||
+        combined.contains('apple-account-required')) {
+      return AuthAppleAccountRequiredException(originalError: e);
     }
 
     // Account conflict cases
@@ -399,6 +417,29 @@ class FirebaseAuthRepository implements AuthRepository {
         message: 'This provider is already linked to your account.',
         code: 'provider-already-linked',
       );
+    }
+
+    return AppException.fromFirebase(e);
+  }
+
+  AppException _mapPlatformException(PlatformException e) {
+    final code = e.code.toLowerCase();
+    final message = (e.message ?? '').toLowerCase();
+    final combined = '$code $message';
+
+    if (code == '1001' ||
+        combined.contains('1001') ||
+        combined.contains('canceled') ||
+        combined.contains('cancelled') ||
+        combined.contains('authorizationerror error 1001')) {
+      return AuthCancelledException(originalError: e);
+    }
+
+    if (code == '1000' ||
+        combined.contains('authorizationerror error 1000') ||
+        combined.contains('authorizationerror') ||
+        combined.contains('apple-account-required')) {
+      return AuthAppleAccountRequiredException(originalError: e);
     }
 
     return AppException.fromFirebase(e);

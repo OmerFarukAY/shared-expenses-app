@@ -1160,6 +1160,12 @@ abstract class AppLocalizations {
   /// **'Failed to link account. Please try again.'**
   String get accountLinkErrorGeneric;
 
+  /// No description provided for @appleAccountRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in with an Apple Account in your device settings to continue with Apple.'**
+  String get appleAccountRequired;
+
   /// No description provided for @deleteAccountTitle.
   ///
   /// In en, this message translates to:

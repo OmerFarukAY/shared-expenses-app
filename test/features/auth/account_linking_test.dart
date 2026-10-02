@@ -23,6 +23,7 @@ class MockLinkingAuthRepository implements AuthRepository {
 
   bool shouldThrowConflictOnGoogle = false;
   bool shouldThrowCancelledOnApple = false;
+  bool shouldThrowAppleAccountRequired = false;
   bool shouldThrowGenericError = false;
 
   MockLinkingAuthRepository({UserProfile? initialProfile}) {
@@ -119,6 +120,9 @@ class MockLinkingAuthRepository implements AuthRepository {
   Future<void> linkAppleAccount({AuthProvider? customProvider}) async {
     if (shouldThrowCancelledOnApple) {
       throw const AuthCancelledException();
+    }
+    if (shouldThrowAppleAccountRequired) {
+      throw const AuthAppleAccountRequiredException();
     }
     _linkedProviders.add('apple.com');
     _providersController.add(List.unmodifiable(_linkedProviders));
@@ -352,6 +356,77 @@ void main() {
 
       expect(find.text('Switched to existing account.'), findsOneWidget);
       expect(repo.currentUid, 'existing_uid_456');
+    });
+
+    testWidgets('Tapping Sign in with Apple and cancelling does not show error banner', (
+      tester,
+    ) async {
+      final repo = MockLinkingAuthRepository();
+      repo.shouldThrowCancelledOnApple = true;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authRepositoryProvider.overrideWithValue(repo),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            theme: AppTheme.light,
+            home: const SettingsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Sign in with Apple'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SnackBar), findsNothing);
+    });
+
+    testWidgets('Tapping Sign in with Apple without Apple Account on device shows informative message', (
+      tester,
+    ) async {
+      final repo = MockLinkingAuthRepository();
+      repo.shouldThrowAppleAccountRequired = true;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authRepositoryProvider.overrideWithValue(repo),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            theme: AppTheme.light,
+            home: const SettingsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Sign in with Apple'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          'Please sign in with an Apple Account in your device settings to continue with Apple.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    test('AppException.fromFirebase correctly maps Apple ASAuthorization errors', () {
+      final error1001 = AppException.fromFirebase(
+        'PlatformException(1001, The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1001.), null, null)',
+      );
+      expect(error1001, isA<AuthCancelledException>());
+
+      final error1000 = AppException.fromFirebase(
+        'PlatformException(error, The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1000.), null, null)',
+      );
+      expect(error1000, isA<AuthAppleAccountRequiredException>());
     });
   });
 }

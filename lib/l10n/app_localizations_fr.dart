@@ -582,6 +582,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Échec de l\'association du compte. Veuillez réessayer.';
 
   @override
+  String get appleAccountRequired =>
+      'Veuillez vous connecter avec un compte Apple dans les réglages de l\'appareil pour continuer.';
+
+  @override
   String get deleteAccountTitle => 'Supprimer le Compte';
 
   @override

@@ -255,6 +255,7 @@
   "keepCurrentAccountButton": "Mantieni account ospite",
   "accountSwitchSuccess": "Passaggio all'account esistente completato.",
   "accountLinkErrorGeneric": "Impossibile collegare l'account. Riprova.",
+  "appleAccountRequired": "Accedi con un account Apple nelle impostazioni del dispositivo per continuare.",
   "deleteAccountTitle": "Elimina Account",
   "deleteAccountSubtitle": "Elimina definitivamente il tuo account. I gruppi di cui sei proprietario con altri membri richiedono un trasferimento di proprietà. Irreversibile.",
   "deleteAccountConfirmTitle": "Eliminare definitivamente l'account?",

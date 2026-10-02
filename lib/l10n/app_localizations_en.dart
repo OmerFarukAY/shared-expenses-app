@@ -577,6 +577,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Failed to link account. Please try again.';
 
   @override
+  String get appleAccountRequired =>
+      'Please sign in with an Apple Account in your device settings to continue with Apple.';
+
+  @override
   String get deleteAccountTitle => 'Delete Account';
 
   @override

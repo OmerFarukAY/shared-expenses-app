@@ -255,6 +255,7 @@
   "keepCurrentAccountButton": "Keep Guest Account",
   "accountSwitchSuccess": "Switched to existing account.",
   "accountLinkErrorGeneric": "Failed to link account. Please try again.",
+  "appleAccountRequired": "Please sign in with an Apple Account in your device settings to continue with Apple.",
   "deleteAccountTitle": "Delete Account",
   "deleteAccountSubtitle": "Permanently delete your account. Groups you own with other members require ownership transfer first. This cannot be undone.",
   "deleteAccountConfirmTitle": "Permanently Delete Account?",

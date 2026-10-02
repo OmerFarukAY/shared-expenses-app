@@ -581,6 +581,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Error al vincular la cuenta. Por favor, inténtalo de nuevo.';
 
   @override
+  String get appleAccountRequired =>
+      'Inicia sesión con una cuenta de Apple en los ajustes del dispositivo para continuar.';
+
+  @override
   String get deleteAccountTitle => 'Eliminar Cuenta';
 
   @override

@@ -255,6 +255,7 @@
   "keepCurrentAccountButton": "Mantener cuenta de invitado",
   "accountSwitchSuccess": "Se cambió a la cuenta existente.",
   "accountLinkErrorGeneric": "Error al vincular la cuenta. Por favor, inténtalo de nuevo.",
+  "appleAccountRequired": "Inicia sesión con una cuenta de Apple en los ajustes del dispositivo para continuar.",
   "deleteAccountTitle": "Eliminar Cuenta",
   "deleteAccountSubtitle": "Elimina permanentemente tu cuenta. Los grupos que posees con otros miembros requieren transferencia de propiedad primero. Esto no se puede deshacer.",
   "deleteAccountConfirmTitle": "¿Eliminar Cuenta Permanentemente?",

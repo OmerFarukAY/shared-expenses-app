@@ -255,6 +255,7 @@
   "keepCurrentAccountButton": "Garder le compte invité",
   "accountSwitchSuccess": "Passage au compte existant effectué.",
   "accountLinkErrorGeneric": "Échec de l'association du compte. Veuillez réessayer.",
+  "appleAccountRequired": "Veuillez vous connecter avec un compte Apple dans les réglages de l'appareil pour continuer.",
   "deleteAccountTitle": "Supprimer le Compte",
   "deleteAccountSubtitle": "Supprimez définitivement votre compte. Les groupes dont vous êtes propriétaire avec d'autres membres nécessitent un transfert de propriété. Irréversible.",
   "deleteAccountConfirmTitle": "Supprimer définitivement le compte ?",

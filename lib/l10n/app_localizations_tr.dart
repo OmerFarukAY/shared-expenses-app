@@ -577,6 +577,10 @@ class AppLocalizationsTr extends AppLocalizations {
       'Hesap bağlanamadı. Lütfen tekrar deneyin.';
 
   @override
+  String get appleAccountRequired =>
+      'Apple ile devam edebilmek için aygıtınızda (Ayarlar > Apple Hesabı) giriş yapılmış olmalıdır.';
+
+  @override
   String get deleteAccountTitle => 'Hesabı Sil';
 
   @override

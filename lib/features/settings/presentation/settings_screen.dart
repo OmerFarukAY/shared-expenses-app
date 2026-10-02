@@ -62,9 +62,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final message = e is AppException
+            ? e.message
+            : (AppLocalizations.of(context)?.accountLinkErrorGeneric ??
+                'Failed to link account. Please try again.');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Text(message),
             backgroundColor: AppColors.negative,
             behavior: SnackBarBehavior.floating,
           ),
@@ -111,11 +115,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         });
         await _showAccountConflictDialog(conflict, isGoogle: false);
       }
-    } catch (e) {
+    } on AuthAppleAccountRequiredException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Text(
+              AppLocalizations.of(context)?.appleAccountRequired ??
+                  e.message,
+            ),
+            backgroundColor: AppColors.negative,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        final message = e is AppException
+            ? e.message
+            : (AppLocalizations.of(context)?.accountLinkErrorGeneric ??
+                'Failed to link account. Please try again.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
             backgroundColor: AppColors.negative,
             behavior: SnackBarBehavior.floating,
           ),
