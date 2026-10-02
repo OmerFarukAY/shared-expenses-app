@@ -564,21 +564,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _launchLegalUrl(String urlString) async {
     final uri = Uri.parse(urlString);
     try {
-      final launched = await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      );
-      if (!launched && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)?.errorOpeningUrl ??
-                  'Could not open link.',
-            ),
-            backgroundColor: AppColors.negative,
-            behavior: SnackBarBehavior.floating,
-          ),
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
         );
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)?.errorOpeningUrl ??
+                    'Could not open link.',
+              ),
+              backgroundColor: AppColors.negative,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       }
     } catch (_) {
       if (mounted) {

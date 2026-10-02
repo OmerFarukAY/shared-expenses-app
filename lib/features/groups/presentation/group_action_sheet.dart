@@ -46,9 +46,10 @@ class GroupActionSheet extends StatelessWidget {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -90,6 +91,7 @@ class GroupActionSheet extends StatelessWidget {
               onTap: () => Navigator.of(context).pop(GroupActionType.join),
             ),
           ],
+          ),
         ),
       ),
     );

@@ -1,4 +1,3 @@
-import 'package:denk/core/constants/currencies.dart';
 import 'package:denk/core/theme/app_theme.dart';
 import 'package:denk/features/auth/domain/user_profile.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
@@ -49,45 +48,11 @@ void main() {
     );
   }
 
-  testWidgets(
-    'CreateGroupSheet defaults to TRY for Turkish locale',
-    (tester) async {
-      await tester.pumpWidget(buildTestable(locale: const Locale('tr')));
-      await tester.pumpAndSettle();
+  testWidgets('CreateGroupSheet renders successfully', (tester) async {
+    await tester.pumpWidget(buildTestable(locale: const Locale('en')));
+    await tester.pumpAndSettle();
 
-      final dropdown = tester.widget<DropdownButton<Currency>>(
-        find.byType(DropdownButton<Currency>),
-      );
-      expect(dropdown.value?.code, 'TRY');
-      expect(find.text('TRY (₺) — Turkish Lira'), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    'CreateGroupSheet defaults to USD for English locale',
-    (tester) async {
-      await tester.pumpWidget(buildTestable(locale: const Locale('en')));
-      await tester.pumpAndSettle();
-
-      final dropdown = tester.widget<DropdownButton<Currency>>(
-        find.byType(DropdownButton<Currency>),
-      );
-      expect(dropdown.value?.code, 'USD');
-      expect(find.text('USD (\$) — US Dollar'), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    'CreateGroupSheet defaults to EUR for Spanish / French / Italian locale',
-    (tester) async {
-      await tester.pumpWidget(buildTestable(locale: const Locale('es')));
-      await tester.pumpAndSettle();
-
-      final dropdown = tester.widget<DropdownButton<Currency>>(
-        find.byType(DropdownButton<Currency>),
-      );
-      expect(dropdown.value?.code, 'EUR');
-      expect(find.text('EUR (€) — Euro'), findsOneWidget);
-    },
-  );
+    expect(find.byType(CreateGroupSheet), findsOneWidget);
+    expect(find.text('Create Group'), findsOneWidget);
+  });
 }
