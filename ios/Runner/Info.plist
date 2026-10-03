@@ -6,6 +6,16 @@
 		<true/>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false/>
+		<key>CFBundleLocalizations</key>
+		<array>
+			<string>en</string>
+			<string>tr</string>
+			<string>es</string>
+			<string>fr</string>
+			<string>it</string>
+		</array>
 		<key>CFBundleDisplayName</key>
 		<string>Denk</string>
 		<key>CFBundleExecutable</key>
