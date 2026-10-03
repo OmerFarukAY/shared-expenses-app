@@ -95,5 +95,36 @@ void main() {
         JoinRequestStatus.cancelled,
       );
     });
+
+    test('rejectionCount defaults to 0 and tracks limit reached correctly', () {
+      final now = DateTime.now();
+      final modelDefault = JoinRequestModel(
+        id: 'u1',
+        groupId: 'g1',
+        uid: 'u1',
+        displayName: 'User 1',
+        status: JoinRequestStatus.pending,
+        inviteCode: 'CODE1',
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      expect(modelDefault.rejectionCount, 0);
+      expect(modelDefault.isLimitReached, isFalse);
+
+      final modelAtLimit = modelDefault.copyWith(rejectionCount: 3);
+      expect(modelAtLimit.rejectionCount, 3);
+      expect(modelAtLimit.isLimitReached, isTrue);
+
+      final modelOverLimit = modelDefault.copyWith(rejectionCount: 5);
+      expect(modelOverLimit.isLimitReached, isTrue);
+
+      final map = modelAtLimit.toMap();
+      expect(map['rejectionCount'], 3);
+
+      final deserialized = JoinRequestModel.fromMap(map, 'u1');
+      expect(deserialized.rejectionCount, 3);
+      expect(deserialized.isLimitReached, isTrue);
+    });
   });
 }

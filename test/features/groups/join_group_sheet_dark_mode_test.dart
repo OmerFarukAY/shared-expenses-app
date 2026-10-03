@@ -41,6 +41,18 @@ class DarkModeTestGroupRepository implements GroupRepository {
   }
 
   @override
+  Future<JoinRequestModel?> getJoinRequest({
+    required String groupId,
+    required String uid,
+  }) async => null;
+
+  @override
+  Future<void> undoRejectJoinRequest({
+    required String groupId,
+    required String requestUid,
+  }) async {}
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 

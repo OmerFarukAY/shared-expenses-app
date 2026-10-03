@@ -375,12 +375,14 @@ service cloud.firestore {
 
         // Update:
         // Case 1: Group creator resolves request (approve or reject)
-        // Case 2: Requester cancels own pending request
+        // Case 2: Group creator undos a rejection (status becomes pending, rejectionCount decremented)
+        // Case 3: Requester cancels own pending request
+        // Case 4: Requester re-submits a previously rejected request (< 3 rejections)
         allow update: if isAuthenticated() && (
-                         // Case 1: Creator approves or rejects
+                         // Case 1A: Creator approves
                          (isGroupCreator(groupId) &&
                           resource.data.status == 'pending' &&
-                          (request.resource.data.status == 'approved' || request.resource.data.status == 'rejected') &&
+                          request.resource.data.status == 'approved' &&
                           request.resource.data.resolvedBy == request.auth.uid &&
                           isValidCreationTimestamp(request.resource.data.resolvedAt) &&
                           request.resource.data.uid == resource.data.uid &&
@@ -388,7 +390,31 @@ service cloud.firestore {
                           request.resource.data.createdAt == resource.data.createdAt &&
                           isValidUpdateTimestamp(request.resource.data.updatedAt, resource.data.updatedAt))
                          ||
-                         // Case 2: Requester cancels own pending request
+                         // Case 1B: Creator rejects (rejectionCount incremented)
+                         (isGroupCreator(groupId) &&
+                          resource.data.status == 'pending' &&
+                          request.resource.data.status == 'rejected' &&
+                          request.resource.data.resolvedBy == request.auth.uid &&
+                          isValidCreationTimestamp(request.resource.data.resolvedAt) &&
+                          (!('rejectionCount' in request.resource.data) || request.resource.data.rejectionCount == (('rejectionCount' in resource.data ? resource.data.rejectionCount : 0) + 1)) &&
+                          request.resource.data.uid == resource.data.uid &&
+                          request.resource.data.groupId == resource.data.groupId &&
+                          request.resource.data.createdAt == resource.data.createdAt &&
+                          isValidUpdateTimestamp(request.resource.data.updatedAt, resource.data.updatedAt))
+                         ||
+                         // Case 2: Creator undos a rejection (status back to pending, rejectionCount decremented)
+                         (isGroupCreator(groupId) &&
+                          resource.data.status == 'rejected' &&
+                          request.resource.data.status == 'pending' &&
+                          (!('rejectionCount' in request.resource.data) || ('rejectionCount' in resource.data && request.resource.data.rejectionCount == resource.data.rejectionCount - 1)) &&
+                          (!('resolvedAt' in request.resource.data) || request.resource.data.resolvedAt == null) &&
+                          (!('resolvedBy' in request.resource.data) || request.resource.data.resolvedBy == null) &&
+                          request.resource.data.uid == resource.data.uid &&
+                          request.resource.data.groupId == resource.data.groupId &&
+                          request.resource.data.createdAt == resource.data.createdAt &&
+                          isValidUpdateTimestamp(request.resource.data.updatedAt, resource.data.updatedAt))
+                         ||
+                         // Case 3: Requester cancels own pending request
                          (request.auth.uid == requestUid &&
                           resource.data.status == 'pending' &&
                           request.resource.data.status == 'cancelled' &&
@@ -396,10 +422,32 @@ service cloud.firestore {
                           request.resource.data.groupId == resource.data.groupId &&
                           request.resource.data.createdAt == resource.data.createdAt &&
                           isValidUpdateTimestamp(request.resource.data.updatedAt, resource.data.updatedAt))
-                       );
+                         ||
+                         // Case 4: Requester re-submits previously rejected request (rejectionCount must be < 3, count preserved)
+                         (request.auth.uid == requestUid &&
+                          resource.data.status == 'rejected' &&
+                          (('rejectionCount' in resource.data ? resource.data.rejectionCount : 1) < 3) &&
+                          request.resource.data.status == 'pending' &&
+                          (!('rejectionCount' in resource.data) || request.resource.data.rejectionCount == resource.data.rejectionCount) &&
+                          (!('resolvedAt' in request.resource.data) || request.resource.data.resolvedAt == null) &&
+                          (!('resolvedBy' in request.resource.data) || request.resource.data.resolvedBy == null) &&
+                          request.resource.data.uid == resource.data.uid &&
+                          request.resource.data.groupId == resource.data.groupId &&
+                          request.resource.data.createdAt == resource.data.createdAt &&
+                          isValidUpdateTimestamp(request.resource.data.updatedAt, resource.data.updatedAt) &&
+                          exists(/databases/$(database)/documents/groups/$(groupId)) &&
+                          get(/databases/$(database)/documents/groups/$(groupId)).data.active == true &&
+                          !(request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.memberUids) &&
+                          exists(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)) &&
+                          get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.active == true &&
+                          get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.groupId == groupId)
+                        );
 
-        // Delete: Requester can cancel/delete own request, or creator can delete
-        allow delete: if isAuthenticated() && (request.auth.uid == requestUid || isGroupCreator(groupId));
+        // Delete: Requester can cancel/delete own pending request, or creator can delete
+        allow delete: if isAuthenticated() && (
+                         isGroupCreator(groupId) ||
+                         (request.auth.uid == requestUid && resource.data.status != 'rejected')
+                      );
       }
 
       // Subcollection: members

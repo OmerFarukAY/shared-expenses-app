@@ -382,6 +382,24 @@ class AppLocalizationsIt extends AppLocalizations {
   String get rejectButton => 'Rifiuta';
 
   @override
+  String get joinRequestRejectedSnackbar => 'Richiesta rifiutata';
+
+  @override
+  String get undoAction => 'Annulla';
+
+  @override
+  String get joinRequestLimitReached =>
+      'Hai raggiunto il limite per unirti a questo gruppo';
+
+  @override
+  String joinRequestAttemptsUsed(int count) {
+    return 'La tua richiesta precedente è stata rifiutata ($count/3 tentativi utilizzati). Puoi richiedere nuovamente l\'adesione.';
+  }
+
+  @override
+  String get requestToJoinAgain => 'Richiedi di nuovo';
+
+  @override
   String get noPendingRequests => 'Nessuna richiesta in attesa';
 
   @override

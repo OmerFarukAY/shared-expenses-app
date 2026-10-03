@@ -354,6 +354,125 @@ void main() {
 
         final updatedGroup = await repository.getGroup(group.id);
         expect(updatedGroup!.memberCount, 1);
+        expect(reqDoc.data()!['rejectionCount'], 1);
+      },
+    );
+
+    test(
+      'undoRejectJoinRequest restores request to pending and decrements rejectionCount',
+      () async {
+        final group = await repository.createGroup(
+          name: 'Undo Reject Group',
+          defaultCurrency: 'TRY',
+          creator: creator,
+        );
+
+        await repository.createJoinRequest(
+          inviteCode: group.inviteCode,
+          user: friend,
+        );
+
+        await repository.rejectJoinRequest(
+          groupId: group.id,
+          requestUid: friend.uid,
+          rejectedBy: creator.uid,
+        );
+
+        var reqDoc = await fakeFirestore
+            .collection('groups')
+            .doc(group.id)
+            .collection('joinRequests')
+            .doc(friend.uid)
+            .get();
+        expect(reqDoc.data()!['status'], 'rejected');
+        expect(reqDoc.data()!['rejectionCount'], 1);
+
+        // Undo rejection
+        await repository.undoRejectJoinRequest(
+          groupId: group.id,
+          requestUid: friend.uid,
+        );
+
+        reqDoc = await fakeFirestore
+            .collection('groups')
+            .doc(group.id)
+            .collection('joinRequests')
+            .doc(friend.uid)
+            .get();
+        expect(reqDoc.data()!['status'], 'pending');
+        expect(reqDoc.data()!['rejectionCount'], 0);
+        expect(reqDoc.data()!.containsKey('resolvedAt'), isFalse);
+        expect(reqDoc.data()!.containsKey('resolvedBy'), isFalse);
+      },
+    );
+
+    test(
+      'createJoinRequest allows re-requesting after rejection when under 3-attempt limit',
+      () async {
+        final group = await repository.createGroup(
+          name: 'Retry Join Group',
+          defaultCurrency: 'TRY',
+          creator: creator,
+        );
+
+        // 1st request
+        final req1 = await repository.createJoinRequest(
+          inviteCode: group.inviteCode,
+          user: friend,
+        );
+        expect(req1.rejectionCount, 0);
+
+        // Admin rejects 1st time
+        await repository.rejectJoinRequest(
+          groupId: group.id,
+          requestUid: friend.uid,
+          rejectedBy: creator.uid,
+        );
+
+        // 2nd request (under limit)
+        final req2 = await repository.createJoinRequest(
+          inviteCode: group.inviteCode,
+          user: friend,
+        );
+        expect(req2.status, JoinRequestStatus.pending);
+        expect(req2.rejectionCount, 1);
+
+        // Admin rejects 2nd time
+        await repository.rejectJoinRequest(
+          groupId: group.id,
+          requestUid: friend.uid,
+          rejectedBy: creator.uid,
+        );
+
+        // 3rd request (under limit)
+        final req3 = await repository.createJoinRequest(
+          inviteCode: group.inviteCode,
+          user: friend,
+        );
+        expect(req3.status, JoinRequestStatus.pending);
+        expect(req3.rejectionCount, 2);
+
+        // Admin rejects 3rd time -> rejectionCount reaches 3
+        await repository.rejectJoinRequest(
+          groupId: group.id,
+          requestUid: friend.uid,
+          rejectedBy: creator.uid,
+        );
+
+        // 4th request -> blocked by spam protection limit!
+        expect(
+          () => repository.createJoinRequest(
+            inviteCode: group.inviteCode,
+            user: friend,
+          ),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.code,
+              'code',
+              'rejection-limit-reached',
+            ),
+          ),
+        );
       },
     );
 

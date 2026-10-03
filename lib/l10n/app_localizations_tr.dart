@@ -382,6 +382,24 @@ class AppLocalizationsTr extends AppLocalizations {
   String get rejectButton => 'Reddet';
 
   @override
+  String get joinRequestRejectedSnackbar => 'Talep reddedildi';
+
+  @override
+  String get undoAction => 'Geri Al';
+
+  @override
+  String get joinRequestLimitReached =>
+      'Bu gruba katılma sınırınızı doldurdunuz';
+
+  @override
+  String joinRequestAttemptsUsed(int count) {
+    return 'Önceki talebiniz reddedildi ($count/3 hak kullanıldı). Tekrar katılma talebi gönderebilirsiniz.';
+  }
+
+  @override
+  String get requestToJoinAgain => 'Tekrar İstek Gönder';
+
+  @override
   String get noPendingRequests => 'Bekleyen katılım isteği yok';
 
   @override

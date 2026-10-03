@@ -31,6 +31,7 @@ class JoinRequestModel {
   final DateTime updatedAt;
   final DateTime? resolvedAt;
   final String? resolvedBy; // UID of creator who approved/rejected
+  final int rejectionCount;
 
   const JoinRequestModel({
     required this.id,
@@ -43,12 +44,14 @@ class JoinRequestModel {
     required this.updatedAt,
     this.resolvedAt,
     this.resolvedBy,
+    this.rejectionCount = 0,
   });
 
   bool get isPending => status == JoinRequestStatus.pending;
   bool get isApproved => status == JoinRequestStatus.approved;
   bool get isRejected => status == JoinRequestStatus.rejected;
   bool get isCancelled => status == JoinRequestStatus.cancelled;
+  bool get isLimitReached => rejectionCount >= 3;
 
   JoinRequestModel copyWith({
     String? id,
@@ -61,6 +64,7 @@ class JoinRequestModel {
     DateTime? updatedAt,
     DateTime? resolvedAt,
     String? resolvedBy,
+    int? rejectionCount,
   }) {
     return JoinRequestModel(
       id: id ?? this.id,
@@ -73,6 +77,7 @@ class JoinRequestModel {
       updatedAt: updatedAt ?? this.updatedAt,
       resolvedAt: resolvedAt ?? this.resolvedAt,
       resolvedBy: resolvedBy ?? this.resolvedBy,
+      rejectionCount: rejectionCount ?? this.rejectionCount,
     );
   }
 
@@ -86,6 +91,7 @@ class JoinRequestModel {
       'inviteCode': inviteCode,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
+      'rejectionCount': rejectionCount,
       if (resolvedAt != null) 'resolvedAt': Timestamp.fromDate(resolvedAt!),
       if (resolvedBy != null) 'resolvedBy': resolvedBy,
     };
@@ -116,6 +122,7 @@ class JoinRequestModel {
           ? parseDate(map['resolvedAt'])
           : null,
       resolvedBy: map['resolvedBy'] as String?,
+      rejectionCount: (map['rejectionCount'] as num?)?.toInt() ?? 0,
     );
   }
 }

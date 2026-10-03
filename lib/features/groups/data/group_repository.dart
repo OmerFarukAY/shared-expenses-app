@@ -39,6 +39,14 @@ abstract class GroupRepository {
     required String requestUid,
     required String rejectedBy,
   });
+  Future<void> undoRejectJoinRequest({
+    required String groupId,
+    required String requestUid,
+  });
+  Future<JoinRequestModel?> getJoinRequest({
+    required String groupId,
+    required String uid,
+  });
   Future<void> cancelJoinRequest({
     required String groupId,
     required String uid,
@@ -391,14 +399,17 @@ class FirestoreGroupRepository implements GroupRepository {
         );
       }
 
-      // 2. Check if user has an existing pending join request
+      // 2. Check if user has an existing join request
       final requestRef = _firestore
           .collection('groups')
           .doc(group.id)
           .collection('joinRequests')
           .doc(user.uid);
       final existingReq = await requestRef.get();
-      if (existingReq.exists) {
+      int rejectionCount = 0;
+      DateTime createdAt = now;
+
+      if (existingReq.exists && existingReq.data() != null) {
         final existingModel = JoinRequestModel.fromMap(
           existingReq.data()!,
           existingReq.id,
@@ -409,6 +420,14 @@ class FirestoreGroupRepository implements GroupRepository {
             code: 'request-already-pending',
           );
         }
+        rejectionCount = existingModel.rejectionCount;
+        if (rejectionCount >= 3) {
+          throw const AppException(
+            message: 'Bu gruba katılma sınırınızı doldurdunuz.',
+            code: 'rejection-limit-reached',
+          );
+        }
+        createdAt = existingModel.createdAt;
       }
 
       final requestModel = JoinRequestModel(
@@ -418,8 +437,9 @@ class FirestoreGroupRepository implements GroupRepository {
         displayName: user.displayName,
         status: JoinRequestStatus.pending,
         inviteCode: group.inviteCode,
-        createdAt: now,
+        createdAt: createdAt,
         updatedAt: now,
+        rejectionCount: rejectionCount,
       );
 
       final batch = _firestore.batch();
@@ -587,6 +607,7 @@ class FirestoreGroupRepository implements GroupRepository {
           .doc(requestUid);
       batch.update(reqRef, {
         'status': JoinRequestStatus.rejected.name,
+        'rejectionCount': FieldValue.increment(1),
         'resolvedAt': Timestamp.fromDate(now),
         'resolvedBy': rejectedBy,
         'updatedAt': Timestamp.fromDate(now),
@@ -597,16 +618,79 @@ class FirestoreGroupRepository implements GroupRepository {
           .doc(requestUid)
           .collection('join_requests')
           .doc(groupId);
-      batch.update(userReqRef, {
+      batch.set(userReqRef, {
         'status': JoinRequestStatus.rejected.name,
+        'rejectionCount': FieldValue.increment(1),
         'resolvedAt': Timestamp.fromDate(now),
         'resolvedBy': rejectedBy,
         'updatedAt': Timestamp.fromDate(now),
-      });
+      }, SetOptions(merge: true));
 
       await batch.commit();
     } catch (e) {
       throw AppException.fromFirebase(e);
+    }
+  }
+
+  @override
+  Future<void> undoRejectJoinRequest({
+    required String groupId,
+    required String requestUid,
+  }) async {
+    final now = DateTime.now();
+    try {
+      final batch = _firestore.batch();
+
+      final reqRef = _firestore
+          .collection('groups')
+          .doc(groupId)
+          .collection('joinRequests')
+          .doc(requestUid);
+      batch.update(reqRef, {
+        'status': JoinRequestStatus.pending.name,
+        'rejectionCount': FieldValue.increment(-1),
+        'resolvedAt': FieldValue.delete(),
+        'resolvedBy': FieldValue.delete(),
+        'updatedAt': Timestamp.fromDate(now),
+      });
+
+      final userReqRef = _firestore
+          .collection('users')
+          .doc(requestUid)
+          .collection('join_requests')
+          .doc(groupId);
+      batch.set(userReqRef, {
+        'status': JoinRequestStatus.pending.name,
+        'rejectionCount': FieldValue.increment(-1),
+        'resolvedAt': FieldValue.delete(),
+        'resolvedBy': FieldValue.delete(),
+        'updatedAt': Timestamp.fromDate(now),
+      }, SetOptions(merge: true));
+
+      await batch.commit();
+    } catch (e) {
+      throw AppException.fromFirebase(e);
+    }
+  }
+
+  @override
+  Future<JoinRequestModel?> getJoinRequest({
+    required String groupId,
+    required String uid,
+  }) async {
+    try {
+      final doc = await _firestore
+          .collection('groups')
+          .doc(groupId)
+          .collection('joinRequests')
+          .doc(uid)
+          .get();
+      if (!doc.exists || doc.data() == null) {
+        return null;
+      }
+      return JoinRequestModel.fromMap(doc.data()!, doc.id);
+    } catch (e) {
+      return null;
     }
   }
 

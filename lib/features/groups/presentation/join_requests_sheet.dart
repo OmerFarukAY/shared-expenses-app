@@ -151,10 +151,48 @@ class JoinRequestsSheet extends ConsumerWidget {
                                     requestUid: req.uid,
                                     rejectedBy: currentUser.uid,
                                   );
+                                  if (context.mounted) {
+                                    final messenger = ScaffoldMessenger.of(context);
+                                    messenger.clearSnackBars();
+                                    messenger.showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          l10n?.joinRequestRejectedSnackbar ??
+                                              'Talep reddedildi',
+                                        ),
+                                        duration: const Duration(seconds: 4),
+                                        behavior: SnackBarBehavior.floating,
+                                        action: SnackBarAction(
+                                          label: l10n?.undoAction ?? 'Geri Al',
+                                          textColor: theme.colorScheme.inversePrimary,
+                                          onPressed: () async {
+                                            try {
+                                              await repo.undoRejectJoinRequest(
+                                                groupId: group.id,
+                                                requestUid: req.uid,
+                                              );
+                                            } catch (e) {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(context.localizedErrorMessage(e)),
+                                                    behavior: SnackBarBehavior.floating,
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  }
                                 } catch (e) {
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(context.localizedErrorMessage(e))),
+                                      SnackBar(
+                                        content: Text(context.localizedErrorMessage(e)),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
                                     );
                                   }
                                 }

@@ -137,6 +137,18 @@
   "joinRequestsTitle": "Join Requests",
   "approveButton": "Approve",
   "rejectButton": "Reject",
+  "joinRequestRejectedSnackbar": "Request rejected",
+  "undoAction": "Undo",
+  "joinRequestLimitReached": "You have reached the limit to join this group",
+  "joinRequestAttemptsUsed": "Previous request was rejected ({count}/3 attempts used). You can request to join again.",
+  "@joinRequestAttemptsUsed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "requestToJoinAgain": "Request to Join Again",
   "noPendingRequests": "No pending requests",
   "cancelRequestButton": "Cancel Request",
   "joinRequestCancelled": "Join request cancelled",

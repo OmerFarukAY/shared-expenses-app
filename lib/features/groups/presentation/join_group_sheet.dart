@@ -7,6 +7,7 @@ import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/auth/presentation/auth_controller.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
 import 'package:denk/features/groups/domain/invite_code_generator.dart';
+import 'package:denk/features/groups/domain/join_request_model.dart';
 import 'package:denk/features/groups/presentation/group_controller.dart';
 import 'package:denk/l10n/l10n.dart';
 
@@ -28,6 +29,7 @@ class JoinGroupSheet extends ConsumerStatefulWidget {
 class _JoinGroupSheetState extends ConsumerState<JoinGroupSheet> {
   final _codeController = TextEditingController();
   GroupModel? _previewGroup;
+  JoinRequestModel? _existingRequest;
   String? _errorText;
   bool _isSearching = false;
   bool _isRequesting = false;
@@ -50,9 +52,18 @@ class _JoinGroupSheetState extends ConsumerState<JoinGroupSheet> {
       try {
         final repo = ref.read(groupRepositoryProvider);
         final group = await repo.resolveInviteCode(clean);
+        JoinRequestModel? existingRequest;
+        final user = await ref.read(userProfileControllerProvider.future);
+        if (user != null) {
+          existingRequest = await repo.getJoinRequest(
+            groupId: group.id,
+            uid: user.uid,
+          );
+        }
         if (mounted) {
           setState(() {
             _previewGroup = group;
+            _existingRequest = existingRequest;
             _errorText = null;
           });
         }
@@ -61,6 +72,7 @@ class _JoinGroupSheetState extends ConsumerState<JoinGroupSheet> {
           final l10n = AppLocalizations.of(context);
           setState(() {
             _previewGroup = null;
+            _existingRequest = null;
             _errorText =
                 l10n?.invalidOrInactiveInvite ??
                 'Invite code not found or inactive';
@@ -72,15 +84,28 @@ class _JoinGroupSheetState extends ConsumerState<JoinGroupSheet> {
         }
       }
     } else {
-      if (_previewGroup != null) {
-        setState(() => _previewGroup = null);
+      if (_previewGroup != null || _existingRequest != null) {
+        setState(() {
+          _previewGroup = null;
+          _existingRequest = null;
+        });
       }
     }
   }
 
   void _submitJoinRequest() async {
     final user = await ref.read(userProfileControllerProvider.future);
-    if (user == null || _previewGroup == null) return;
+    if (!mounted || user == null || _previewGroup == null) return;
+
+    if (_existingRequest != null && _existingRequest!.isLimitReached) {
+      final l10n = AppLocalizations.of(context);
+      setState(() {
+        _errorText =
+            l10n?.joinRequestLimitReached ??
+            'Bu gruba katılma sınırınızı doldurdunuz';
+      });
+      return;
+    }
 
     setState(() => _isRequesting = true);
 
@@ -271,13 +296,147 @@ class _JoinGroupSheetState extends ConsumerState<JoinGroupSheet> {
                     ],
                   ),
                 ),
+                if (_existingRequest != null && _existingRequest!.isLimitReached) ...[
+                  const SizedBox(height: 14),
+                  DenkCard(
+                    backgroundColor: isDark
+                        ? AppColors.negative.withValues(alpha: 0.12)
+                        : AppColors.negativeLight,
+                    borderColor: isDark
+                        ? AppColors.negative.withValues(alpha: 0.4)
+                        : AppColors.negative.withValues(alpha: 0.3),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColors.negative.withValues(alpha: 0.2)
+                                : AppColors.negative.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.block_rounded,
+                            color: AppColors.negative,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n?.joinRequestLimitReached ??
+                                    'Bu gruba katılma sınırınızı doldurdunuz',
+                                style: AppTypography.bodyMedium.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.negative,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${_existingRequest!.rejectionCount}/3 ${l10n?.joinRequestAttemptsUsed(_existingRequest!.rejectionCount) != null ? "" : "attempts used"}',
+                                style: AppTypography.caption.copyWith(
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.7,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else if (_existingRequest != null && _existingRequest!.isPending) ...[
+                  const SizedBox(height: 14),
+                  DenkCard(
+                    backgroundColor: isDark
+                        ? const Color(0xFFFBBF24).withValues(alpha: 0.12)
+                        : const Color(0xFFFEF3C7),
+                    borderColor: isDark
+                        ? const Color(0xFFFBBF24).withValues(alpha: 0.35)
+                        : const Color(0xFFFCD34D),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.hourglass_top_rounded,
+                          color: isDark
+                              ? const Color(0xFFFBBF24)
+                              : const Color(0xFFD97706),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            l10n?.pendingApprovalCardSubtitle ??
+                                'Waiting for group owner approval.',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: isDark
+                                  ? const Color(0xFFFBBF24)
+                                  : const Color(0xFFB45309),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else if (_existingRequest != null && _existingRequest!.isRejected) ...[
+                  const SizedBox(height: 14),
+                  DenkCard(
+                    backgroundColor: theme.colorScheme.surfaceContainerHighest
+                        .withValues(alpha: isDark ? 0.3 : 0.5),
+                    borderColor: theme.colorScheme.outlineVariant
+                        .withValues(alpha: isDark ? 0.25 : 0.4),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline_rounded,
+                          color: theme.colorScheme.primary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            l10n?.joinRequestAttemptsUsed(
+                                  _existingRequest!.rejectionCount,
+                                ) ??
+                                'Önceki talebiniz reddedildi (${_existingRequest!.rejectionCount}/3 hak kullanıldı). Tekrar katılma talebi gönderebilirsiniz.',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.75,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 20),
-                DenkButton(
-                  label:
-                      '${l10n?.requestToJoinButton ?? "Request to Join"} ${_previewGroup!.name}',
-                  isLoading: _isRequesting,
-                  onPressed: _submitJoinRequest,
-                ),
+                if (_existingRequest != null && _existingRequest!.isLimitReached)
+                  DenkButton(
+                    label: l10n?.joinRequestLimitReached ??
+                        'Bu gruba katılma sınırınızı doldurdunuz',
+                    onPressed: null,
+                  )
+                else if (_existingRequest != null && _existingRequest!.isPending)
+                  DenkButton(
+                    label: l10n?.joinRequestPending ?? 'Pending Approval',
+                    onPressed: null,
+                  )
+                else
+                  DenkButton(
+                    label: _existingRequest != null &&
+                            _existingRequest!.isRejected
+                        ? (l10n?.requestToJoinAgain ?? 'Tekrar İstek Gönder')
+                        : '${l10n?.requestToJoinButton ?? "Request to Join"} ${_previewGroup!.name}',
+                    isLoading: _isRequesting,
+                    onPressed: _submitJoinRequest,
+                  ),
               ],
             ],
           ],

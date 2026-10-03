@@ -384,6 +384,24 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rejectButton => 'Rejeter';
 
   @override
+  String get joinRequestRejectedSnackbar => 'Demande rejetée';
+
+  @override
+  String get undoAction => 'Annuler';
+
+  @override
+  String get joinRequestLimitReached =>
+      'Vous avez atteint la limite pour rejoindre ce groupe';
+
+  @override
+  String joinRequestAttemptsUsed(int count) {
+    return 'Votre demande précédente a été rejetée ($count/3 tentatives utilisées). Vous pouvez refaire une demande.';
+  }
+
+  @override
+  String get requestToJoinAgain => 'Demander à nouveau';
+
+  @override
   String get noPendingRequests => 'Aucune demande en attente';
 
   @override

@@ -127,6 +127,18 @@
   "joinRequestsTitle": "Solicitudes de unión",
   "approveButton": "Aprobar",
   "rejectButton": "Rechazar",
+  "joinRequestRejectedSnackbar": "Solicitud rechazada",
+  "undoAction": "Deshacer",
+  "joinRequestLimitReached": "Has alcanzado el límite para unirte a este grupo",
+  "joinRequestAttemptsUsed": "Tu solicitud anterior fue rechazada ({count}/3 intentos utilizados). Puedes volver a solicitar unirte.",
+  "@joinRequestAttemptsUsed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "requestToJoinAgain": "Volver a solicitar",
   "noPendingRequests": "No hay solicitudes pendientes",
   "cancelRequestButton": "Cancelar solicitud",
   "joinRequestCancelled": "Solicitud de unión cancelada",

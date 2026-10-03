@@ -33,6 +33,8 @@ extension LocalizedErrorX on BuildContext {
         case 'request-already-pending':
         case 'pending-request-exists':
           return l10n.requestAlreadyPendingError;
+        case 'rejection-limit-reached':
+          return l10n.joinRequestLimitReached;
         case 'invalid-percentage-sum':
           return l10n.errorInvalidPercentageSum;
         case 'invalid-amount':
@@ -123,6 +125,9 @@ extension LocalizedErrorX on BuildContext {
     }
     if (msg.contains('pending') && msg.contains('request')) {
       return l10n.requestAlreadyPendingError;
+    }
+    if (msg.contains('katılma sınır') || msg.contains('limit reached') || msg.contains('rejection-limit-reached')) {
+      return l10n.joinRequestLimitReached;
     }
     if (msg.contains('invite code not found') || msg.contains('invalid or inactive invite')) {
       return l10n.invalidOrInactiveInvite;

@@ -212,6 +212,18 @@ class MockGroupRepository implements GroupRepository {
   }) async {}
 
   @override
+  Future<void> undoRejectJoinRequest({
+    required String groupId,
+    required String requestUid,
+  }) async {}
+
+  @override
+  Future<JoinRequestModel?> getJoinRequest({
+    required String groupId,
+    required String uid,
+  }) async => null;
+
+  @override
   Future<void> cancelJoinRequest({
     required String groupId,
     required String uid,

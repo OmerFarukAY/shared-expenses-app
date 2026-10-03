@@ -127,6 +127,18 @@
   "joinRequestsTitle": "Katılım İstekleri",
   "approveButton": "Onayla",
   "rejectButton": "Reddet",
+  "joinRequestRejectedSnackbar": "Talep reddedildi",
+  "undoAction": "Geri Al",
+  "joinRequestLimitReached": "Bu gruba katılma sınırınızı doldurdunuz",
+  "joinRequestAttemptsUsed": "Önceki talebiniz reddedildi ({count}/3 hak kullanıldı). Tekrar katılma talebi gönderebilirsiniz.",
+  "@joinRequestAttemptsUsed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "requestToJoinAgain": "Tekrar İstek Gönder",
   "noPendingRequests": "Bekleyen katılım isteği yok",
   "cancelRequestButton": "İsteği İptal Et",
   "joinRequestCancelled": "Katılım isteği iptal edildi",

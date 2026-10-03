@@ -127,6 +127,18 @@
   "joinRequestsTitle": "Richieste di adesione",
   "approveButton": "Approva",
   "rejectButton": "Rifiuta",
+  "joinRequestRejectedSnackbar": "Richiesta rifiutata",
+  "undoAction": "Annulla",
+  "joinRequestLimitReached": "Hai raggiunto il limite per unirti a questo gruppo",
+  "joinRequestAttemptsUsed": "La tua richiesta precedente è stata rifiutata ({count}/3 tentativi utilizzati). Puoi richiedere nuovamente l'adesione.",
+  "@joinRequestAttemptsUsed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "requestToJoinAgain": "Richiedi di nuovo",
   "noPendingRequests": "Nessuna richiesta in attesa",
   "cancelRequestButton": "Annulla richiesta",
   "joinRequestCancelled": "Richiesta di adesione annullata",

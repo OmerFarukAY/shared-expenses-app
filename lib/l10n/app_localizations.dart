@@ -824,6 +824,36 @@ abstract class AppLocalizations {
   /// **'Reject'**
   String get rejectButton;
 
+  /// No description provided for @joinRequestRejectedSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Request rejected'**
+  String get joinRequestRejectedSnackbar;
+
+  /// No description provided for @undoAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undoAction;
+
+  /// No description provided for @joinRequestLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'You have reached the limit to join this group'**
+  String get joinRequestLimitReached;
+
+  /// No description provided for @joinRequestAttemptsUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous request was rejected ({count}/3 attempts used). You can request to join again.'**
+  String joinRequestAttemptsUsed(int count);
+
+  /// No description provided for @requestToJoinAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Request to Join Again'**
+  String get requestToJoinAgain;
+
   /// No description provided for @noPendingRequests.
   ///
   /// In en, this message translates to:

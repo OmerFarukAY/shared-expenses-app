@@ -384,6 +384,24 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rejectButton => 'Rechazar';
 
   @override
+  String get joinRequestRejectedSnackbar => 'Solicitud rechazada';
+
+  @override
+  String get undoAction => 'Deshacer';
+
+  @override
+  String get joinRequestLimitReached =>
+      'Has alcanzado el límite para unirte a este grupo';
+
+  @override
+  String joinRequestAttemptsUsed(int count) {
+    return 'Tu solicitud anterior fue rechazada ($count/3 intentos utilizados). Puedes volver a solicitar unirte.';
+  }
+
+  @override
+  String get requestToJoinAgain => 'Volver a solicitar';
+
+  @override
   String get noPendingRequests => 'No hay solicitudes pendientes';
 
   @override
