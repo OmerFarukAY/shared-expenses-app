@@ -256,6 +256,30 @@ void main() {
       expect(find.text('Sign in with Apple'), findsOneWidget);
     });
 
+    testWidgets('SettingsScreen on Android does not display Sign in with Apple button', (
+      tester,
+    ) async {
+      final repo = MockLinkingAuthRepository();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authRepositoryProvider.overrideWithValue(repo),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            theme: AppTheme.light,
+            home: const SettingsScreen(isApplePlatformOverride: false),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Link with Google'), findsOneWidget);
+      expect(find.text('Sign in with Apple'), findsNothing);
+    });
+
     testWidgets('Tapping Link with Google successfully secures account', (
       tester,
     ) async {

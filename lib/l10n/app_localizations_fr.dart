@@ -64,7 +64,28 @@ class AppLocalizationsFr extends AppLocalizations {
       'Gérez vos dépenses partagées entre colocataires, amis ou famille sans mot de passe ni données superflues.';
 
   @override
-  String get chooseDisplayName => 'Choisissez votre nom affiché';
+  String get welcomeFeature1Title => 'Sans Compte ni Mot de Passe';
+
+  @override
+  String get welcomeFeature1Subtitle =>
+      'Sans e-mail ni téléphone, commencez instantanément.';
+
+  @override
+  String get welcomeFeature2Title => 'Partage Équitable et Précis';
+
+  @override
+  String get welcomeFeature2Subtitle =>
+      'Répartissez les dépenses équitablement et en toute transparence.';
+
+  @override
+  String get welcomeFeature3Title => 'Rejoignez en un Clic';
+
+  @override
+  String get welcomeFeature3Subtitle =>
+      'Rejoignez des groupes en quelques secondes avec un code d\'invitation.';
+
+  @override
+  String get chooseDisplayName => 'Votre nom visible dans les groupes';
 
   @override
   String get youLabel => 'Vous';

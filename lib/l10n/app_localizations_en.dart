@@ -64,7 +64,28 @@ class AppLocalizationsEn extends AppLocalizations {
       'Keep track of shared expenses with friends, roommates, and family without passwords or personal data.';
 
   @override
-  String get chooseDisplayName => 'Choose your display name';
+  String get welcomeFeature1Title => 'No Account or Password';
+
+  @override
+  String get welcomeFeature1Subtitle =>
+      'No email or phone required, start instantly.';
+
+  @override
+  String get welcomeFeature2Title => 'Exact & Fair Splitting';
+
+  @override
+  String get welcomeFeature2Subtitle =>
+      'Split expenses fairly and transparently.';
+
+  @override
+  String get welcomeFeature3Title => 'Instant Joining';
+
+  @override
+  String get welcomeFeature3Subtitle =>
+      'Join groups in seconds with an invite code.';
+
+  @override
+  String get chooseDisplayName => 'Your display name in groups';
 
   @override
   String get youLabel => 'You';

@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,7 +22,12 @@ import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   final bool isTab;
-  const SettingsScreen({super.key, this.isTab = false});
+  final bool? isApplePlatformOverride;
+  const SettingsScreen({
+    super.key,
+    this.isTab = false,
+    this.isApplePlatformOverride,
+  });
 
   @override
   ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
@@ -1288,17 +1295,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     _isLinking ? null : _handleLinkGoogle,
                                 height: 44,
                               ),
-                            const SizedBox(height: 10),
-                            // Apple
-                            if (isAppleLinked)
+                            // Apple (visible on iOS or if already linked)
+                            if (isAppleLinked) ...[
+                              const SizedBox(height: 10),
                               _buildLinkedProviderTile(
                                 icon: Icons.apple,
                                 title: l10n?.linkedWithApple ??
                                     'Linked with Apple',
                                 subtitle: null,
                                 theme: theme,
-                              )
-                            else
+                              ),
+                            ] else if (widget.isApplePlatformOverride ??
+                                (!kIsWeb &&
+                                    (Platform.isIOS ||
+                                        (Platform.environment
+                                                .containsKey('FLUTTER_TEST') &&
+                                            !Platform.isAndroid)))) ...[
+                              const SizedBox(height: 10),
                               DenkButton(
                                 label: l10n?.linkWithApple ??
                                     'Sign in with Apple',
@@ -1309,6 +1322,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 onPressed: _isLinking ? null : _handleLinkApple,
                                 height: 44,
                               ),
+                            ],
                           ],
                         ),
                       );

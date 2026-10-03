@@ -61,10 +61,30 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get welcomeSubtitle =>
-      'Şifre ve kişisel bilgi vermeden; arkadaşlarınız, ev arkadaşlarınız veya ailenizle ortak harcamalarınızı kolayca takip edin.';
+      'Şifre veya kişisel bilgi gerekmeden ortak masrafları kolayca takip edin.';
 
   @override
-  String get chooseDisplayName => 'Görünecek adınızı seçin';
+  String get welcomeFeature1Title => 'Hesap & Şifre Yok';
+
+  @override
+  String get welcomeFeature1Subtitle =>
+      'E-posta veya telefon istemez, hemen başla.';
+
+  @override
+  String get welcomeFeature2Title => 'Kuruşu Kuruşuna Denk';
+
+  @override
+  String get welcomeFeature2Subtitle => 'Masrafları adil ve şeffaf bölüştür.';
+
+  @override
+  String get welcomeFeature3Title => 'Kolay Katılım';
+
+  @override
+  String get welcomeFeature3Subtitle =>
+      'Davet koduyla saniyeler içinde gruba bağlan.';
+
+  @override
+  String get chooseDisplayName => 'Grupta görünecek adınız';
 
   @override
   String get youLabel => 'Sen';
@@ -77,7 +97,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'Lütfen 2 ile 50 karakter arasında bir ad girin';
 
   @override
-  String get getStarted => 'Başlayın';
+  String get getStarted => 'Denk\'e Başla';
 
   @override
   String get createGroup => 'Grup Oluştur';

@@ -212,10 +212,46 @@ abstract class AppLocalizations {
   /// **'Keep track of shared expenses with friends, roommates, and family without passwords or personal data.'**
   String get welcomeSubtitle;
 
+  /// No description provided for @welcomeFeature1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'No Account or Password'**
+  String get welcomeFeature1Title;
+
+  /// No description provided for @welcomeFeature1Subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No email or phone required, start instantly.'**
+  String get welcomeFeature1Subtitle;
+
+  /// No description provided for @welcomeFeature2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Exact & Fair Splitting'**
+  String get welcomeFeature2Title;
+
+  /// No description provided for @welcomeFeature2Subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Split expenses fairly and transparently.'**
+  String get welcomeFeature2Subtitle;
+
+  /// No description provided for @welcomeFeature3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Instant Joining'**
+  String get welcomeFeature3Title;
+
+  /// No description provided for @welcomeFeature3Subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join groups in seconds with an invite code.'**
+  String get welcomeFeature3Subtitle;
+
   /// No description provided for @chooseDisplayName.
   ///
   /// In en, this message translates to:
-  /// **'Choose your display name'**
+  /// **'Your display name in groups'**
   String get chooseDisplayName;
 
   /// No description provided for @youLabel.
