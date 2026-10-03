@@ -142,6 +142,10 @@ void main() {
       expect(l10n.joinRequestsTitle, equals('Katılım İstekleri'));
       expect(l10n.approveButton, equals('Onayla'));
       expect(l10n.rejectButton, equals('Reddet'));
+      expect(
+        l10n.confirmPaymentSubtitle('Alice', 'Bob'),
+        equals('Alice kişisinin Bob kişisine ödeme yaptığını onaylıyor musunuz?'),
+      );
     });
 
     testWidgets('Spanish localization contains natural terminology', (
@@ -170,6 +174,10 @@ void main() {
       expect(l10n.joinRequestsTitle, equals('Solicitudes de unión'));
       expect(l10n.approveButton, equals('Aprobar'));
       expect(l10n.rejectButton, equals('Rechazar'));
+      expect(
+        l10n.confirmPaymentSubtitle('Alice', 'Bob'),
+        equals('¿Confirmas que Alice le pagó a Bob?'),
+      );
     });
 
     testWidgets('French localization contains natural terminology', (
@@ -198,6 +206,10 @@ void main() {
       expect(l10n.joinRequestsTitle, equals('Demandes d\'adhésion'));
       expect(l10n.approveButton, equals('Approuver'));
       expect(l10n.rejectButton, equals('Rejeter'));
+      expect(
+        l10n.confirmPaymentSubtitle('Alice', 'Bob'),
+        equals('Confirmez-vous que Alice a payé Bob ?'),
+      );
     });
 
     testWidgets('Italian localization contains natural terminology', (
@@ -226,6 +238,10 @@ void main() {
       expect(l10n.joinRequestsTitle, equals('Richieste di adesione'));
       expect(l10n.approveButton, equals('Approva'));
       expect(l10n.rejectButton, equals('Rifiuta'));
+      expect(
+        l10n.confirmPaymentSubtitle('Alice', 'Bob'),
+        equals('Confermi che Alice ha pagato Bob?'),
+      );
     });
 
     test(

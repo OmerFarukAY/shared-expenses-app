@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:uuid/uuid.dart';
 import 'package:denk/core/constants/currencies.dart';
 import 'package:denk/core/theme/app_colors.dart';
 import 'package:denk/core/theme/app_haptics.dart';
@@ -43,6 +42,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
   String? _selectedMemberUid;
   String? _selectedViewCurrency;
   bool _isInviteCodeCopied = false;
+  final Set<String> _inFlightSettlementKeys = <String>{};
 
   @override
   void initState() {
@@ -76,38 +76,72 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
     });
   }
 
-  Future<void> _recordSettlement(SettlementTransaction tx) async {
+  Future<void> _recordSettlement(
+    SettlementTransaction tx, {
+    required String activityToken,
+  }) async {
+    final txKey = '${tx.fromUid}_${tx.toUid}_${tx.currency}_${tx.amountMinor}';
+    if (_inFlightSettlementKeys.contains(txKey)) return;
+
     final l10n = AppLocalizations.of(context);
     final user = ref.read(userProfileControllerProvider).value;
     if (user == null) return;
 
+    bool isConfirming = false;
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(
-          l10n?.markAsSettled ?? 'Mark as Settled',
-          style: AppTypography.h3,
-        ),
-        content: Text(
-          'Confirm that ${tx.fromName} paid ${tx.toName}?',
-          style: AppTypography.bodyMedium,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(l10n?.commonCancel ?? 'Cancel'),
+      builder: (ctx) => StatefulBuilder(
+        builder: (dialogCtx, setDialogState) => AlertDialog(
+          title: Text(
+            l10n?.markAsSettled ?? 'Mark as Settled',
+            style: AppTypography.h3,
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n?.commonConfirm ?? 'Confirm'),
+          content: Text(
+            l10n?.confirmPaymentSubtitle(tx.fromName, tx.toName) ??
+                'Confirm that ${tx.fromName} paid ${tx.toName}?',
+            style: AppTypography.bodyMedium,
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed:
+                  isConfirming ? null : () => Navigator.of(ctx).pop(false),
+              child: Text(l10n?.commonCancel ?? 'Cancel'),
+            ),
+            FilledButton(
+              onPressed: isConfirming
+                  ? null
+                  : () {
+                      setDialogState(() => isConfirming = true);
+                      Navigator.of(ctx).pop(true);
+                    },
+              child: isConfirming
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(l10n?.commonConfirm ?? 'Confirm'),
+            ),
+          ],
+        ),
       ),
     );
 
     if (confirm == true && mounted) {
+      if (_inFlightSettlementKeys.contains(txKey)) return;
+      setState(() => _inFlightSettlementKeys.add(txKey));
+
+      final settlementId = SettlementRecord.generateDeterministicId(
+        groupId: widget.group.id,
+        fromUid: tx.fromUid,
+        toUid: tx.toUid,
+        currency: tx.currency,
+        amountMinor: tx.amountMinor,
+        activityToken: activityToken,
+      );
+
       final record = SettlementRecord(
-        id: const Uuid().v4(),
+        id: settlementId,
         groupId: widget.group.id,
         fromUid: tx.fromUid,
         fromName: tx.fromName,
@@ -142,6 +176,10 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
               backgroundColor: AppColors.negative,
             ),
           );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _inFlightSettlementKeys.remove(txKey));
         }
       }
     }
@@ -1049,6 +1087,12 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                         tx.fromUid == currentUserId;
                                     final isMeCreditor =
                                         tx.toUid == currentUserId;
+                                    final txKey =
+                                        '${tx.fromUid}_${tx.toUid}_${tx.currency}_${tx.amountMinor}';
+                                    final isSettling =
+                                        _inFlightSettlementKeys.contains(txKey);
+                                    final activityToken =
+                                        '${expenses.length}_${settlements.length}_${expenses.firstOrNull?.id ?? "no_exp"}_${settlements.firstOrNull?.id ?? "no_stl"}';
 
                                     return DenkCard(
                                       padding: const EdgeInsets.all(16),
@@ -1065,7 +1109,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                                     Flexible(
                                                       child: Text(
                                                         isMeDebtor
-                                                            ? 'You'
+                                                            ? (l10n?.youLabel ?? 'You')
                                                             : tx.fromName,
                                                         style: AppTypography
                                                             .bodyMedium
@@ -1094,7 +1138,7 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                                     Flexible(
                                                       child: Text(
                                                         isMeCreditor
-                                                            ? 'You'
+                                                            ? (l10n?.youLabel ?? 'You')
                                                             : tx.toName,
                                                         style: AppTypography
                                                             .bodyMedium
@@ -1133,8 +1177,14 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                                               variant:
                                                   DenkButtonVariant.secondary,
                                               height: 40,
-                                              onPressed: () =>
-                                                  _recordSettlement(tx),
+                                              isLoading: isSettling,
+                                              onPressed: isSettling
+                                                  ? null
+                                                  : () => _recordSettlement(
+                                                      tx,
+                                                      activityToken:
+                                                          activityToken,
+                                                    ),
                                             ),
                                           ),
                                         ],

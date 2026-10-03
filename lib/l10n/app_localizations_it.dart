@@ -240,6 +240,11 @@ class AppLocalizationsIt extends AppLocalizations {
   String get markAsSettled => 'Segna come Saldato';
 
   @override
+  String confirmPaymentSubtitle(String payer, String payee) {
+    return 'Confermi che $payer ha pagato $payee?';
+  }
+
+  @override
   String get settlementCompleted => 'Saldo registrato con successo';
 
   @override

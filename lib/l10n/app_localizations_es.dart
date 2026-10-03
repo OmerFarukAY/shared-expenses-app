@@ -241,6 +241,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get markAsSettled => 'Marcar como Pagado';
 
   @override
+  String confirmPaymentSubtitle(String payer, String payee) {
+    return '¿Confirmas que $payer le pagó a $payee?';
+  }
+
+  @override
   String get settlementCompleted => 'Pago registrado con éxito';
 
   @override

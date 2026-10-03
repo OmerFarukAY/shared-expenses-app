@@ -75,6 +75,7 @@
   "noExpensesSubtitle": "Toca el botón inferior para registrar el primer gasto.",
   "settlementTitle": "Plan de Liquidación",
   "markAsSettled": "Marcar como Pagado",
+  "confirmPaymentSubtitle": "¿Confirmas que {payer} le pagó a {payee}?",
   "settlementCompleted": "Pago registrado con éxito",
   "settlementHistory": "Historial de Pagos",
   "noSettlementsNeeded": "¡Todo el mundo está al día! No hay pagos pendientes.",

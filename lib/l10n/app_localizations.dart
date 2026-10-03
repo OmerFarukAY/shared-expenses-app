@@ -554,6 +554,12 @@ abstract class AppLocalizations {
   /// **'Mark as Settled'**
   String get markAsSettled;
 
+  /// No description provided for @confirmPaymentSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm that {payer} paid {payee}?'**
+  String confirmPaymentSubtitle(String payer, String payee);
+
   /// No description provided for @settlementCompleted.
   ///
   /// In en, this message translates to:

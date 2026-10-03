@@ -241,6 +241,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get markAsSettled => 'Mark as Settled';
 
   @override
+  String confirmPaymentSubtitle(String payer, String payee) {
+    return 'Confirm that $payer paid $payee?';
+  }
+
+  @override
   String get settlementCompleted => 'Settlement recorded successfully';
 
   @override

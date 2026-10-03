@@ -75,6 +75,7 @@
   "noExpensesSubtitle": "Tocca il pulsante qui sotto per inserire la prima spesa.",
   "settlementTitle": "Piano di Pareggio",
   "markAsSettled": "Segna come Saldato",
+  "confirmPaymentSubtitle": "Confermi che {payer} ha pagato {payee}?",
   "settlementCompleted": "Saldo registrato con successo",
   "settlementHistory": "Cronologia Saldi",
   "noSettlementsNeeded": "I conti sono perfettamente in pari!",

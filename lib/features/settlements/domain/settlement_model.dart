@@ -112,4 +112,34 @@ class SettlementRecord {
       notes: map['notes'] as String?,
     );
   }
+
+  /// Generates a deterministic settlement document ID for a given debt payment.
+  ///
+  /// Combines the group ID, payer, recipient, currency, amount, and an activity
+  /// token (e.g. latest contributing expense ID or settlement count) so that
+  /// concurrent taps or multiple devices resolving the exact same debt share
+  /// the identical document ID.
+  ///
+  /// When executed within a Firestore transaction, any duplicate/concurrent
+  /// attempt targets this exact same document reference and is cleanly recognized
+  /// as already existing, preventing duplicate writes and balance reversals.
+  static String generateDeterministicId({
+    required String groupId,
+    required String fromUid,
+    required String toUid,
+    required String currency,
+    required int amountMinor,
+    String? activityToken,
+  }) {
+    final cleanGroup = groupId.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+    final cleanFrom = fromUid.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+    final cleanTo = toUid.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+    final cleanCurr = currency.toUpperCase().replaceAll(RegExp(r'[^A-Z]'), '');
+    final token = activityToken != null && activityToken.isNotEmpty
+        ? activityToken.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '')
+        : 'base';
+
+    return 'stl_${cleanGroup}_${cleanFrom}_${cleanTo}_${cleanCurr}_${amountMinor}_$token';
+  }
 }
+

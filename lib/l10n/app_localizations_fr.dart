@@ -241,6 +241,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get markAsSettled => 'Marquer comme remboursé';
 
   @override
+  String confirmPaymentSubtitle(String payer, String payee) {
+    return 'Confirmez-vous que $payer a payé $payee ?';
+  }
+
+  @override
   String get settlementCompleted => 'Remboursement enregistré';
 
   @override

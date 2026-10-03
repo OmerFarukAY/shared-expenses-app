@@ -75,6 +75,7 @@
   "noExpensesSubtitle": "Appuyez sur le bouton ci-dessous pour ajouter votre première dépense.",
   "settlementTitle": "Plan de remboursement",
   "markAsSettled": "Marquer comme remboursé",
+  "confirmPaymentSubtitle": "Confirmez-vous que {payer} a payé {payee} ?",
   "settlementCompleted": "Remboursement enregistré",
   "settlementHistory": "Historique des remboursements",
   "noSettlementsNeeded": "Les comptes sont parfaitement équilibrés !",

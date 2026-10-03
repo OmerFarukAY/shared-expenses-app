@@ -75,6 +75,7 @@
   "noExpensesSubtitle": "İlk harcamanızı eklemek için aşağıdaki düğmeye dokunun.",
   "settlementTitle": "Ödeme Planı",
   "markAsSettled": "Ödendi Olarak İşaretle",
+  "confirmPaymentSubtitle": "{payer} kişisinin {payee} kişisine ödeme yaptığını onaylıyor musunuz?",
   "settlementCompleted": "Ödeme başarıyla kaydedildi",
   "settlementHistory": "Geçmiş Ödemeler",
   "noSettlementsNeeded": "Herkes denkleşti! Bekleyen ödeme yok.",

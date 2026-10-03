@@ -75,6 +75,17 @@
   "noExpensesSubtitle": "Tap the button below to add your first expense.",
   "settlementTitle": "Settlement Plan",
   "markAsSettled": "Mark as Settled",
+  "confirmPaymentSubtitle": "Confirm that {payer} paid {payee}?",
+  "@confirmPaymentSubtitle": {
+    "placeholders": {
+      "payer": {
+        "type": "String"
+      },
+      "payee": {
+        "type": "String"
+      }
+    }
+  },
   "settlementCompleted": "Settlement recorded successfully",
   "settlementHistory": "Settlement History",
   "noSettlementsNeeded": "Everyone is settled up! No payments needed.",

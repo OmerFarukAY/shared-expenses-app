@@ -34,10 +34,21 @@ class FirestoreSettlementRepository implements SettlementRepository {
   @override
   Future<void> recordSettlement(SettlementRecord settlement) async {
     try {
-      await _settlementsCol(
-        settlement.groupId,
-      ).doc(settlement.id).set(settlement.toMap());
+      await _firestore.runTransaction((transaction) async {
+        final docRef = _settlementsCol(settlement.groupId).doc(settlement.id);
+        final docSnap = await transaction.get(docRef);
+
+        if (docSnap.exists) {
+          // Idempotent guard: A settlement with this deterministic ID has already
+          // been recorded (e.g. from a concurrent tap or another member's device).
+          // Safely no-op without writing a duplicate document or reversing balances.
+          return;
+        }
+
+        transaction.set(docRef, settlement.toMap());
+      });
     } catch (e) {
+      if (e is AppException) rethrow;
       throw AppException(
         message: 'Failed to record settlement: $e',
         code: 'settlement-record-failed',

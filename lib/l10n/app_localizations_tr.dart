@@ -240,6 +240,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get markAsSettled => 'Ödendi Olarak İşaretle';
 
   @override
+  String confirmPaymentSubtitle(String payer, String payee) {
+    return '$payer kişisinin $payee kişisine ödeme yaptığını onaylıyor musunuz?';
+  }
+
+  @override
   String get settlementCompleted => 'Ödeme başarıyla kaydedildi';
 
   @override
