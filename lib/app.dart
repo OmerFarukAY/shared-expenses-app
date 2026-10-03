@@ -12,6 +12,10 @@ import 'package:denk/features/settings/presentation/settings_controller.dart';
 import 'package:denk/l10n/l10n.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
+/// Global key for displaying SnackBars from anywhere across the app (including modals, sheets, and background callbacks).
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
 /// Root application widget for Denk.
 class DenkApp extends ConsumerWidget {
   final Locale? forcedLocale;
@@ -24,6 +28,7 @@ class DenkApp extends ConsumerWidget {
     final appThemeMode = ref.watch(appThemeModeProvider);
 
     return MaterialApp(
+      scaffoldMessengerKey: rootScaffoldMessengerKey,
       title: 'Denk',
       debugShowCheckedModeBanner: false,
       locale: forcedLocale ?? appLocale,

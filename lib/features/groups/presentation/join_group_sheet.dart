@@ -111,13 +111,14 @@ class _JoinGroupSheetState extends ConsumerState<JoinGroupSheet> {
 
     try {
       final repo = ref.read(groupRepositoryProvider);
-      await repo.createJoinRequest(
+      final submittedRequest = await repo.createJoinRequest(
         inviteCode: _previewGroup!.inviteCode,
         user: user,
       );
 
       if (mounted) {
         setState(() {
+          _existingRequest = submittedRequest;
           _requestSubmitted = true;
           _errorText = null;
         });

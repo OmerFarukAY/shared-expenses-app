@@ -442,23 +442,31 @@ class FirestoreGroupRepository implements GroupRepository {
         rejectionCount: rejectionCount,
       );
 
-      final batch = _firestore.batch();
-      // Write to groups/{groupId}/joinRequests/{uid}
-      batch.set(requestRef, requestModel.toMap());
+      if (existingReq.exists && existingReq.data() != null) {
+        // Update existing rejected request back to pending without altering createdAt or rejectionCount
+        await requestRef.update({
+          'status': JoinRequestStatus.pending.name,
+          'updatedAt': Timestamp.fromDate(now),
+          'resolvedAt': FieldValue.delete(),
+          'resolvedBy': FieldValue.delete(),
+        });
+      } else {
+        // Create new request
+        await requestRef.set(requestModel.toMap());
+      }
 
-      // Write to users/{uid}/join_requests/{groupId}
+      // Write to users/{uid}/join_requests/{groupId} only after requestRef write succeeds on server
       final userReqRef = _firestore
           .collection('users')
           .doc(user.uid)
           .collection('join_requests')
           .doc(group.id);
-      batch.set(userReqRef, {
+      await userReqRef.set({
         ...requestModel.toMap(),
         'groupName': group.name,
         'defaultCurrency': group.defaultCurrency,
       });
 
-      await batch.commit();
       return requestModel;
     } catch (e) {
       if (e is AppException) rethrow;

@@ -426,21 +426,21 @@ service cloud.firestore {
                          // Case 4: Requester re-submits previously rejected request (rejectionCount must be < 3, count preserved)
                          (request.auth.uid == requestUid &&
                           resource.data.status == 'rejected' &&
-                          (('rejectionCount' in resource.data ? resource.data.rejectionCount : 1) < 3) &&
+                          (('rejectionCount' in resource.data ? resource.data.rejectionCount : 0) < 3) &&
                           request.resource.data.status == 'pending' &&
                           (!('rejectionCount' in resource.data) || request.resource.data.rejectionCount == resource.data.rejectionCount) &&
                           (!('resolvedAt' in request.resource.data) || request.resource.data.resolvedAt == null) &&
                           (!('resolvedBy' in request.resource.data) || request.resource.data.resolvedBy == null) &&
                           request.resource.data.uid == resource.data.uid &&
                           request.resource.data.groupId == resource.data.groupId &&
-                          request.resource.data.createdAt == resource.data.createdAt &&
+                          (!('createdAt' in request.resource.data) ||
+                           request.resource.data.createdAt == resource.data.createdAt ||
+                           (request.resource.data.createdAt <= resource.data.createdAt + duration.value(2, 's') &&
+                            request.resource.data.createdAt >= resource.data.createdAt - duration.value(2, 's'))) &&
                           isValidUpdateTimestamp(request.resource.data.updatedAt, resource.data.updatedAt) &&
                           exists(/databases/$(database)/documents/groups/$(groupId)) &&
                           get(/databases/$(database)/documents/groups/$(groupId)).data.active == true &&
-                          !(request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.memberUids) &&
-                          exists(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)) &&
-                          get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.active == true &&
-                          get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.groupId == groupId)
+                          !(request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.memberUids))
                         );
 
         // Delete: Requester can cancel/delete own pending request, or creator can delete

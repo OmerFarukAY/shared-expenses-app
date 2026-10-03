@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:denk/app.dart';
 import 'package:denk/core/errors/error_localizer.dart';
 import 'package:denk/core/theme/app_colors.dart';
 import 'package:denk/core/theme/app_typography.dart';
@@ -151,50 +152,85 @@ class JoinRequestsSheet extends ConsumerWidget {
                                     requestUid: req.uid,
                                     rejectedBy: currentUser.uid,
                                   );
-                                  if (context.mounted) {
-                                    final messenger = ScaffoldMessenger.of(context);
-                                    messenger.clearSnackBars();
-                                    messenger.showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          l10n?.joinRequestRejectedSnackbar ??
-                                              'Talep reddedildi',
-                                        ),
-                                        duration: const Duration(seconds: 4),
-                                        behavior: SnackBarBehavior.floating,
-                                        action: SnackBarAction(
-                                          label: l10n?.undoAction ?? 'Geri Al',
-                                          textColor: theme.colorScheme.inversePrimary,
-                                          onPressed: () async {
-                                            try {
-                                              await repo.undoRejectJoinRequest(
-                                                groupId: group.id,
-                                                requestUid: req.uid,
-                                              );
-                                            } catch (e) {
-                                              if (context.mounted) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(context.localizedErrorMessage(e)),
-                                                    behavior: SnackBarBehavior.floating,
-                                                  ),
-                                                );
-                                              }
-                                            }
-                                          },
-                                        ),
-                                      ),
-                                    );
+                                  if (context.mounted &&
+                                      requests.length <= 1 &&
+                                      Navigator.of(context).canPop()) {
+                                    Navigator.of(context).pop();
                                   }
+
+                                  final messenger =
+                                      rootScaffoldMessengerKey.currentState ??
+                                          (context.mounted
+                                              ? ScaffoldMessenger.maybeOf(context)
+                                              : null);
+                                  messenger?.clearSnackBars();
+                                  messenger?.showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        l10n?.joinRequestRejectedSnackbar ??
+                                            'Talep reddedildi',
+                                      ),
+                                      duration: const Duration(seconds: 4),
+                                      behavior: SnackBarBehavior.floating,
+                                      action: SnackBarAction(
+                                        label: l10n?.undoAction ?? 'Geri Al',
+                                        textColor:
+                                            theme.colorScheme.inversePrimary,
+                                        onPressed: () async {
+                                          try {
+                                            await repo.undoRejectJoinRequest(
+                                              groupId: group.id,
+                                              requestUid: req.uid,
+                                            );
+                                          } catch (e) {
+                                            final currentCtx =
+                                                rootScaffoldMessengerKey
+                                                    .currentContext;
+                                            final errorMsg =
+                                                currentCtx != null &&
+                                                        currentCtx.mounted
+                                                    ? currentCtx
+                                                        .localizedErrorMessage(
+                                                          e,
+                                                        )
+                                                    : e.toString();
+                                            final errMessenger =
+                                                rootScaffoldMessengerKey
+                                                        .currentState ??
+                                                    (context.mounted
+                                                        ? ScaffoldMessenger
+                                                            .maybeOf(context)
+                                                        : null);
+                                            errMessenger?.showSnackBar(
+                                              SnackBar(
+                                                content: Text(errorMsg),
+                                                behavior:
+                                                    SnackBarBehavior.floating,
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  );
                                 } catch (e) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(context.localizedErrorMessage(e)),
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                  }
+                                  final currentCtx =
+                                      rootScaffoldMessengerKey.currentContext;
+                                  final errorMsg =
+                                      currentCtx != null && currentCtx.mounted
+                                          ? currentCtx.localizedErrorMessage(e)
+                                          : e.toString();
+                                  final errMessenger =
+                                      rootScaffoldMessengerKey.currentState ??
+                                          (context.mounted
+                                              ? ScaffoldMessenger.maybeOf(context)
+                                              : null);
+                                  errMessenger?.showSnackBar(
+                                    SnackBar(
+                                      content: Text(errorMsg),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
                                 }
                               },
                             ),
