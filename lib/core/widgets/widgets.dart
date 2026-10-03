@@ -5,4 +5,5 @@ export 'denk_empty_state.dart';
 export 'denk_error_view.dart';
 export 'denk_loading_view.dart';
 export 'denk_logo.dart';
+export 'denk_skeleton.dart';
 export 'denk_text_field.dart';

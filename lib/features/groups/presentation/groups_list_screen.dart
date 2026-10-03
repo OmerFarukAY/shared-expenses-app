@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:native_liquid_glass/native_liquid_glass.dart';
 import 'package:denk/core/theme/app_colors.dart';
+import 'package:denk/core/theme/app_haptics.dart';
 import 'package:denk/core/theme/app_typography.dart';
 import 'package:denk/core/widgets/widgets.dart';
 import 'package:denk/features/groups/domain/group_model.dart';
@@ -24,8 +25,55 @@ class GroupsListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
     final groupsAsync = ref.watch(userGroupsStreamProvider);
     final userRequestsAsync = ref.watch(userJoinRequestsStreamProvider);
+
+    // Auto-listen for approved join requests and seamlessly navigate into group
+    ref.listen<AsyncValue<List<JoinRequestModel>>>(
+      userJoinRequestsStreamProvider,
+      (previous, next) async {
+        final approvedRequests = next.value
+            ?.where((r) => r.status == JoinRequestStatus.approved)
+            .toList() ?? [];
+
+        if (approvedRequests.isNotEmpty) {
+          final req = approvedRequests.first;
+          AppHaptics.medium();
+
+          final repo = ref.read(groupRepositoryProvider);
+          // Delete resolved join request so it won't repeatedly re-trigger
+          await repo.deleteUserJoinRequest(groupId: req.groupId, uid: req.uid);
+
+          // Update active selected group ID
+          ref.read(selectedGroupIdProvider.notifier).state = req.groupId;
+
+          // Fetch fresh group document
+          final group = await repo.getGroup(req.groupId);
+
+          if (context.mounted && group != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  '${group.name}: ${l10n?.joinRequestApproved ?? 'Approved'}!',
+                ),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+
+            if (onGroupSelected != null) {
+              onGroupSelected!(group);
+            } else {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => GroupDashboardScreen(group: group),
+                ),
+              );
+            }
+          }
+        }
+      },
+    );
 
     final pendingRequests =
         userRequestsAsync.asData?.value
@@ -79,7 +127,8 @@ class GroupsListScreen extends ConsumerWidget {
           ),
         ),
         child: groupsAsync.when(
-        data: (groups) {
+          skipLoadingOnReload: true,
+          data: (groups) {
           if (groups.isEmpty && pendingRequests.isEmpty) {
             return Center(
               child: SingleChildScrollView(
@@ -147,23 +196,45 @@ class GroupsListScreen extends ConsumerWidget {
                     final confirmed = await showDialog<bool>(
                       context: context,
                       builder: (ctx) => AlertDialog(
+                        backgroundColor: theme.colorScheme.surface,
+                        surfaceTintColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: BorderSide(
+                            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                          ),
+                        ),
                         title: Text(
                           l10n?.cancelRequestButton ?? 'Cancel Request',
+                          style: AppTypography.h3.copyWith(
+                            color: theme.colorScheme.onSurface,
+                          ),
                         ),
                         content: Text(
                           l10n?.pendingApprovalCardSubtitle ??
                               'Waiting for group owner approval.',
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+                          ),
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(ctx).pop(false),
-                            child: Text(l10n?.commonCancel ?? 'Cancel'),
+                            child: Text(
+                              l10n?.commonCancel ?? 'Cancel',
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                              ),
+                            ),
                           ),
                           TextButton(
                             onPressed: () => Navigator.of(ctx).pop(true),
                             child: Text(
                               l10n?.commonDelete ?? 'Delete',
-                              style: const TextStyle(color: Colors.red),
+                              style: TextStyle(
+                                color: theme.colorScheme.error,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
@@ -237,7 +308,7 @@ class GroupsListScreen extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(child: DenkLoadingView()),
+        loading: () => const DenkGroupsListSkeleton(),
         error: (err, _) => Center(
           child: DenkErrorView(
             message: err.toString(),
@@ -262,7 +333,10 @@ class _PendingRequestsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
+    final amberColor =
+        isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,7 +351,10 @@ class _PendingRequestsSection extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               l10n?.pendingApprovalCardTitle ?? 'Pending Approval',
-              style: AppTypography.h3.copyWith(fontSize: 16),
+              style: AppTypography.h3.copyWith(
+                fontSize: 16,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
           ],
         ),
@@ -288,11 +365,13 @@ class _PendingRequestsSection extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest.withValues(
-                alpha: 0.4,
+                alpha: isDark ? 0.35 : 0.5,
               ),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                color: theme.colorScheme.outlineVariant.withValues(
+                  alpha: isDark ? 0.25 : 0.4,
+                ),
               ),
             ),
             child: Row(
@@ -300,12 +379,12 @@ class _PendingRequestsSection extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: 0.15),
+                    color: amberColor.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.hourglass_top_rounded,
-                    color: Colors.amber,
+                    color: amberColor,
                     size: 18,
                   ),
                 ),

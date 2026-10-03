@@ -79,7 +79,7 @@ class _JoinGroupSheetState extends ConsumerState<JoinGroupSheet> {
   }
 
   void _submitJoinRequest() async {
-    final user = ref.read(userProfileControllerProvider).value;
+    final user = await ref.read(userProfileControllerProvider.future);
     if (user == null || _previewGroup == null) return;
 
     setState(() => _isRequesting = true);
@@ -113,6 +113,8 @@ class _JoinGroupSheetState extends ConsumerState<JoinGroupSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return GestureDetector(
@@ -132,40 +134,51 @@ class _JoinGroupSheetState extends ConsumerState<JoinGroupSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(l10n?.joinGroup ?? 'Join Group', style: AppTypography.h2),
+                Text(
+                  l10n?.joinGroup ?? 'Join Group',
+                  style: AppTypography.h2.copyWith(
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),
                   icon: const Icon(Icons.close_rounded),
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ],
             ),
             const SizedBox(height: 16),
             if (_requestSubmitted) ...[
               DenkCard(
-                backgroundColor: AppColors.positiveLight,
-                borderColor: AppColors.positive.withValues(alpha: 0.3),
+                backgroundColor: isDark
+                    ? AppColors.positive.withValues(alpha: 0.12)
+                    : AppColors.positiveLight,
+                borderColor: isDark
+                    ? AppColors.positive.withValues(alpha: 0.35)
+                    : AppColors.positive.withValues(alpha: 0.3),
                 child: Column(
                   children: [
                     Container(
-                      width: 48,
-                      height: 48,
-                      decoration: const BoxDecoration(
-                        color: AppColors.positive,
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppColors.positive.withValues(alpha: 0.2)
+                            : AppColors.positive,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.check_rounded,
-                        color: Colors.white,
+                        color: isDark ? AppColors.positive : Colors.white,
                         size: 28,
                       ),
                     ),
                     const SizedBox(height: 14),
                     Text(
                       l10n?.joinRequestSentTitle ?? 'Request Sent',
-                      style: AppTypography.h3,
+                      style: AppTypography.h3.copyWith(
+                        color: theme.colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -175,9 +188,9 @@ class _JoinGroupSheetState extends ConsumerState<JoinGroupSheet> {
                           'Your request to join has been submitted. You will be able to access the group once an owner approves it.',
                       textAlign: TextAlign.center,
                       style: AppTypography.bodySmall.copyWith(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.75,
+                        ),
                       ),
                     ),
                   ],
@@ -194,7 +207,7 @@ class _JoinGroupSheetState extends ConsumerState<JoinGroupSheet> {
                 label: l10n?.inviteCodeLabel ?? 'Invite Code',
                 hintText: l10n?.inviteCodeHint ?? 'e.g. DNK-7X2K',
                 errorText: _errorText,
-                autofocus: true,
+                autofocus: false,
                 textInputAction: TextInputAction.done,
                 keyboardType: TextInputType.text,
                 onChanged: _onCodeChanged,
@@ -212,26 +225,24 @@ class _JoinGroupSheetState extends ConsumerState<JoinGroupSheet> {
               if (_previewGroup != null) ...[
                 const SizedBox(height: 16),
                 DenkCard(
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.primary.withValues(alpha: 0.06),
-                  borderColor: Theme.of(
-                    context,
-                  ).colorScheme.primary.withValues(alpha: 0.2),
+                  backgroundColor: theme.colorScheme.surfaceContainerHighest
+                      .withValues(alpha: isDark ? 0.35 : 0.5),
+                  borderColor: theme.colorScheme.outlineVariant
+                      .withValues(alpha: isDark ? 0.3 : 0.5),
                   child: Row(
                     children: [
                       Container(
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.15),
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.15,
+                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
                           Icons.groups_rounded,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: theme.colorScheme.primary,
                         ),
                       ),
                       const SizedBox(width: 14),
@@ -239,14 +250,19 @@ class _JoinGroupSheetState extends ConsumerState<JoinGroupSheet> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(_previewGroup!.name, style: AppTypography.h3),
+                            Text(
+                              _previewGroup!.name,
+                              style: AppTypography.h3.copyWith(
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
                             const SizedBox(height: 2),
                             Text(
                               '${_previewGroup!.memberCount} ${l10n?.membersLabel ?? "members"} • ${_previewGroup!.defaultCurrency}',
                               style: AppTypography.bodySmall.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.6),
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.65,
+                                ),
                               ),
                             ),
                           ],

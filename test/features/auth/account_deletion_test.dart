@@ -218,6 +218,12 @@ class MockGroupRepository implements GroupRepository {
   }) async {}
 
   @override
+  Future<void> deleteUserJoinRequest({
+    required String groupId,
+    required String uid,
+  }) async {}
+
+  @override
   Stream<List<GroupMember>> watchGroupMembers(String groupId) =>
       const Stream.empty();
 

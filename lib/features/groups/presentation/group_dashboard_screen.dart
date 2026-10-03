@@ -15,7 +15,6 @@ import 'package:denk/features/groups/presentation/group_controller.dart';
 import 'package:denk/features/expenses/domain/expense_category.dart';
 import 'package:denk/features/expenses/domain/group_balance_calculator.dart';
 import 'package:denk/features/expenses/presentation/add_expense_screen.dart';
-import 'package:denk/features/expenses/presentation/expense_controller.dart';
 import 'package:denk/features/expenses/presentation/expense_detail_screen.dart';
 import 'package:denk/features/expenses/presentation/expense_item_tile.dart';
 import 'package:denk/features/expenses/presentation/group_insights_sheet.dart';
@@ -156,12 +155,8 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
     final user = ref.watch(userProfileControllerProvider).value;
     final currentUserId = user?.uid ?? '';
 
-    final membersAsync = ref.watch(groupMembersStreamProvider(widget.group.id));
-    final expensesAsync = ref.watch(
-      groupExpensesStreamProvider(widget.group.id),
-    );
-    final settlementsAsync = ref.watch(
-      groupSettlementsStreamProvider(widget.group.id),
+    final dashboardAsync = ref.watch(
+      groupDashboardDataProvider(widget.group.id),
     );
 
     return Scaffold(
@@ -176,9 +171,10 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            membersAsync.when(
-              data: (members) => Text(
-                '${members.length} ${l10n?.membersLabel ?? 'members'}',
+            dashboardAsync.when(
+              skipLoadingOnReload: true,
+              data: (data) => Text(
+                '${data.members.length} ${l10n?.membersLabel ?? 'members'}',
                 style: AppTypography.labelSmall.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
@@ -190,38 +186,32 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
         ),
         actions: [
           // Insights / Statistics Button
-          membersAsync.when(
-            data: (members) => expensesAsync.when(
-              data: (expenses) => settlementsAsync.when(
-                data: (settlements) {
-                  final summaries = GroupBalanceCalculator.calculateAll(
-                    expenses: expenses,
-                    members: members,
-                    defaultCurrency: widget.group.defaultCurrency,
-                    settlements: settlements,
-                  );
-                  final activeCurrency = _selectedViewCurrency ?? widget.group.defaultCurrency;
-                  final summary = summaries[activeCurrency]!;
-                  return IconButton(
-                    icon: const Icon(Icons.insights_rounded),
-                    tooltip: l10n?.spendingInsights ?? 'Spending Overview',
-                    onPressed: () {
-                      GroupInsightsSheet.show(
-                        context: context,
-                        group: widget.group,
-                        members: members,
-                        expenses: expenses,
-                        summary: summary,
-                      );
-                    },
+          dashboardAsync.when(
+            skipLoadingOnReload: true,
+            data: (data) {
+              final summaries = GroupBalanceCalculator.calculateAll(
+                expenses: data.expenses,
+                members: data.members,
+                defaultCurrency: widget.group.defaultCurrency,
+                settlements: data.settlements,
+              );
+              final activeCurrency =
+                  _selectedViewCurrency ?? widget.group.defaultCurrency;
+              final summary = summaries[activeCurrency]!;
+              return IconButton(
+                icon: const Icon(Icons.insights_rounded),
+                tooltip: l10n?.spendingInsights ?? 'Spending Overview',
+                onPressed: () {
+                  GroupInsightsSheet.show(
+                    context: context,
+                    group: widget.group,
+                    members: data.members,
+                    expenses: data.expenses,
+                    summary: summary,
                   );
                 },
-                loading: () => const SizedBox.shrink(),
-                error: (_, _) => const SizedBox.shrink(),
-              ),
-              loading: () => const SizedBox.shrink(),
-              error: (_, _) => const SizedBox.shrink(),
-            ),
+              );
+            },
             loading: () => const SizedBox.shrink(),
             error: (_, _) => const SizedBox.shrink(),
           ),
@@ -305,12 +295,12 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
           ),
         ],
       ),
-      body: membersAsync.when(
-        data: (members) {
-          return expensesAsync.when(
-            data: (expenses) {
-              return settlementsAsync.when(
-                data: (settlements) {
+      body: dashboardAsync.when(
+        skipLoadingOnReload: true,
+        data: (data) {
+          final members = data.members;
+          final expenses = data.expenses;
+          final settlements = data.settlements;
                   final summaries = GroupBalanceCalculator.calculateAll(
                     expenses: expenses,
                     members: members,
@@ -1228,34 +1218,14 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
                       ),
                     ],
                   );
-                },
-                loading: () => const Center(child: DenkLoadingView()),
-                error: (err, _) => Center(
-                  child: DenkErrorView(
-                    message: err.toString(),
-                    onRetry: () => ref.refresh(
-                      groupSettlementsStreamProvider(widget.group.id),
-                    ),
-                  ),
-                ),
-              );
-            },
-            loading: () => const Center(child: DenkLoadingView()),
-            error: (err, _) => Center(
-              child: DenkErrorView(
-                message: err.toString(),
-                onRetry: () =>
-                    ref.refresh(groupExpensesStreamProvider(widget.group.id)),
-              ),
-            ),
-          );
         },
-        loading: () => const Center(child: DenkLoadingView()),
+        loading: () => const DenkDashboardSkeleton(),
         error: (err, _) => Center(
           child: DenkErrorView(
             message: err.toString(),
-            onRetry: () =>
-                ref.refresh(groupMembersStreamProvider(widget.group.id)),
+            onRetry: () => ref.refresh(
+              groupDashboardDataProvider(widget.group.id),
+            ),
           ),
         ),
       ),
@@ -1267,11 +1237,11 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
               tint: theme.colorScheme.primary,
               height: 52,
               onPressed: () {
-                membersAsync.whenData((members) {
+                dashboardAsync.whenData((data) {
                   AddExpenseScreen.show(
                     context: context,
                     group: widget.group,
-                    members: members,
+                    members: data.members,
                   );
                 });
               },
@@ -1279,11 +1249,11 @@ class _GroupDashboardScreenState extends ConsumerState<GroupDashboardScreen>
           : FloatingActionButton.extended(
               tooltip: l10n?.addExpense ?? 'Add Expense',
               onPressed: () {
-                membersAsync.whenData((members) {
+                dashboardAsync.whenData((data) {
                   AddExpenseScreen.show(
                     context: context,
                     group: widget.group,
-                    members: members,
+                    members: data.members,
                   );
                 });
               },

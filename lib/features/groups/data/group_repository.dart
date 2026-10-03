@@ -43,6 +43,10 @@ abstract class GroupRepository {
     required String groupId,
     required String uid,
   });
+  Future<void> deleteUserJoinRequest({
+    required String groupId,
+    required String uid,
+  });
   Stream<List<GroupMember>> watchGroupMembers(String groupId);
   Future<void> leaveGroup({required String groupId, required String uid});
   Future<void> removeMember({required String groupId, required String uid});
@@ -463,7 +467,6 @@ class FirestoreGroupRepository implements GroupRepository {
         .collection('users')
         .doc(uid)
         .collection('join_requests')
-        .where('status', isEqualTo: 'pending')
         .snapshots()
         .map((snapshot) {
           return snapshot.docs
@@ -480,6 +483,18 @@ class FirestoreGroupRepository implements GroupRepository {
   }) async {
     final now = DateTime.now();
     try {
+      // Fetch current group data to denormalize into user's user_groups
+      final groupDoc = await _firestore.collection('groups').doc(groupId).get();
+      final groupData = groupDoc.data() ?? {};
+      final existingUids = (groupData['memberUids'] as List<dynamic>? ?? [])
+          .map((e) => e.toString())
+          .toList();
+      final updatedUids = existingUids.contains(request.uid)
+          ? existingUids
+          : [...existingUids, request.uid];
+      final currentCount = (groupData['memberCount'] as num?)?.toInt() ?? existingUids.length;
+      final newCount = existingUids.contains(request.uid) ? currentCount : currentCount + 1;
+
       final batch = _firestore.batch();
 
       // 1. Mark request approved in groups/{groupId}/joinRequests/{uid}
@@ -510,22 +525,14 @@ class FirestoreGroupRepository implements GroupRepository {
       );
       batch.set(memberRef, member.toMap());
 
-      // 3. Update groups/{groupId}.memberUids and memberCount
+      // 3. Update groups/{groupId}.memberUids, memberCount, and lastAddedUid
       final groupRef = _firestore.collection('groups').doc(groupId);
       batch.update(groupRef, {
         'memberUids': FieldValue.arrayUnion([request.uid]),
-        'memberCount': FieldValue.increment(1),
+        'memberCount': newCount,
+        'lastAddedUid': request.uid,
         'updatedAt': Timestamp.fromDate(now),
       });
-
-      // Fetch current group data to denormalize into user's user_groups
-      final groupDoc = await _firestore.collection('groups').doc(groupId).get();
-      final groupData = groupDoc.data() ?? {};
-      final existingUids = (groupData['memberUids'] as List<dynamic>? ?? [])
-          .map((e) => e.toString())
-          .toList();
-      final updatedUids = [...existingUids, request.uid];
-      final currentCount = (groupData['memberCount'] as num?)?.toInt() ?? updatedUids.length;
 
       // 4. Update user's user_groups/{groupId} with denormalized summary
       final userGroupRef = _firestore
@@ -537,7 +544,7 @@ class FirestoreGroupRepository implements GroupRepository {
         ...groupData,
         'id': groupId,
         'groupId': groupId,
-        'memberCount': currentCount + 1,
+        'memberCount': newCount,
         'memberUids': updatedUids,
         'updatedAt': Timestamp.fromDate(now),
         'joinedAt': Timestamp.fromDate(now),
@@ -627,6 +634,23 @@ class FirestoreGroupRepository implements GroupRepository {
       await batch.commit();
     } catch (e) {
       throw AppException.fromFirebase(e);
+    }
+  }
+
+  @override
+  Future<void> deleteUserJoinRequest({
+    required String groupId,
+    required String uid,
+  }) async {
+    try {
+      await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('join_requests')
+          .doc(groupId)
+          .delete();
+    } catch (e) {
+      // Non-fatal cleanup
     }
   }
 
